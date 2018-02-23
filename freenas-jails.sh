@@ -39,6 +39,10 @@ plex_DEFAULT_IP="192.168.0.18"
 plex_DEFAULT_PORT="32400"
 plex_DEFAULT_MAC=""
 
+plexpass_DEFAULT_IP="192.168.0.18"
+plexpass_DEFAULT_PORT="32400"
+plexpass_DEFAULT_MAC=""
+
 emby_DEFAULT_IP="192.168.0.19"
 emby_DEFAULT_PORT="8989"
 emby_DEFAULT_MAC=""
@@ -145,6 +149,7 @@ install_dialog () {
 	Radarr "Radarr automatic movie downloader" 1 \
 	Ombi "Your personal media assistant!" 1 \
 	Plex "Plex Media Server" 1 \
+	Plexpass "Plex Media Server plexpass version" 1 \
 	Emby "The open media solution" 1 \
 	Gogs "Go Git  Server" 1 \
 	HomeAssistant "Home-Assistant (Python 3)" 1 \
@@ -411,9 +416,9 @@ install_jail () {
 			if [ "$i" = "0" ]; then
 				cp -R $BACKUP_LOCATION/$1$(<$(dirname $0)/$1/backup.conf)/ $JAIL_LOCATION/${!JAIL_NAME}/root$(<$(dirname $0)/$1/backup.conf)
 				chown -R $USER_NAME:$USER_NAME $JAIL_LOCATION/${!JAIL_NAME}/root$(<$(dirname $0)/$1/backup.conf)
-				iocage restart ${!JAIL_NAME}
 			fi
 		fi
+		iocage restart ${!JAIL_NAME}
 		dialog --msgbox "$1 installed" 0 0
 	else
 		dialog --msgbox "$1 already installed, use the upgrade function in main menu!" 0 0
@@ -434,6 +439,7 @@ mount_storage () {
 		Radarr "Radarr automatic movie downloader" 1 \
 		Ombi "Your personal media assistant!" 1 \
 		Plex "Plex Media Server" 1 \
+		Plexpass "Plex Media Server plexpass version" 1 \
 		Emby "The open media solution" 1 \
 		Gogs "Go Git  Server" 1 \
 		HomeAssistant "Home-Assistant (Python 3)" 1 \
@@ -451,7 +457,7 @@ mount_storage () {
 		chown -R $USER_NAME:$USER_NAME $DATA
 		iocage fstab -a ${!JAIL_NAME} $DATA /media nullfs rw 0 0
 	fi
-	if [[ $JAIL == "sonarr" ]] || [[ $JAIL == "radarr" ]] || [[ $JAIL == "sabnzbd" ]] || [[ $JAIL == "plex" ]] || [[ $JAIL == "emby" ]] || [[ $JAIL == "ombi" ]]; then
+	if [[ $JAIL == "sonarr" ]] || [[ $JAIL == "radarr" ]] || [[ $JAIL == "sabnzbd" ]] || [[ $JAIL == "plex" ]] || [[ $JAIL == "plexpass" ]] || [[ $JAIL == "emby" ]] || [[ $JAIL == "ombi" ]]; then
 		DATA=$(dialog --title "Mounting storage" --stdout --title "Please choose the media folder for $JAIL" --fselect /mnt/ 14 48)
 		chown -R $USER_NAME:$USER_NAME $DATA
 		iocage fstab -a ${!JAIL_NAME} $DATA /mnt/media nullfs rw 0 0
@@ -485,6 +491,7 @@ delete_jail () {
 	Radarr "Radarr automatic movie downloader" 1 \
 	Ombi "Your personal media assistant!" 1 \
 	Plex "Plex Media Server" 1 \
+	Plexpass "Plex Media Server plexpass version" 1 \
 	Emby "The open media solution" 1 \
 	Gogs "Go Git  Server" 1 \
 	HomeAssistant "Home-Assistant (Python 3)" 1 \
@@ -569,6 +576,7 @@ backup_jail () {
 		Radarr "Radarr automatic movie downloader" 1 \
 		Ombi "Your personal media assistant!" 1 \
 		Plex "Plex Media Server" 1 \
+		Plexpass "Plex Media Server plexpass version" 1 \
 		Emby "The open media solution" 1 \
 		Gogs "Go Git  Server" 1 \
 		HomeAssistant "Home-Assistant (Python 3)" 1 \
