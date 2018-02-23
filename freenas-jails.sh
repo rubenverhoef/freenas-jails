@@ -61,7 +61,6 @@ first () {
 	"Mount storage" "Mount storage to a jail" \
 	"Backup jail" "Backup a specific jail" \
 	"Delete jail" "Delete a specific jail" \
-	"Delete config" "Delete a specific jail" \
 	2>&1 1>&3)
 	exec 3>&-
 
@@ -91,11 +90,6 @@ first () {
 			delete_jail
 		fi
 		
-		# Delete config is selected
-		if [ "$CHOICE" = "Delete config" ]
-		then
-			delete_config
-		fi
 		if [ "$CHOICE" = "Mount storage" ]
 		then
 			mount_storage
@@ -448,7 +442,6 @@ mount_storage () {
 		JAIL=${JAIL,,} 
 	fi
 	
-	echo $JAIL
 	. $(dirname $0)/$JAIL/$JAIL\_config.sh
 	. $(dirname $0)/config.sh
 	JAIL_NAME=$JAIL\_JAIL_NAME
@@ -508,6 +501,12 @@ delete_jail () {
 				. $(dirname $0)/webserver/webserver_config.sh
 				. $(dirname $0)/config.sh
 				JAIL_NAME=${jail_arr[$i-1],,}\_JAIL_NAME
+				dialog --title "Backup before deleting" \
+				--yesno "Do you want to make a config backup before deleting ${!JAIL_NAME}?" 7 60
+				if [ "$?" = "0" ]; then
+					backup_jail ${jail_arr[$i-1],,}
+				fi
+				
 				dialog --title "Delete Program/Jail" \
 				--yesno "Are you sure you want to permanently delete ${!JAIL_NAME}?" 7 60
 				if [ "$?" = "0" ]; then
@@ -535,46 +534,10 @@ delete_jail () {
 	first
 }
 
-delete_config () { #delete backup, delete config not helpfull...
-	exec 3>&1
-	JAILS=$(dialog --separate-output --checklist "Delete config files of following programs:" 0 0 0 \
-	Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" 1 \
-	Nextcloud "Nextcloud 12" 1 \
-	SABnzbd "SABnzbd" 1 \
-	Sonarr "Sonarr automatic serice downloader" 1 \
-	Radarr "Radarr automatic movie downloader" 1 \
-	Ombi "Your personal media assistant!" 1 \
-	Plex "Plex Media Server" 1 \
-	Emby "The open media solution" 1 \
-	Gogs "Go Git  Server" 1 \
-	HomeAssistant "Home-Assistant (Python 3)" 1 \
-	2>&1 1>&3)
-	exec 3>&-
-	
-	if [ "$?" = "0" ]
-	then
-		jail_arr=( $JAILS )
-		if [ -n "$jail_arr" ]; then
-			for i in $(seq 1 ${#jail_arr[@]})
-			do	
-				. $(dirname $0)/${jail_arr[$i-1],,}/${jail_arr[$i-1],,}_config.sh
-				JAIL_NAME=${jail_arr[$i-1],,}\_JAIL_NAME
-				dialog --title "Delete config" \
-				--yesno "Are you sure you want to permanently delete the config files of ${!JAIL_NAME}\"?" 7 60
-				if [ "$?" = "0" ]; then
-					rm $(dirname $0)/${jail_arr[$i-1],,}/${jail_arr[$i-1],,}_config.sh
-					dialog --msgbox "Config files of ${!JAIL_NAME} deleted" 5 30 #not looking good..
-				else
-					dialog --msgbox "Config files of ${!JAIL_NAME} NOT deleted, operation canceled by user!" 5 30 #not looking good..
-				fi
-			done
-		fi
-	fi
-
-	first
-}
-
 backup_jail () {
+
+	JAILS=$1
+
 	if ! grep -q "JAIL_LOCATION" "$(dirname $0)/config.sh"; then
 		echo -e "JAIL_LOCATION=\"$DEFAULT_JAIL_LOCATION\"" >> "$(dirname $0)/config.sh" | tr '[:upper:]' '[:lower:]'
 	fi
@@ -584,34 +547,34 @@ backup_jail () {
 	
 	#load updated config file
 	. $(dirname $0)/config.sh
-	
-	exec 3>&1
-	JAIL=$(dialog --form "IOCAGE Jail location:" 0 0 0 \
-	"Jail location (starting with \"/\" and without last \"/\")" 1 1 "$JAIL_LOCATION" 1 60 25 0 \
-	"Backup location (starting with \"/\" and without last \"/\")" 2 1 "$BACKUP_LOCATION" 2 60 25 0 \
-	2>&1 1>&3)
-	exec 3>&-
-	
-	info_arr=( $JAIL )
-	sed -i '' -e 's,JAIL_LOCATION="'$JAIL_LOCATION'",JAIL_LOCATION="'${info_arr[0]}'",g' $(dirname $0)/config.sh
-	sed -i '' -e 's,BACKUP_LOCATION="'$BACKUP_LOCATION'",BACKUP_LOCATION="'${info_arr[1]}'",g' $(dirname $0)/config.sh
-	mkdir -p $BACKUP_LOCATION
-	
-	exec 3>&1
-	JAILS=$(dialog --separate-output --checklist "Backup following programs:" 0 0 0 \
-	Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" 1 \
-	Nextcloud "Nextcloud 12" 1 \
-	SABnzbd "SABnzbd" 1 \
-	Sonarr "Sonarr automatic serice downloader" 1 \
-	Radarr "Radarr automatic movie downloader" 1 \
-	Ombi "Your personal media assistant!" 1 \
-	Plex "Plex Media Server" 1 \
-	Emby "The open media solution" 1 \
-	Gogs "Go Git  Server" 1 \
-	HomeAssistant "Home-Assistant (Python 3)" 1 \
-	2>&1 1>&3)
-	exec 3>&-
-	
+	if [[ $1 == "" ]]; then
+		exec 3>&1
+		JAIL=$(dialog --form "IOCAGE Jail location:" 0 0 0 \
+		"Jail location (starting with \"/\" and without last \"/\")" 1 1 "$JAIL_LOCATION" 1 60 25 0 \
+		"Backup location (starting with \"/\" and without last \"/\")" 2 1 "$BACKUP_LOCATION" 2 60 25 0 \
+		2>&1 1>&3)
+		exec 3>&-
+		
+		info_arr=( $JAIL )
+		sed -i '' -e 's,JAIL_LOCATION="'$JAIL_LOCATION'",JAIL_LOCATION="'${info_arr[0]}'",g' $(dirname $0)/config.sh
+		sed -i '' -e 's,BACKUP_LOCATION="'$BACKUP_LOCATION'",BACKUP_LOCATION="'${info_arr[1]}'",g' $(dirname $0)/config.sh
+		mkdir -p $BACKUP_LOCATION
+		
+		exec 3>&1
+		JAILS=$(dialog --separate-output --checklist "Backup following programs:" 0 0 0 \
+		Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" 1 \
+		Nextcloud "Nextcloud 12" 1 \
+		SABnzbd "SABnzbd" 1 \
+		Sonarr "Sonarr automatic serice downloader" 1 \
+		Radarr "Radarr automatic movie downloader" 1 \
+		Ombi "Your personal media assistant!" 1 \
+		Plex "Plex Media Server" 1 \
+		Emby "The open media solution" 1 \
+		Gogs "Go Git  Server" 1 \
+		HomeAssistant "Home-Assistant (Python 3)" 1 \
+		2>&1 1>&3)
+		exec 3>&-
+	fi
 	#load updated config file
 	. $(dirname $0)/config.sh
 	
@@ -635,7 +598,9 @@ backup_jail () {
 		fi
 	fi
 	#make mysql dump?
-	first
+	if [[ $1 == "" ]]; then
+		first
+	fi
 }
 
 upgrade_jail () {
