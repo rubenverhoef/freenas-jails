@@ -1,0 +1,15 @@
+{
+    "pkgs": [
+	"bash",
+	"curl",
+	"wget",
+    "python27",
+    "py27-pip",
+	"unrar",
+	"par2cmdline",
+	"par2cmdline-tbb",
+	"unzip",
+	"p7zip",
+	"py27-sqlite3"
+    ]
+}
