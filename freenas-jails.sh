@@ -385,6 +385,7 @@ install_jail () {
 	VERSION=${VERSION//[!0-9,.]/}-RELEASE
 
 	if [[ $(iocage list) != *${!JAIL_NAME}* ]]; then
+		
 		iocage create -n ${!JAIL_NAME} -p $(dirname $0)/$1/$1.json -r $VERSION ip4_addr="vnet0|${!IP}/24" defaultrouter="$ROUTER_IP" vnet="on" allow_raw_sockets="1" boot="on"
 		
 		mount_storage $1
@@ -410,6 +411,15 @@ install_jail () {
 		fi
 		#create mysql user (and database) for gogs
 		#look for backup and ask to restore?
+		if [ -d "$BACKUP_LOCATION/$1" ]; then
+			dialog --title "Restore backup?" --yesno "Do you want to restore the backup?\"?" 7 60
+			i=$?
+			if [ "$i" = "0" ]; then
+				cp -R $BACKUP_LOCATION/$1$(<$(dirname $0)/$1/backup.conf)/ $JAIL_LOCATION/${!JAIL_NAME}/root$(<$(dirname $0)/$1/backup.conf)
+				chown -R $USER_NAME:$USER_NAME $JAIL_LOCATION/${!JAIL_NAME}/root$(<$(dirname $0)/$1/backup.conf)
+				iocage restart ${!JAIL_NAME}
+			fi
+		fi
 		dialog --msgbox "$1 installed" 0 0
 	else
 		dialog --msgbox "$1 already installed, use the upgrade function in main menu!" 0 0
@@ -495,16 +505,23 @@ delete_jail () {
 			for i in $(seq 1 ${#jail_arr[@]})
 			do	
 				. $(dirname $0)/${jail_arr[$i-1],,}/${jail_arr[$i-1],,}_config.sh
+				. $(dirname $0)/webserver/webserver_config.sh
+				. $(dirname $0)/config.sh
 				JAIL_NAME=${jail_arr[$i-1],,}\_JAIL_NAME
 				dialog --title "Delete Program/Jail" \
-				--yesno "Are you sure you want to permanently delete ${!JAIL_NAME}\"?" 7 60
+				--yesno "Are you sure you want to permanently delete ${!JAIL_NAME}?" 7 60
 				if [ "$?" = "0" ]; then
 					iocage stop ${!JAIL_NAME}
 					iocage destroy ${!JAIL_NAME} -f
 					iocage destroy ${!JAIL_NAME} -f
+					dialog --title "Delete backup" \
+					--yesno "Do you want to delete the backup of ${!JAIL_NAME} also?" 7 60
+					if [ "$?" = "0" ]; then
+						rm -R $BACKUP_LOCATION/${jail_arr[$i-1],,}
+					fi
+					rm $JAIL_LOCATION/$webserver_JAIL_NAME/root/usr/local/etc/nginx/sites/${jail_arr[$i-1],,}.conf
+					sed -i '' -e '/.*'${jail_arr[$i-1],,}'.*/d' $JAIL_LOCATION/$webserver_JAIL_NAME/root/usr/local/etc/nginx/standard.conf
 					if [[ ${jail_arr[$i-1],,} == *"nextcloud"* ]]; then
-						. $(dirname $0)/webserver/webserver_config.sh
-						. $(dirname $0)/${jail_arr[$i-1],,}/${jail_arr[$i-1],,}_config.sh
 						DATABASE=${jail_arr[$i-1],,}\_MYSQL_DATABASE
 						iocage exec $webserver_JAIL_NAME mysql -u root -p$MYSQL_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS ${!DATABASE};"
 					fi
@@ -595,6 +612,9 @@ backup_jail () {
 	2>&1 1>&3)
 	exec 3>&-
 	
+	#load updated config file
+	. $(dirname $0)/config.sh
+	
 	if [ "$?" = "0" ]
 	then
 		jail_arr=( $JAILS )
@@ -606,15 +626,14 @@ backup_jail () {
 				mkdir -p $BACKUP_LOCATION/${jail_arr[$i-1],,}
 				#$JAIL_LOCATION/${!JAIL_NAME}/root/%
 				iocage stop ${!JAIL_NAME}
-				cp -R $JAIL_LOCATION/${!JAIL_NAME}/root$(<$(dirname $0)/${jail_arr[$i-1],,}/backup.conf) $BACKUP_LOCATION/${jail_arr[$i-1],,}
+				mkdir -p $BACKUP_LOCATION/${jail_arr[$i-1],,}$(<$(dirname $0)/${jail_arr[$i-1],,}/backup.conf)
+				cp -R $JAIL_LOCATION/${!JAIL_NAME}/root$(<$(dirname $0)/${jail_arr[$i-1],,}/backup.conf)/ $BACKUP_LOCATION/${jail_arr[$i-1],,}$(<$(dirname $0)/${jail_arr[$i-1],,}/backup.conf)
 				#cat $(dirname $0)/${jail_arr[$i-1],,}/backup.conf | xargs -J % cp -R /mnt/iocage/jails/sonarr_1/root/% $BACKUP_LOCATION/${jail_arr[$i-1],,}
 				iocage start ${!JAIL_NAME}
-				dialog --msgbox "Config files of ${!JAIL_NAME} NOT deleted, operation canceled by user!" 5 30 #not looking good..
+				dialog --msgbox "Config of ${!JAIL_NAME} backuped!" 5 50
 			done
 		fi
 	fi
-
-	#copy files from jail to destignation (config, data etc.)
 	#make mysql dump?
 	first
 }
