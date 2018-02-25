@@ -14,6 +14,8 @@ pkg upgrade -y
 #create user
 pw useradd -n $USER_NAME -u $USER_ID -d /nonexistent -s /usr/sbin/nologin
 
+ln -s /mnt/* /usr/local/plexdata-plexpass/Plex\ Media\ Server/mounts/
+
 sysrc 'ifconfig_epair0_name=epair0b'
 sysrc 'plexmediaserver_plexpass_enable=YES'
 sysrc 'plexmediaserver_plexpass_user='$USER_NAME''
