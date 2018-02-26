@@ -408,56 +408,62 @@ install_jail () {
 mount_storage () {
 	
 	JAIL=$1
-	
-	if [[ $1 == "" ]]; then
-		JAIL=$(dialog -menu "Mount storage to:" 0 0 0 \
-		Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" 1 \
-		Nextcloud "Nextcloud 12" 1 \
-		SABnzbd "SABnzbd" 1 \
-		Sonarr "Sonarr automatic serice downloader" 1 \
-		Radarr "Radarr automatic movie downloader" 1 \
-		Ombi "Your personal media assistant!" 1 \
-		Plex "Plex Media Server" 1 \
-		Plexpass "Plex Media Server plexpass version" 1 \
-		Emby "The open media solution" 1 \
-		Gogs "Go Git  Server" 1 \
-		HomeAssistant "Home-Assistant (Python 3)" 1 \
+
+	if [[ $JAIL == "" ]]; then
+		exec 3>&1
+		JAIL=$(dialog --menu "Mount storage to:" 0 0 0 \
+		Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" \
+		Nextcloud "Nextcloud 12" \
+		SABnzbd "SABnzbd" \
+		Sonarr "Sonarr automatic serice downloader" \
+		Radarr "Radarr automatic movie downloader" \
+		Ombi "Your personal media assistant!" \
+		Plex "Plex Media Server" \
+		Plexpass "Plex Media Server plexpass version" \
+		Emby "The open media solution" \
+		Gogs "Go Git  Server" \
+		HomeAssistant "Home-Assistant (Python 3)" \
 		2>&1 1>&3)
 		exec 3>&-
 		JAIL=${JAIL,,} 
 	fi
-	
 	. $(dirname $0)/$JAIL/$JAIL\_config.sh
 	. $(dirname $0)/config.sh
 	JAIL_NAME=$JAIL\_JAIL_NAME
-	
-	if [[ $JAIL == "nextcloud" ]]; then
-		DATA=$(dialog --title "Mounting storage" --stdout --title "Please choose a folder for the use of user data on $JAIL" --fselect /mnt/ 14 48)
-		chown -R $USER_NAME:$USER_NAME $DATA
-		iocage fstab -a ${!JAIL_NAME} $DATA /media nullfs rw 0 0
-	fi
-	if [[ $JAIL == "sonarr" ]] || [[ $JAIL == "radarr" ]] || [[ $JAIL == "sabnzbd" ]] || [[ $JAIL == "plex" ]] || [[ $JAIL == "plexpass" ]] || [[ $JAIL == "emby" ]] || [[ $JAIL == "ombi" ]]; then
-		DATA=$(dialog --title "Mounting storage" --stdout --title "Please choose the media folder for $JAIL" --fselect /mnt/ 14 48)
-		chown -R $USER_NAME:$USER_NAME $DATA
-		iocage fstab -a ${!JAIL_NAME} $DATA /mnt/media nullfs rw 0 0
-		DATA=$(dialog --title "Mounting storage" --stdout --title "Please choose the download folder for $JAIL" --fselect /mnt/ 14 48)
-		chown -R $USER_NAME:$USER_NAME $DATA
-		iocage fstab -a ${!JAIL_NAME} $DATA /mnt/downloads nullfs rw 0 0
-	fi
-
-	
-	i="0"
-	while [ "$i" = "0" ]; do
-	{
-		dialog --title "Mount more storage to $JAIL?" --yesno "Do you want to mount more storage to $JAIL?\"?" 7 60
-		i=$?
-		if [ "$i" = "0" ]; then
-			DATA=$(dialog --title "Mounting storage" --stdout --title "Please choose a folder to mount at /mnt on $JAIL" --fselect /mnt/ 14 48)
+	if [[ $(iocage list) == *${!JAIL_NAME}* ]] && [ -f $(dirname $0)/$JAIL/$JAIL\_config.sh ]; then
+		if [[ $1 == "nextcloud" ]]; then
+			DATA=$(dialog --title "Mounting storage" --stdout --title "Please choose a folder for the use of user data on $JAIL" --fselect /mnt/ 14 48)
 			chown -R $USER_NAME:$USER_NAME $DATA
-			iocage fstab -a ${!JAIL_NAME} $DATA /mnt/$(basename $DATA) nullfs rw 0 0
-		fi		
-	}
-	done
+			iocage fstab -a ${!JAIL_NAME} $DATA /media nullfs rw 0 0
+		fi
+		if [[ $1 == "sonarr" ]] || [[ $1 == "radarr" ]] || [[ $1 == "sabnzbd" ]] || [[ $1 == "plex" ]] || [[ $1 == "plexpass" ]] || [[ $1 == "emby" ]] || [[ $1 == "ombi" ]]; then
+			DATA=$(dialog --title "Mounting storage" --stdout --title "Please choose the media folder for $JAIL" --fselect /mnt/ 14 48)
+			chown -R $USER_NAME:$USER_NAME $DATA
+			iocage fstab -a ${!JAIL_NAME} $DATA /mnt/media nullfs rw 0 0
+			DATA=$(dialog --title "Mounting storage" --stdout --title "Please choose the download folder for $JAIL" --fselect /mnt/ 14 48)
+			chown -R $USER_NAME:$USER_NAME $DATA
+			iocage fstab -a ${!JAIL_NAME} $DATA /mnt/downloads nullfs rw 0 0
+		fi
+
+		
+		i="0"
+		while [ "$i" = "0" ]; do
+		{
+			dialog --title "Mount more storage to $JAIL?" --yesno "Do you want to mount more storage to $JAIL?\"?" 7 60
+			i=$?
+			if [ "$i" = "0" ]; then
+				DATA=$(dialog --title "Mounting storage" --stdout --title "Please choose a folder to mount at /mnt on $JAIL" --fselect /mnt/ 14 48)
+				chown -R $USER_NAME:$USER_NAME $DATA
+				iocage fstab -a ${!JAIL_NAME} $DATA /mnt/$(basename $DATA) nullfs rw 0 0
+			fi		
+		}
+		done
+	else
+		dialog --msgbox "Jail does not exists!" 5 50
+	fi
+	if [[ $1 == "" ]]; then
+		first
+	fi
 }
 
 delete_jail () {
