@@ -9,51 +9,40 @@ DEFAULT_BACKUP_LOCATION="/mnt/data/backup_jails"
 DEFAULT_EMAIL_ADDRESS="admin@example.com"
 
 webserver_DEFAULT_IP="192.168.0.12"
-webserver_DEFAULT_MAC="d2:f0:5b:49:91:cb"
 wordpress_DEFAULT_USERNAME="wordpress_user"
 wordpress_DEFAULT_DATABASE="wordpress"
 
 nextcloud_DEFAULT_IP="192.168.0.13"
 nextcloud_DEFAULT_PORT="80"
-nextcloud_DEFAULT_MAC="4a:66:71:10:f7:ad"
 nextcloud_DEFAULT_USERNAME="nextcloud_user"
 nextcloud_DEFAULT_DATABASE="nextcloud"
 
 sabnzbd_DEFAULT_IP="192.168.0.14"
 sabnzbd_DEFAULT_PORT="8080"
-sabnzbd_DEFAULT_MAC="02:ff:30:00:09:0b"
 
 sonarr_DEFAULT_IP="192.168.0.15"
 sonarr_DEFAULT_PORT="8989"
-sonarr_DEFAULT_MAC="6e:24:27:3f:70:c2"
 
 radarr_DEFAULT_IP="192.168.0.16"
 radarr_DEFAULT_PORT="7878"
-radarr_DEFAULT_MAC="92:15:2c:7e:8c:1b"
 
 ombi_DEFAULT_IP="192.168.0.17"
-ombi_DEFAULT_PORT="8989"
-ombi_DEFAULT_MAC=""
+ombi_DEFAULT_PORT="5000"
 
 plex_DEFAULT_IP="192.168.0.18"
 plex_DEFAULT_PORT="32400"
-plex_DEFAULT_MAC=""
 
 plexpass_DEFAULT_IP="192.168.0.18"
 plexpass_DEFAULT_PORT="32400"
-plexpass_DEFAULT_MAC=""
 
 emby_DEFAULT_IP="192.168.0.19"
-emby_DEFAULT_PORT="8989"
-emby_DEFAULT_MAC=""
+emby_DEFAULT_PORT="8096"
 
 gogs_DEFAULT_IP="192.168.0.20"
-gogs_DEFAULT_PORT="8989"
-gogs_DEFAULT_MAC=""
+gogs_DEFAULT_PORT="3000"
 
 homeassistant_DEFAULT_IP="192.168.0.30"
-homeassistant_DEFAULT_PORT="8989"
-homeassistant_DEFAULT_MAC=""
+homeassistant_DEFAULT_PORT="8123"
 }
 
 first () {
@@ -104,19 +93,19 @@ first () {
 install_dialog () {
 	
 	if ! grep -q "JAIL_LOCATION" "$(dirname $0)/config.sh"; then
-		echo -e "JAIL_LOCATION=\"$DEFAULT_JAIL_LOCATION\"" >> "$(dirname $0)/config.sh" | tr '[:upper:]' '[:lower:]'
+		echo -e "JAIL_LOCATION=\"$DEFAULT_JAIL_LOCATION\"" >> "$(dirname $0)/config.sh"
 	fi
 	if ! grep -q "BACKUP_LOCATION" "$(dirname $0)/config.sh"; then
-		echo -e "\nBACKUP_LOCATION=\"$DEFAULT_BACKUP_LOCATION\"" >> "$(dirname $0)/config.sh" | tr '[:upper:]' '[:lower:]'
+		echo -e "BACKUP_LOCATION=\"$DEFAULT_BACKUP_LOCATION\"" >> "$(dirname $0)/config.sh"
 	fi
 	if ! grep -q "USER_NAME" "$(dirname $0)/config.sh"; then
-		echo -e "\nUSER_NAME=\"\"" >> "$(dirname $0)/config.sh" | tr '[:upper:]' '[:lower:]'
+		echo -e "USER_NAME=\"\"" >> "$(dirname $0)/config.sh"
 	fi
 	if ! grep -q "USER_ID" "$(dirname $0)/config.sh"; then
-		echo -e "\nUSER_ID=\"\"" >> "$(dirname $0)/config.sh" | tr '[:upper:]' '[:lower:]'
+		echo -e "USER_ID=\"\"" >> "$(dirname $0)/config.sh"
 	fi
 	if ! grep -q "ROUTER_IP" "$(dirname $0)/config.sh"; then
-		echo -e "\nROUTER_IP=\"$DEFAULT_ROUTER\"" >> "$(dirname $0)/config.sh" | tr '[:upper:]' '[:lower:]'
+		echo -e "ROUTER_IP=\"$DEFAULT_ROUTER\"" >> "$(dirname $0)/config.sh"
 	fi
 	
 	#load updated config file
@@ -176,38 +165,33 @@ config_jail () {
 	SUB_DOMAIN=$1\_SUB_DOMAIN
 	DEFAULT_IP=$1\_DEFAULT_IP
 	DEFAULT_PORT=$1\_DEFAULT_PORT
-	DEFAULT_MAC=$1\_DEFAULT_MAC
 	IP=$1\_IP
 	PORT=$1\_PORT
-	MAC=$1\_MAC
 
 	mkdir -p $(dirname $0)/$1
 	touch  $(dirname $0)/$1/$1_config.sh || exit
 	
 	if ! grep -q "$JAIL_NAME" "$(dirname $0)/$1/$1_config.sh"; then
-		echo -e "\n$JAIL_NAME=\"${1,,}_1\"" >> "$(dirname $0)/$1/$1_config.sh" | tr '[:upper:]' '[:lower:]'
+		echo -e "$JAIL_NAME=\"${1,,}_1\"" >> "$(dirname $0)/$1/$1_config.sh"
 	fi
 	if [[ $1 == *"webserver"* ]]; then
 		if ! grep -q "DOMAIN" "$(dirname $0)/config.sh"; then
-			echo -e "DOMAIN=\"$DEFAULT_DOMAIN\"" >> "$(dirname $0)/config.sh" | tr '[:upper:]' '[:lower:]'
+			echo -e "DOMAIN=\"$DEFAULT_DOMAIN\"" >> "$(dirname $0)/config.sh"
 		fi
 		if ! grep -q "$IP" "$(dirname $0)/config.sh"; then
-			echo -e "$IP=\"${!DEFAULT_IP}\"" >> "$(dirname $0)/config.sh" | tr '[:upper:]' '[:lower:]'
+			echo -e "$IP=\"${!DEFAULT_IP}\"" >> "$(dirname $0)/config.sh"
 		fi
 	else
 		if ! grep -q "$SUB_DOMAIN" "$(dirname $0)/$1/$1_config.sh"; then
-			echo -e "$SUB_DOMAIN=\"\"" >> "$(dirname $0)/$1/$1_config.sh" | tr '[:upper:]' '[:lower:]'
+			echo -e "$SUB_DOMAIN=\"\"" >> "$(dirname $0)/$1/$1_config.sh"
 		fi
 	fi
 	if ! grep -q "$IP" "$(dirname $0)/$1/$1_config.sh"; then
-		echo -e "$IP=\"${!DEFAULT_IP}\"" >> "$(dirname $0)/$1/$1_config.sh" | tr '[:upper:]' '[:lower:]'
+		echo -e "$IP=\"${!DEFAULT_IP}\"" >> "$(dirname $0)/$1/$1_config.sh"
 	fi
 	if ! grep -q "$PORT" "$(dirname $0)/$1/$1_config.sh"; then
-		echo -e "$PORT=\"${!DEFAULT_PORT}\"" >> "$(dirname $0)/$1/$1_config.sh" | tr '[:upper:]' '[:lower:]'
+		echo -e "$PORT=\"${!DEFAULT_PORT}\"" >> "$(dirname $0)/$1/$1_config.sh"
 	fi
-	if ! grep -q "$MAC" "$(dirname $0)/$1/$1_config.sh"; then
-		echo -e "$MAC=\"${!DEFAULT_MAC}\"" >> "$(dirname $0)/$1/$1_config.sh" | tr '[:upper:]' '[:lower:]'
-	fi	
 	
 	#load updated config file
 	. $(dirname $0)/$1/$1_config.sh
@@ -218,26 +202,24 @@ config_jail () {
 		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
 		"Jail name:" 1 1 "${!JAIL_NAME}" 1 40 25 0 \
 		"IP address:" 2 1 "${!IP}" 2 40 15 0 \
-		"MAC address:" 3 1 "${!MAC}" 3 40 17 0 \
-		"Domain name (without https://www.)" 4 1 "$DOMAIN" 4 40 25 0 \
+		"Domain name (without https://www.)" 3 1 "$DOMAIN" 3 40 25 0 \
 		2>&1 1>&3)
 	else
 		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
 		"Jail name:" 1 1 "${!JAIL_NAME}" 1 30 25 0 \
 		"IP address:" 2 1 "${!IP}" 2 30 15 0 \
-		"MAC address:" 3 1 "${!MAC}" 3 30 17 0 \
-		"Application PORT:" 4 1 "${!PORT}" 4 30 5 0 \
-		"Keep emtpy for no Subdomain" 5 1 "" 5 30 0 0 \
-		"Subdomain name" 6 1 "${!SUB_DOMAIN}" 6 30 25 0 \
+		"Application PORT:" 3 1 "${!PORT}" 3 30 5 0 \
+		"Keep emtpy for no Subdomain" 4 1 "" 4 30 0 0 \
+		"Subdomain name" 5 1 "${!SUB_DOMAIN}" 5 30 25 0 \
 		2>&1 1>&3)
 	fi
 	exec 3>&-
 	
 	array=( $VALUES )
 	if [[ $1 == "webserver" ]]; then
-		sed -i '' -e 's/DOMAIN="'$DOMAIN'"/DOMAIN="'${array[3]}'"/g' $(dirname $0)/config.sh
+		sed -i '' -e 's/DOMAIN="'$DOMAIN'"/DOMAIN="'${array[2]}'"/g' $(dirname $0)/config.sh
 	else
-		sed -i '' -e 's/'$SUB_DOMAIN'="'${!SUB_DOMAIN}'"/'$SUB_DOMAIN'="'${array[4]}'"/g' $(dirname $0)/$1/$1_config.sh
+		sed -i '' -e 's/'$SUB_DOMAIN'="'${!SUB_DOMAIN}'"/'$SUB_DOMAIN'="'${array[3]}'"/g' $(dirname $0)/$1/$1_config.sh
 	fi
 	
 	sed -i '' -e 's/'$JAIL_NAME'="'${!JAIL_NAME}'"/'$JAIL_NAME'="'${array[0]}'"/g' $(dirname $0)/$1/$1_config.sh
@@ -245,30 +227,29 @@ config_jail () {
 		sed -i '' -e 's/'$IP'="'${!IP}'"/'$IP'="'${array[1]}'"/g' $(dirname $0)/config.sh
 	fi
 	sed -i '' -e 's/'$IP'="'${!IP}'"/'$IP'="'${array[1]}'"/g' $(dirname $0)/$1/$1_config.sh
-	sed -i '' -e 's/'$MAC'="'${!MAC}'"/'$MAC'="'${array[2]}'"/g' $(dirname $0)/$1/$1_config.sh
-	sed -i '' -e 's/'$PORT'="'${!PORT}'"/'$PORT'="'${array[3]}'"/g' $(dirname $0)/$1/$1_config.sh
+	sed -i '' -e 's/'$PORT'="'${!PORT}'"/'$PORT'="'${array[2]}'"/g' $(dirname $0)/$1/$1_config.sh
 
 	if [[ $1 == "webserver" ]]; then
 		if ! grep -q "EMAIL_ADDRESS" "$(dirname $0)/$1/$1_config.sh"; then
-			echo -e "EMAIL_ADDRESS=\"$DEFAULT_EMAIL_ADDRESS\"" >> "$(dirname $0)/$1/$1_config.sh" | tr '[:upper:]' '[:lower:]'
+			echo -e "EMAIL_ADDRESS=\"$DEFAULT_EMAIL_ADDRESS\"" >> "$(dirname $0)/$1/$1_config.sh"
 		fi
 		if ! grep -q "MYSQL_ROOT_PASSWORD" "$(dirname $0)/$1/$1_config.sh"; then
-			echo -e "MYSQL_ROOT_PASSWORD=\"\"" >> "$(dirname $0)/$1/$1_config.sh" | tr '[:upper:]' '[:lower:]'
+			echo -e "MYSQL_ROOT_PASSWORD=\"\"" >> "$(dirname $0)/$1/$1_config.sh"
 		fi
 		if ! grep -q "SUB_DOMAIN" "$(dirname $0)/$1/$1_config.sh"; then
-			echo -e "SUB_DOMAIN=\"organizr\"" >> "$(dirname $0)/$1/$1_config.sh" | tr '[:upper:]' '[:lower:]'
+			echo -e "SUB_DOMAIN=\"organizr\"" >> "$(dirname $0)/$1/$1_config.sh"
 		fi	
 		if ! grep -q "EXTERNAL_GUI" "$(dirname $0)/$1/$1_config.sh"; then
-			echo -e "EXTERNAL_GUI=\"NO\"" >> "$(dirname $0)/$1/$1_config.sh" | tr '[:upper:]' '[:lower:]'
+			echo -e "EXTERNAL_GUI=\"NO\"" >> "$(dirname $0)/$1/$1_config.sh"
 		fi			
 		if ! grep -q "WORDPRESS_WEB" "$(dirname $0)/$1/$1_config.sh"; then
-			echo -e "WORDPRESS_WEB=\"NO\"" >> "$(dirname $0)/$1/$1_config.sh" | tr '[:upper:]' '[:lower:]'
+			echo -e "WORDPRESS_WEB=\"NO\"" >> "$(dirname $0)/$1/$1_config.sh"
 		fi			
 		if ! grep -q "FREENAS_IP" "$(dirname $0)/$1/$1_config.sh"; then
-			echo -e "FREENAS_IP=\"\"" >> "$(dirname $0)/$1/$1_config.sh" | tr '[:upper:]' '[:lower:]'
+			echo -e "FREENAS_IP=\"\"" >> "$(dirname $0)/$1/$1_config.sh"
 		fi	
 		if ! grep -q "FREENAS_PORT" "$(dirname $0)/$1/$1_config.sh"; then
-			echo -e "FREENAS_PORT=\"\"" >> "$(dirname $0)/$1/$1_config.sh" | tr '[:upper:]' '[:lower:]'
+			echo -e "FREENAS_PORT=\"\"" >> "$(dirname $0)/$1/$1_config.sh"
 		fi	
 
 		#load updated config file
@@ -336,13 +317,13 @@ config_mysql () {
 	DEFAULT_DATA=$1\_DEFAULT_DATABASE
 	
 	if ! grep -q "$MYSQL_USER" "$(dirname $0)/$2/$2_config.sh"; then
-		echo -e "$MYSQL_USER=\"${!DEFAULT_USER}\"" >> "$(dirname $0)/$2/$2_config.sh" | tr '[:upper:]' '[:lower:]'
+		echo -e "$MYSQL_USER=\"${!DEFAULT_USER}\"" >> "$(dirname $0)/$2/$2_config.sh"
 	fi
 	if ! grep -q "$MYSQL_DATA" "$(dirname $0)/$2/$2_config.sh"; then
-		echo -e "$MYSQL_DATA=\"${!DEFAULT_DATA}\"" >> "$(dirname $0)/$2/$2_config.sh" | tr '[:upper:]' '[:lower:]'
+		echo -e "$MYSQL_DATA=\"${!DEFAULT_DATA}\"" >> "$(dirname $0)/$2/$2_config.sh"
 	fi
 	if ! grep -q "$MYSQL_PASS" "$(dirname $0)/$2/$2_config.sh"; then
-		echo -e "$MYSQL_PASS=\"\"" >> "$(dirname $0)/$2/$2_config.sh" | tr '[:upper:]' '[:lower:]'
+		echo -e "$MYSQL_PASS=\"\"" >> "$(dirname $0)/$2/$2_config.sh"
 	fi
 	
 	#load updated config file
@@ -375,7 +356,6 @@ install_jail () {
 	. $(dirname $0)/$1/$1_config.sh
 	. $(dirname $0)/config.sh
 	JAIL_NAME=$1\_JAIL_NAME
-	MAC=$1\_MAC
 	IP=$1\_IP
 	PORT=$1\_PORT
 	SUB_DOMAIN=$1\_SUB_DOMAIN
@@ -409,7 +389,6 @@ install_jail () {
 			iocage exec $webserver_JAIL_NAME bash /root/mysql.sh ${!DATABASE} ${!USER} ${!PASS}
 		fi
 		#create mysql user (and database) for gogs
-		#look for backup and ask to restore?
 		if [ -d "$BACKUP_LOCATION/$1" ]; then
 			dialog --title "Restore backup?" --yesno "Do you want to restore the backup?\"?" 7 60
 			i=$?
@@ -482,6 +461,8 @@ mount_storage () {
 }
 
 delete_jail () {
+    backup="0"
+
 	exec 3>&1
 	JAILS=$(dialog --separate-output --checklist "Delete following programs:" 0 0 0 \
 	Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" 1 \
@@ -508,32 +489,39 @@ delete_jail () {
 				. $(dirname $0)/webserver/webserver_config.sh
 				. $(dirname $0)/config.sh
 				JAIL_NAME=${jail_arr[$i-1],,}\_JAIL_NAME
-				dialog --title "Backup before deleting" \
-				--yesno "Do you want to make a config backup before deleting ${!JAIL_NAME}?" 7 60
-				if [ "$?" = "0" ]; then
-					backup_jail ${jail_arr[$i-1],,}
-				fi
-				
-				dialog --title "Delete Program/Jail" \
-				--yesno "Are you sure you want to permanently delete ${!JAIL_NAME}?" 7 60
-				if [ "$?" = "0" ]; then
-					iocage stop ${!JAIL_NAME}
-					iocage destroy ${!JAIL_NAME} -f
-					iocage destroy ${!JAIL_NAME} -f
-					dialog --title "Delete backup" \
-					--yesno "Do you want to delete the backup of ${!JAIL_NAME} also?" 7 60
+				if [[ $(iocage list) == *${!JAIL_NAME}* ]]; then
+					dialog --title "Backup before deleting" \
+					--yesno "Do you want to make a config backup before deleting ${!JAIL_NAME}?" 7 60
 					if [ "$?" = "0" ]; then
-						rm -R $BACKUP_LOCATION/${jail_arr[$i-1],,}
+						backup="1"
+						backup_jail ${jail_arr[$i-1],,}
 					fi
-					rm $JAIL_LOCATION/$webserver_JAIL_NAME/root/usr/local/etc/nginx/sites/${jail_arr[$i-1],,}.conf
-					sed -i '' -e '/.*'${jail_arr[$i-1],,}'.*/d' $JAIL_LOCATION/$webserver_JAIL_NAME/root/usr/local/etc/nginx/standard.conf
-					if [[ ${jail_arr[$i-1],,} == *"nextcloud"* ]]; then
-						DATABASE=${jail_arr[$i-1],,}\_MYSQL_DATABASE
-						iocage exec $webserver_JAIL_NAME mysql -u root -p$MYSQL_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS ${!DATABASE};"
+					
+					dialog --title "Delete Program/Jail" \
+					--yesno "Are you sure you want to permanently delete ${!JAIL_NAME}?" 7 60
+					if [ "$?" = "0" ]; then
+						iocage stop ${!JAIL_NAME}
+						iocage destroy ${!JAIL_NAME} -f
+						iocage destroy ${!JAIL_NAME} -f
+						if [ "$backup" != "1" ]; then
+							dialog --title "Delete backup" \
+							--yesno "Do you want to delete the backup of ${!JAIL_NAME} also?" 7 60
+							if [ "$?" = "0" ]; then
+								rm -R $BACKUP_LOCATION/${jail_arr[$i-1],,}
+							fi
+						fi
+						rm $JAIL_LOCATION/$webserver_JAIL_NAME/root/usr/local/etc/nginx/sites/${jail_arr[$i-1],,}.conf
+						sed -i '' -e '/.*'${jail_arr[$i-1],,}'.*/d' $JAIL_LOCATION/$webserver_JAIL_NAME/root/usr/local/etc/nginx/standard.conf
+						if [[ ${jail_arr[$i-1],,} == *"nextcloud"* ]]; then
+							DATABASE=${jail_arr[$i-1],,}\_MYSQL_DATABASE
+							iocage exec $webserver_JAIL_NAME mysql -u root -p$MYSQL_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS ${!DATABASE};"
+						fi
+						dialog --msgbox "${!JAIL_NAME} deleted" 5 30
+					else
+						dialog --msgbox "${!JAIL_NAME} NOT deleted, operation canceled by user!" 5 30
 					fi
-					dialog --msgbox "${!JAIL_NAME} deleted" 5 30 #not looking good..
 				else
-					dialog --msgbox "${!JAIL_NAME} NOT deleted, operation canceled by user!" 5 30 #not looking good..
+					dialog --msgbox "${!JAIL_NAME} does not exists!" 5 50
 				fi
 			done
 		fi
@@ -546,10 +534,10 @@ backup_jail () {
 	JAILS=$1
 
 	if ! grep -q "JAIL_LOCATION" "$(dirname $0)/config.sh"; then
-		echo -e "JAIL_LOCATION=\"$DEFAULT_JAIL_LOCATION\"" >> "$(dirname $0)/config.sh" | tr '[:upper:]' '[:lower:]'
+		echo -e "JAIL_LOCATION=\"$DEFAULT_JAIL_LOCATION\"" >> "$(dirname $0)/config.sh"
 	fi
 	if ! grep -q "BACKUP_LOCATION" "$(dirname $0)/config.sh"; then
-		echo -e "\nBACKUP_LOCATION=\"$DEFAULT_BACKUP_LOCATION\"" >> "$(dirname $0)/config.sh" | tr '[:upper:]' '[:lower:]'
+		echo -e "\nBACKUP_LOCATION=\"$DEFAULT_BACKUP_LOCATION\"" >> "$(dirname $0)/config.sh"
 	fi
 	
 	#load updated config file
