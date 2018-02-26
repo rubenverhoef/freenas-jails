@@ -589,11 +589,10 @@ backup_jail () {
 				. $(dirname $0)/${jail_arr[$i-1],,}/${jail_arr[$i-1],,}_config.sh
 				JAIL_NAME=${jail_arr[$i-1],,}\_JAIL_NAME
 				mkdir -p $BACKUP_LOCATION/${jail_arr[$i-1],,}
-				#$JAIL_LOCATION/${!JAIL_NAME}/root/%
 				iocage stop ${!JAIL_NAME}
-				mkdir -p $BACKUP_LOCATION/${jail_arr[$i-1],,}$(<$(dirname $0)/${jail_arr[$i-1],,}/backup.conf)
-				cp -R $JAIL_LOCATION/${!JAIL_NAME}/root$(<$(dirname $0)/${jail_arr[$i-1],,}/backup.conf)/ $BACKUP_LOCATION/${jail_arr[$i-1],,}$(<$(dirname $0)/${jail_arr[$i-1],,}/backup.conf)
-				#cat $(dirname $0)/${jail_arr[$i-1],,}/backup.conf | xargs -J % cp -R /mnt/iocage/jails/sonarr_1/root/% $BACKUP_LOCATION/${jail_arr[$i-1],,}
+				FOLDER="$(sed -n '1p' $(dirname $0)/${jail_arr[$i-1],,}/backup.conf)"
+				mkdir -p $BACKUP_LOCATION/${jail_arr[$i-1],,}${FOLDER}
+				cp -R $JAIL_LOCATION/${!JAIL_NAME}/root${FOLDER}/ $BACKUP_LOCATION/${jail_arr[$i-1],,}${FOLDER}
 				iocage start ${!JAIL_NAME}
 				dialog --msgbox "Config of ${!JAIL_NAME} backuped!" 5 50
 			done
