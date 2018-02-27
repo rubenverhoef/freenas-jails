@@ -221,7 +221,7 @@ config_jail () {
 	exit_status=$?
 	exec 3>&-
 	if [ $exit_status != $DIALOG_OK ]; then
-		install_dialog
+		install_dialog second_time
 	fi
 	
 	array=( $VALUES )
@@ -274,7 +274,7 @@ config_jail () {
 			exit_status=$?
 			exec 3>&-
 			if [ $exit_status != $DIALOG_OK ]; then
-				install_dialog
+				install_dialog second_time
 			fi
 			FREENASARR=( $FREENASIP )
 			sed -i '' -e 's/FREENAS_IP="'$FREENAS_IP'"/FREENAS_IP="'${FREENASARR[0]}'"/g' $(dirname $0)/$1/$1_config.sh
@@ -290,7 +290,7 @@ config_jail () {
 		exit_status=$?
 		exec 3>&-
 		if [ $exit_status != $DIALOG_OK ]; then
-			install_dialog
+			install_dialog second_time
 		fi
 
 		sed -i '' -e 's/EMAIL_ADDRESS="'$EMAIL_ADDRESS'"/EMAIL_ADDRESS="'$VALUE'"/g' $(dirname $0)/$1/$1_config.sh
@@ -304,7 +304,7 @@ config_jail () {
 		exit_status=$?
 		exec 3>&-
 		if [ $exit_status != $DIALOG_OK ]; then
-			install_dialog
+			install_dialog second_time
 		fi
 
 		sed -i '' -e 's/MYSQL_ROOT_PASSWORD="'$MYSQL_ROOT_PASSWORD'"/MYSQL_ROOT_PASSWORD="'$PASS'"/g' $(dirname $0)/$1/$1_config.sh
@@ -319,7 +319,7 @@ config_jail () {
 			exit_status=$?
 			exec 3>&-
 			if [ $exit_status != $DIALOG_OK ]; then
-				install_dialog
+				install_dialog second_time
 			fi
 			sed -i '' -e 's/'SUB_DOMAIN'="'$SUB_DOMAIN'"/'SUB_DOMAIN'="'$VALUE1'"/g' $(dirname $0)/$1/$1_config.sh
 			config_mysql "wordpress" "webserver"
@@ -361,7 +361,7 @@ config_mysql () {
 	exit_status=$?
 	exec 3>&-
 	if [ $exit_status != $DIALOG_OK ]; then
-		install_dialog
+		install_dialog second_time
 	fi
 	
 	array=( $VALUES )
@@ -377,7 +377,7 @@ config_mysql () {
 	exit_status=$?
 	exec 3>&-
 	if [ $exit_status != $DIALOG_OK ]; then
-		install_dialog
+		install_dialog second_time
 	fi
 
 	sed -i '' -e 's/'$MYSQL_PASS'="'${!MYSQL_PASS}'"/'$MYSQL_PASS'="'$PASS'"/g' $(dirname $0)/$2/$2_config.sh
@@ -404,6 +404,10 @@ install_jail () {
 		cp $(dirname $0)/$1/* $JAIL_LOCATION/${!JAIL_NAME}/root/root/
 		cp $(dirname $0)/config.sh $JAIL_LOCATION/${!JAIL_NAME}/root/root/
 		
+		if [ -d "$BACKUP_LOCATION/$1/usr/local/etc/letsencrypt/" ]; then
+			cp -R $BACKUP_LOCATION/$1/usr/local/etc/letsencrypt/ $JAIL_LOCATION/${!JAIL_NAME}/root/usr/local/etc/letsencrypt/
+			chown -R $USER_NAME:$USER_NAME $JAIL_LOCATION/${!JAIL_NAME}/root/usr/local/etc/letsencrypt/
+		fi
 		iocage exec ${!JAIL_NAME} bash /root/$1.sh
 		#monit (monitoring, auto backup, auto update (not upgrade..)?)
 		if [[ $1 != "webserver" ]]; then  #configure subdomain
@@ -425,8 +429,21 @@ install_jail () {
 			dialog --title "Restore backup?" --yesno "Do you want to restore the backup?\"?" 7 60
 			i=$?
 			if [ "$i" = "0" ]; then
-				cp -R $BACKUP_LOCATION/$1$(<$(dirname $0)/$1/backup.conf)/ $JAIL_LOCATION/${!JAIL_NAME}/root$(<$(dirname $0)/$1/backup.conf)
-				chown -R $USER_NAME:$USER_NAME $JAIL_LOCATION/${!JAIL_NAME}/root$(<$(dirname $0)/$1/backup.conf)
+				i=1
+				while true; do
+					FOLDER="$(sed -n ''$i'p' $(dirname $0)/${JAILS,,}/backup.conf)"
+					(( i++ ))
+					if [ ! -z "$FOLDER" ]; then
+						if [ $FOLDER == *letnsencrypt* ]; then
+							echo "lentsencrypt!"
+						else
+							cp -R $BACKUP_LOCATION/$1$FOLDER/ $JAIL_LOCATION/${!JAIL_NAME}/root$FOLDER
+							chown -R $USER_NAME:$USER_NAME $JAIL_LOCATION/${!JAIL_NAME}/root$FOLDER
+						fi
+					else
+						break
+					fi
+				done
 			fi
 		fi
 		iocage restart ${!JAIL_NAME}
@@ -620,9 +637,17 @@ backup_jail () {
         JAIL_NAME=${JAILS,,}\_JAIL_NAME
         mkdir -p $BACKUP_LOCATION/${JAILS,,}
         iocage stop ${!JAIL_NAME}
-        FOLDER="$(sed -n '1p' $(dirname $0)/${JAILS,,}/backup.conf)"
-        mkdir -p $BACKUP_LOCATION/${JAILS,,}${FOLDER}
-        cp -R $JAIL_LOCATION/${!JAIL_NAME}/root${FOLDER}/ $BACKUP_LOCATION/${JAILS,,}${FOLDER}
+		i=1
+		while true; do
+			FOLDER="$(sed -n ''$i'p' $(dirname $0)/${JAILS,,}/backup.conf)"
+			(( i++ ))
+			if [ ! -z "$FOLDER" ]; then
+				mkdir -p $BACKUP_LOCATION/${JAILS,,}${FOLDER}
+				cp -R $JAIL_LOCATION/${!JAIL_NAME}/root${FOLDER}/ $BACKUP_LOCATION/${JAILS,,}${FOLDER}
+			else
+				break
+			fi
+		done
         iocage start ${!JAIL_NAME}
         dialog --msgbox "Config of ${!JAIL_NAME} backuped!" 5 50
 	fi
