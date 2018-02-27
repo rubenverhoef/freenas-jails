@@ -59,34 +59,27 @@ first () {
 
 	if [ "$?" = "0" ]
 	then
-		# Install is selected
-		if [ "$CHOICE" = "Install jails" ]
-		then
-			install_dialog
-		fi
-		
-		# Upgrdae is selected
-		if [ "$CHOICE" = "Upgrade jail" ]
-		then
-			upgrade_jail
-		fi
-		
-		# Backup is selected
-		if [ "$CHOICE" = "Backup jail" ]
-		then
-			backup_jail
-		fi
-		
-		# Delete is selected
-		if [ "$CHOICE" = "Delete jail" ]
-		then
-			delete_jail
-		fi
-		
-		if [ "$CHOICE" = "Mount storage" ]
-		then
-			mount_storage
-		fi
+        case "$CHOICE" in
+            "Install jails")
+                install_dialog
+                ;;
+            
+            "Upgrade jail")
+                upgrade_jail
+                ;;
+            
+            "Backup jail")
+                backup_jail
+                ;;
+                
+            "Delete jail")
+                delete_jail
+                ;;
+            
+            "Mount storage")
+                mount_storage
+                ;;
+        esac
 	fi
 }
 
