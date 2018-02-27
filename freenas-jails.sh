@@ -1,5 +1,13 @@
 #!/bin/bash
 
+# Define the dialog exit status codes
+: ${DIALOG_OK=0}
+: ${DIALOG_CANCEL=1}
+: ${DIALOG_HELP=2}
+: ${DIALOG_EXTRA=3}
+: ${DIALOG_ITEM_HELP=4}
+: ${DIALOG_ESC=255}
+
 #DEFAULT VALUES:
 {
 DEFAULT_DOMAIN="example.com"
@@ -55,101 +63,105 @@ first () {
 	"Backup jail" "Backup a specific jail" \
 	"Delete jail" "Delete a specific jail" \
 	2>&1 1>&3)
+	exit_status=$?
 	exec 3>&-
-
-	if [ "$?" = "0" ]
-	then
-        case "$CHOICE" in
-            "Install jails")
-                install_dialog
-                ;;
-            
-            "Upgrade jail")
-                upgrade_jail
-                ;;
-            
-            "Backup jail")
-                backup_jail
-                ;;
-                
-            "Delete jail")
-                delete_jail
-                ;;
-            
-            "Mount storage")
-                mount_storage
-                ;;
-        esac
+	if [ $exit_status != $DIALOG_OK ]; then
+		exit
 	fi
+	
+	case "$CHOICE" in
+		"Install jails")
+			install_dialog
+			;;
+		
+		"Upgrade jail")
+			upgrade_jail
+			;;
+		
+		"Backup jail")
+			backup_jail
+			;;
+			
+		"Delete jail")
+			delete_jail
+			;;
+		
+		"Mount storage")
+			mount_storage
+			;;
+	esac
 }
 
 install_dialog () {
-	
-	if ! grep -q "JAIL_LOCATION" "$(dirname $0)/config.sh"; then
-		echo -e "JAIL_LOCATION=\"$DEFAULT_JAIL_LOCATION\"" >> "$(dirname $0)/config.sh"
-	fi
-	if ! grep -q "BACKUP_LOCATION" "$(dirname $0)/config.sh"; then
-		echo -e "BACKUP_LOCATION=\"$DEFAULT_BACKUP_LOCATION\"" >> "$(dirname $0)/config.sh"
-	fi
-	if ! grep -q "USER_NAME" "$(dirname $0)/config.sh"; then
-		echo -e "USER_NAME=\"\"" >> "$(dirname $0)/config.sh"
-	fi
-	if ! grep -q "USER_ID" "$(dirname $0)/config.sh"; then
-		echo -e "USER_ID=\"\"" >> "$(dirname $0)/config.sh"
-	fi
-	if ! grep -q "ROUTER_IP" "$(dirname $0)/config.sh"; then
-		echo -e "ROUTER_IP=\"$DEFAULT_ROUTER\"" >> "$(dirname $0)/config.sh"
-	fi
-	
-	#load updated config file
-	. $(dirname $0)/config.sh
-	
-	exec 3>&1
-	JAIL=$(dialog --form "IOCAGE Jail location:" 0 0 0 \
-	"Jail location (starting with \"/\" and without last \"/\")" 1 1 "$JAIL_LOCATION" 1 60 25 0 \
-	"Backup location (starting with \"/\" and without last \"/\")" 2 1 "$BACKUP_LOCATION" 2 60 25 0 \
-	"Please create a USER in the FreeNAS WebGUI!!" 3 1 "" 3 60 0 0 \
-	"User name:" 4 1 "$USER_NAME" 4 60 25 0 \
-	"User ID (UID):" 5 1 "$USER_ID" 5 60 25 0 \
-	"Router (DHCP server) IP:" 7 1 "$ROUTER_IP" 7 60 15 0 \
-	2>&1 1>&3)
-	exec 3>&-
-	
-	info_arr=( $JAIL )
-	sed -i '' -e 's,JAIL_LOCATION="'$JAIL_LOCATION'",JAIL_LOCATION="'${info_arr[0]}'",g' $(dirname $0)/config.sh
-	sed -i '' -e 's,BACKUP_LOCATION="'$BACKUP_LOCATION'",BACKUP_LOCATION="'${info_arr[1]}'",g' $(dirname $0)/config.sh
-	sed -i '' -e 's,USER_NAME="'$USER_NAME'",USER_NAME="'${info_arr[2]}'",g' $(dirname $0)/config.sh
-	sed -i '' -e 's,USER_ID="'$USER_ID'",USER_ID="'${info_arr[3]}'",g' $(dirname $0)/config.sh
-	sed -i '' -e 's,ROUTER_IP="'$ROUTER_IP'",ROUTER_IP="'${info_arr[4]}'",g' $(dirname $0)/config.sh
-	
-	exec 3>&1
-	JAILS=$(dialog --separate-output --checklist "Install following programs:" 0 0 0 \
-	Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" 1 \
-	Nextcloud "Nextcloud 12" 1 \
-	SABnzbd "SABnzbd" 1 \
-	Sonarr "Sonarr automatic serice downloader" 1 \
-	Radarr "Radarr automatic movie downloader" 1 \
-	Ombi "Your personal media assistant!" 1 \
-	Plex "Plex Media Server" 1 \
-	Plexpass "Plex Media Server plexpass version" 1 \
-	Emby "The open media solution" 1 \
-	Gogs "Go Git  Server" 1 \
-	HomeAssistant "Home-Assistant (Python 3)" 1 \
-	2>&1 1>&3)
-	exec 3>&-
-	
-	if [ "$?" = "0" ]
-	then
-		jail_arr=( $JAILS )
-		if [ -n "$jail_arr" ]; then
-			for i in $(seq 1 ${#jail_arr[@]})
-			do	
-				config_jail ${jail_arr[$i-1],,}
-				install_jail ${jail_arr[$i-1],,}
-			done
+	if  [[ $1 == "" ]]; then
+		#create config variables in file if they don't exists
+		if ! grep -q "JAIL_LOCATION" "$(dirname $0)/config.sh"; then
+			echo -e "JAIL_LOCATION=\"$DEFAULT_JAIL_LOCATION\"" >> "$(dirname $0)/config.sh"
 		fi
+		if ! grep -q "BACKUP_LOCATION" "$(dirname $0)/config.sh"; then
+			echo -e "BACKUP_LOCATION=\"$DEFAULT_BACKUP_LOCATION\"" >> "$(dirname $0)/config.sh"
+		fi
+		if ! grep -q "USER_NAME" "$(dirname $0)/config.sh"; then
+			echo -e "USER_NAME=\"\"" >> "$(dirname $0)/config.sh"
+		fi
+		if ! grep -q "USER_ID" "$(dirname $0)/config.sh"; then
+			echo -e "USER_ID=\"\"" >> "$(dirname $0)/config.sh"
+		fi
+		if ! grep -q "ROUTER_IP" "$(dirname $0)/config.sh"; then
+			echo -e "ROUTER_IP=\"$DEFAULT_ROUTER\"" >> "$(dirname $0)/config.sh"
+		fi
+		
+		#load updated config file
+		. $(dirname $0)/config.sh
+		
+		exec 3>&1
+		JAIL=$(dialog --form "IOCAGE Jail location:" 0 0 0 \
+		"Jail location (starting with \"/\" and without last \"/\")" 1 1 "$JAIL_LOCATION" 1 60 25 0 \
+		"Backup location (starting with \"/\" and without last \"/\")" 2 1 "$BACKUP_LOCATION" 2 60 25 0 \
+		"Please create a USER in the FreeNAS WebGUI!!" 3 1 "" 3 60 0 0 \
+		"User name:" 4 1 "$USER_NAME" 4 60 25 0 \
+		"User ID (UID):" 5 1 "$USER_ID" 5 60 25 0 \
+		"Router (DHCP server) IP:" 7 1 "$ROUTER_IP" 7 60 15 0 \
+		2>&1 1>&3)
+		exit_status=$?
+		exec 3>&-
+		if [ $exit_status != $DIALOG_OK ]; then
+			first
+		fi
+		
+		info_arr=( $JAIL )
+		
+		#save new config variables in file
+		sed -i '' -e 's,JAIL_LOCATION="'$JAIL_LOCATION'",JAIL_LOCATION="'${info_arr[0]}'",g' $(dirname $0)/config.sh
+		sed -i '' -e 's,BACKUP_LOCATION="'$BACKUP_LOCATION'",BACKUP_LOCATION="'${info_arr[1]}'",g' $(dirname $0)/config.sh
+		sed -i '' -e 's,USER_NAME="'$USER_NAME'",USER_NAME="'${info_arr[2]}'",g' $(dirname $0)/config.sh
+		sed -i '' -e 's,USER_ID="'$USER_ID'",USER_ID="'${info_arr[3]}'",g' $(dirname $0)/config.sh
+		sed -i '' -e 's,ROUTER_IP="'$ROUTER_IP'",ROUTER_IP="'${info_arr[4]}'",g' $(dirname $0)/config.sh
+    fi
+	
+	exec 3>&1
+	JAILS=$(dialog --menu "Install following program:" 0 0 0 \
+	Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" \
+	Nextcloud "Nextcloud 12" \
+	SABnzbd "SABnzbd" \
+	Sonarr "Sonarr automatic serice downloader" \
+	Radarr "Radarr automatic movie downloader" \
+	Ombi "Your personal media assistant!" \
+	Plex "Plex Media Server" \
+	Plexpass "Plex Media Server plexpass version" \
+	Emby "The open media solution" \
+	Gogs "Go Git  Server" \
+	HomeAssistant "Home-Assistant (Python 3)" \
+	2>&1 1>&3)
+	exit_status=$?
+	exec 3>&-
+	if [ $exit_status != $DIALOG_OK ]; then
+		first
 	fi
-	first
+	config_jail ${JAILS,,}
+	install_jail ${JAILS,,}
+
+	install_dialog second_time
 }
 
 config_jail () {
@@ -206,21 +218,24 @@ config_jail () {
 		"Subdomain name" 5 1 "${!SUB_DOMAIN}" 5 30 25 0 \
 		2>&1 1>&3)
 	fi
+	exit_status=$?
 	exec 3>&-
-	
-	array=( $VALUES )
-	if [[ $1 == "webserver" ]]; then
-		sed -i '' -e 's/DOMAIN="'$DOMAIN'"/DOMAIN="'${array[2]}'"/g' $(dirname $0)/config.sh
-	else
-		sed -i '' -e 's/'$SUB_DOMAIN'="'${!SUB_DOMAIN}'"/'$SUB_DOMAIN'="'${array[3]}'"/g' $(dirname $0)/$1/$1_config.sh
+	if [ $exit_status != $DIALOG_OK ]; then
+		install_dialog
 	fi
 	
+	array=( $VALUES )
 	sed -i '' -e 's/'$JAIL_NAME'="'${!JAIL_NAME}'"/'$JAIL_NAME'="'${array[0]}'"/g' $(dirname $0)/$1/$1_config.sh
 	if [[ $1 == "webserver" ]]; then
 		sed -i '' -e 's/'$IP'="'${!IP}'"/'$IP'="'${array[1]}'"/g' $(dirname $0)/config.sh
 	fi
 	sed -i '' -e 's/'$IP'="'${!IP}'"/'$IP'="'${array[1]}'"/g' $(dirname $0)/$1/$1_config.sh
 	sed -i '' -e 's/'$PORT'="'${!PORT}'"/'$PORT'="'${array[2]}'"/g' $(dirname $0)/$1/$1_config.sh
+    if [[ $1 == "webserver" ]]; then
+		sed -i '' -e 's/DOMAIN="'$DOMAIN'"/DOMAIN="'${array[2]}'"/g' $(dirname $0)/config.sh
+	else
+		sed -i '' -e 's/'$SUB_DOMAIN'="'${!SUB_DOMAIN}'"/'$SUB_DOMAIN'="'${array[3]}'"/g' $(dirname $0)/$1/$1_config.sh
+	fi
 
 	if [[ $1 == "webserver" ]]; then
 		if ! grep -q "EMAIL_ADDRESS" "$(dirname $0)/$1/$1_config.sh"; then
@@ -242,7 +257,7 @@ config_jail () {
 			echo -e "FREENAS_IP=\"\"" >> "$(dirname $0)/$1/$1_config.sh"
 		fi	
 		if ! grep -q "FREENAS_PORT" "$(dirname $0)/$1/$1_config.sh"; then
-			echo -e "FREENAS_PORT=\"\"" >> "$(dirname $0)/$1/$1_config.sh"
+			echo -e "FREENAS_PORT=\"80\"" >> "$(dirname $0)/$1/$1_config.sh"
 		fi	
 
 		#load updated config file
@@ -256,7 +271,11 @@ config_jail () {
 			"FreeNAS webGUI IP:" 1 1 "$FREENAS_IP" 1 30 25 0 \
 			"FreeNAS webGUI Port:" 2 2 "$FREENAS_PORT" 2 30 5 0 \
 			2>&1 1>&3)
+			exit_status=$?
 			exec 3>&-
+			if [ $exit_status != $DIALOG_OK ]; then
+				install_dialog
+			fi
 			FREENASARR=( $FREENASIP )
 			sed -i '' -e 's/FREENAS_IP="'$FREENAS_IP'"/FREENAS_IP="'${FREENASARR[0]}'"/g' $(dirname $0)/$1/$1_config.sh
 			sed -i '' -e 's/FREENAS_PORT="'$FREENAS_PORT'"/FREENAS_PORT="'${FREENASARR[1]}'"/g' $(dirname $0)/$1/$1_config.sh
@@ -268,7 +287,11 @@ config_jail () {
 		VALUE=$(dialog --form "Webserver configuration:" 0 0 0 \
 		"Email address:" 1 1 "$EMAIL_ADDRESS" 1 30 25 0 \
 		2>&1 1>&3)
+		exit_status=$?
 		exec 3>&-
+		if [ $exit_status != $DIALOG_OK ]; then
+			install_dialog
+		fi
 
 		sed -i '' -e 's/EMAIL_ADDRESS="'$EMAIL_ADDRESS'"/EMAIL_ADDRESS="'$VALUE'"/g' $(dirname $0)/$1/$1_config.sh
 
@@ -278,7 +301,11 @@ config_jail () {
 		--insecure \
 		--passwordbox "Set MySQL Root password:" 0 0 "$MYSQL_ROOT_PASSWORD" \
 		2>&1 1>&3)
+		exit_status=$?
 		exec 3>&-
+		if [ $exit_status != $DIALOG_OK ]; then
+			install_dialog
+		fi
 
 		sed -i '' -e 's/MYSQL_ROOT_PASSWORD="'$MYSQL_ROOT_PASSWORD'"/MYSQL_ROOT_PASSWORD="'$PASS'"/g' $(dirname $0)/$1/$1_config.sh
 		
@@ -289,7 +316,11 @@ config_jail () {
 			VALUE1=$(dialog --form "Organizr subdomain:" 0 0 0 \
 			"Organizr subdomain:" 1 1 "$SUB_DOMAIN" 1 30 25 0 \
 			2>&1 1>&3)
+			exit_status=$?
 			exec 3>&-
+			if [ $exit_status != $DIALOG_OK ]; then
+				install_dialog
+			fi
 			sed -i '' -e 's/'SUB_DOMAIN'="'$SUB_DOMAIN'"/'SUB_DOMAIN'="'$VALUE1'"/g' $(dirname $0)/$1/$1_config.sh
 			config_mysql "wordpress" "webserver"
 		else
@@ -327,7 +358,11 @@ config_mysql () {
 	"$1 MySQL User:" 1 1 "${!MYSQL_USER}" 1 30 25 0 \
 	"$1 MySQL Database:" 2 1 "${!MYSQL_DATA}" 2 30 25 0 \
 	2>&1 1>&3)
+	exit_status=$?
 	exec 3>&-
+	if [ $exit_status != $DIALOG_OK ]; then
+		install_dialog
+	fi
 	
 	array=( $VALUES )
 	sed -i '' -e 's/'$MYSQL_USER'="'${!MYSQL_USER}'"/'$MYSQL_USER'="'${array[0]}'"/g' $(dirname $0)/$2/$2_config.sh
@@ -339,7 +374,11 @@ config_mysql () {
 	--insecure \
 	--passwordbox "Set MySQL $1 password:" 0 0 "${!MYSQL_PASS}" \
 	2>&1 1>&3)
+	exit_status=$?
 	exec 3>&-
+	if [ $exit_status != $DIALOG_OK ]; then
+		install_dialog
+	fi
 
 	sed -i '' -e 's/'$MYSQL_PASS'="'${!MYSQL_PASS}'"/'$MYSQL_PASS'="'$PASS'"/g' $(dirname $0)/$2/$2_config.sh
 }
@@ -417,7 +456,11 @@ mount_storage () {
 		Gogs "Go Git  Server" \
 		HomeAssistant "Home-Assistant (Python 3)" \
 		2>&1 1>&3)
+		exit_status=$?
 		exec 3>&-
+		if [ $exit_status != $DIALOG_OK ]; then
+			first
+		fi
 		JAIL=${JAIL,,} 
 	fi
 	. $(dirname $0)/$JAIL/$JAIL\_config.sh
@@ -455,7 +498,7 @@ mount_storage () {
 		dialog --msgbox "Jail does not exists!" 5 50
 	fi
 	if [[ $1 == "" ]]; then
-		first
+		mount_storage
 	fi
 }
 
@@ -463,67 +506,65 @@ delete_jail () {
     backup="0"
 
 	exec 3>&1
-	JAILS=$(dialog --separate-output --checklist "Delete following programs:" 0 0 0 \
-	Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" 1 \
-	Nextcloud "Nextcloud 12" 1 \
-	SABnzbd "SABnzbd" 1 \
-	Sonarr "Sonarr automatic serice downloader" 1 \
-	Radarr "Radarr automatic movie downloader" 1 \
-	Ombi "Your personal media assistant!" 1 \
-	Plex "Plex Media Server" 1 \
-	Plexpass "Plex Media Server plexpass version" 1 \
-	Emby "The open media solution" 1 \
-	Gogs "Go Git  Server" 1 \
-	HomeAssistant "Home-Assistant (Python 3)" 1 \
+	JAILS=$(dialog --menu "Delete following programs:" 0 0 0 \
+	Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" \
+	Nextcloud "Nextcloud 12" \
+	SABnzbd "SABnzbd" \
+	Sonarr "Sonarr automatic serice downloader" \
+	Radarr "Radarr automatic movie downloader" \
+	Ombi "Your personal media assistant!" \
+	Plex "Plex Media Server" \
+	Plexpass "Plex Media Server plexpass version" \
+	Emby "The open media solution" \
+	Gogs "Go Git  Server" \
+	HomeAssistant "Home-Assistant (Python 3)" \
 	2>&1 1>&3)
+	exit_status=$?
 	exec 3>&-
+	if [ $exit_status != $DIALOG_OK ]; then
+		first
+	fi
 	
 	if [ "$?" = "0" ]
 	then
-		jail_arr=( $JAILS )
-		if [ -n "$jail_arr" ]; then
-			for i in $(seq 1 ${#jail_arr[@]})
-			do	
-				. $(dirname $0)/${jail_arr[$i-1],,}/${jail_arr[$i-1],,}_config.sh
-				. $(dirname $0)/webserver/webserver_config.sh
-				. $(dirname $0)/config.sh
-				JAIL_NAME=${jail_arr[$i-1],,}\_JAIL_NAME
-				if [[ $(iocage list) == *${!JAIL_NAME}* ]]; then
-					dialog --title "Backup before deleting" \
-					--yesno "Do you want to make a config backup before deleting ${!JAIL_NAME}?" 7 60
-					if [ "$?" = "0" ]; then
-						backup="1"
-						backup_jail ${jail_arr[$i-1],,}
-					fi
-					
-					dialog --title "Delete Program/Jail" \
-					--yesno "Are you sure you want to permanently delete ${!JAIL_NAME}?" 7 60
-					if [ "$?" = "0" ]; then
-						iocage stop ${!JAIL_NAME}
-						iocage destroy ${!JAIL_NAME} -f
-						iocage destroy ${!JAIL_NAME} -f
-						if [ "$backup" != "1" ]; then
-							dialog --title "Delete backup" \
-							--yesno "Do you want to delete the backup of ${!JAIL_NAME} also?" 7 60
-							if [ "$?" = "0" ]; then
-								rm -R $BACKUP_LOCATION/${jail_arr[$i-1],,}
-							fi
-						fi
-						rm $JAIL_LOCATION/$webserver_JAIL_NAME/root/usr/local/etc/nginx/sites/${jail_arr[$i-1],,}.conf
-						sed -i '' -e '/.*'${jail_arr[$i-1],,}'.*/d' $JAIL_LOCATION/$webserver_JAIL_NAME/root/usr/local/etc/nginx/standard.conf
-						if [[ ${jail_arr[$i-1],,} == *"nextcloud"* ]]; then
-							DATABASE=${jail_arr[$i-1],,}\_MYSQL_DATABASE
-							iocage exec $webserver_JAIL_NAME mysql -u root -p$MYSQL_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS ${!DATABASE};"
-						fi
-						dialog --msgbox "${!JAIL_NAME} deleted" 5 30
-					else
-						dialog --msgbox "${!JAIL_NAME} NOT deleted, operation canceled by user!" 5 30
-					fi
-				else
-					dialog --msgbox "${!JAIL_NAME} does not exists!" 5 50
-				fi
-			done
-		fi
+        . $(dirname $0)/${JAILS,,}/${JAILS,,}_config.sh
+        . $(dirname $0)/webserver/webserver_config.sh
+        . $(dirname $0)/config.sh
+        JAIL_NAME=${JAILS,,}\_JAIL_NAME
+        if [[ $(iocage list) == *${!JAIL_NAME}* ]]; then
+            dialog --title "Backup before deleting" \
+            --yesno "Do you want to make a config backup before deleting ${!JAIL_NAME}?" 7 60
+            if [ "$?" = "0" ]; then
+                backup="1"
+                backup_jail ${JAILS,,}
+            fi
+            
+            dialog --title "Delete Program/Jail" \
+            --yesno "Are you sure you want to permanently delete ${!JAIL_NAME}?" 7 60
+            if [ "$?" = "0" ]; then
+                iocage stop ${!JAIL_NAME}
+                iocage destroy ${!JAIL_NAME} -f
+                iocage destroy ${!JAIL_NAME} -f
+                if [ "$backup" != "1" ]; then
+                    dialog --title "Delete backup" \
+                    --yesno "Do you want to delete the backup of ${!JAIL_NAME} also?" 7 60
+                    if [ "$?" = "0" ]; then
+                        rm -R $BACKUP_LOCATION/${JAILS,,}
+                    fi
+                fi
+                rm $JAIL_LOCATION/$webserver_JAIL_NAME/root/usr/local/etc/nginx/sites/${JAILS,,}.conf
+                sed -i '' -e '/.*'${JAILS,,}'.*/d' $JAIL_LOCATION/$webserver_JAIL_NAME/root/usr/local/etc/nginx/standard.conf
+                if [[ ${JAILS,,} == *"nextcloud"* ]]; then
+                    DATABASE=${JAILS,,}\_MYSQL_DATABASE
+                    iocage exec $webserver_JAIL_NAME mysql -u root -p$MYSQL_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS ${!DATABASE};"
+                fi
+                dialog --msgbox "${!JAIL_NAME} deleted" 5 30
+            else
+                dialog --msgbox "${!JAIL_NAME} NOT deleted, operation canceled by user!" 5 30
+            fi
+        else
+            dialog --msgbox "${!JAIL_NAME} does not exists!" 5 50
+        fi
 	fi
 	first
 }
@@ -555,18 +596,18 @@ backup_jail () {
 		mkdir -p $BACKUP_LOCATION
 		
 		exec 3>&1
-		JAILS=$(dialog --separate-output --checklist "Backup following programs:" 0 0 0 \
-		Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" 1 \
-		Nextcloud "Nextcloud 12" 1 \
-		SABnzbd "SABnzbd" 1 \
-		Sonarr "Sonarr automatic serice downloader" 1 \
-		Radarr "Radarr automatic movie downloader" 1 \
-		Ombi "Your personal media assistant!" 1 \
-		Plex "Plex Media Server" 1 \
-		Plexpass "Plex Media Server plexpass version" 1 \
-		Emby "The open media solution" 1 \
-		Gogs "Go Git  Server" 1 \
-		HomeAssistant "Home-Assistant (Python 3)" 1 \
+		JAILS=$(dialog --menu "Backup following programs:" 0 0 0 \
+		Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" \
+		Nextcloud "Nextcloud 12" \
+		SABnzbd "SABnzbd" \
+		Sonarr "Sonarr automatic serice downloader" \
+		Radarr "Radarr automatic movie downloader" \
+		Ombi "Your personal media assistant!" \
+		Plex "Plex Media Server" \
+		Plexpass "Plex Media Server plexpass version" \
+		Emby "The open media solution" \
+		Gogs "Go Git  Server" \
+		HomeAssistant "Home-Assistant (Python 3)" \
 		2>&1 1>&3)
 		exec 3>&-
 	fi
@@ -575,21 +616,15 @@ backup_jail () {
 	
 	if [ "$?" = "0" ]
 	then
-		jail_arr=( $JAILS )
-		if [ -n "$jail_arr" ]; then
-			for i in $(seq 1 ${#jail_arr[@]})
-			do	
-				. $(dirname $0)/${jail_arr[$i-1],,}/${jail_arr[$i-1],,}_config.sh
-				JAIL_NAME=${jail_arr[$i-1],,}\_JAIL_NAME
-				mkdir -p $BACKUP_LOCATION/${jail_arr[$i-1],,}
-				iocage stop ${!JAIL_NAME}
-				FOLDER="$(sed -n '1p' $(dirname $0)/${jail_arr[$i-1],,}/backup.conf)"
-				mkdir -p $BACKUP_LOCATION/${jail_arr[$i-1],,}${FOLDER}
-				cp -R $JAIL_LOCATION/${!JAIL_NAME}/root${FOLDER}/ $BACKUP_LOCATION/${jail_arr[$i-1],,}${FOLDER}
-				iocage start ${!JAIL_NAME}
-				dialog --msgbox "Config of ${!JAIL_NAME} backuped!" 5 50
-			done
-		fi
+        . $(dirname $0)/${JAILS,,}/${JAILS,,}_config.sh
+        JAIL_NAME=${JAILS,,}\_JAIL_NAME
+        mkdir -p $BACKUP_LOCATION/${JAILS,,}
+        iocage stop ${!JAIL_NAME}
+        FOLDER="$(sed -n '1p' $(dirname $0)/${JAILS,,}/backup.conf)"
+        mkdir -p $BACKUP_LOCATION/${JAILS,,}${FOLDER}
+        cp -R $JAIL_LOCATION/${!JAIL_NAME}/root${FOLDER}/ $BACKUP_LOCATION/${JAILS,,}${FOLDER}
+        iocage start ${!JAIL_NAME}
+        dialog --msgbox "Config of ${!JAIL_NAME} backuped!" 5 50
 	fi
 	#make mysql dump?
 	if [[ $1 == "" ]]; then
