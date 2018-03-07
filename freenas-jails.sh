@@ -404,13 +404,13 @@ install_jail () {
 		cp $(dirname $0)/$1/* $JAIL_LOCATION/${!JAIL_NAME}/root/root/
 		cp $(dirname $0)/config.sh $JAIL_LOCATION/${!JAIL_NAME}/root/root/
 		
-		if [ -d "$BACKUP_LOCATION/$1/usr/local/etc/letsencrypt/" ]; then
-			cp -R $BACKUP_LOCATION/$1/usr/local/etc/letsencrypt/ $JAIL_LOCATION/${!JAIL_NAME}/root/usr/local/etc/letsencrypt/
+		if [ -d "$BACKUP_LOCATION/$1/usr/local/etc/letsencrypt/" ]; then #copy certificates before installing, otherwise certificates will be requested when not necessary
+			echo "restoring certificates..."
+			mkdir -p $JAIL_LOCATION/${!JAIL_NAME}/root/usr/local/etc/letsencrypt
+			rsync -a $BACKUP_LOCATION/$1/usr/local/etc/letsencrypt/ $JAIL_LOCATION/${!JAIL_NAME}/root/usr/local/etc/letsencrypt
 			chown -R $USER_NAME:$USER_NAME $JAIL_LOCATION/${!JAIL_NAME}/root/usr/local/etc/letsencrypt/
 		fi
-		if [ -d "$BACKUP_LOCATION/$1" ]; then #copy certificates before installing, otherwise certificates will be requested when not nessasary
-			cp -R $BACKUP_LOCATION/$1/usr/local/etc/letsencrypt/ $JAIL_LOCATION/${!JAIL_NAME}/root/usr/local/etc/letsencrypt
-		fi
+		
 		iocage exec ${!JAIL_NAME} bash /root/$1.sh
 		#monit (monitoring, auto backup, auto update (not upgrade..)?)
 		if [[ $1 != "webserver" ]]; then  #configure subdomain
@@ -435,10 +435,12 @@ install_jail () {
 				i=1
 				while true; do
 					FOLDER="$(sed -n ''$i'p' $(dirname $0)/${JAILS,,}/backup.conf)"
+					DEST_FOLDER="$(sed -n ''$i'p' $(dirname $0)/${JAILS,,}/backup.conf | cut -d " " -f1)"
+					DEST_FOLDER=${DEST_FOLDER%/*}/
 					(( i++ ))
 					if [ ! -z "$FOLDER" ]; then
-						cp -R $BACKUP_LOCATION/$1$FOLDER/ $JAIL_LOCATION/${!JAIL_NAME}/root$FOLDER
-						chown -R $USER_NAME:$USER_NAME $JAIL_LOCATION/${!JAIL_NAME}/root$FOLDER
+						rsync -a $BACKUP_LOCATION/$1$FOLDER $JAIL_LOCATION/${!JAIL_NAME}/root$DEST_FOLDER
+						chown -R $USER_NAME:$USER_NAME $JAIL_LOCATION/${!JAIL_NAME}/root$DEST_FOLDER
 					else
 						break
 					fi
@@ -643,7 +645,7 @@ backup_jail () {
 			DEST_FOLDER=${DEST_FOLDER%/*}/
 			(( i++ ))
 			if [ ! -z "$FOLDER" ]; then
-				mkdir -p $BACKUP_LOCATION/${JAILS,,}${FOLDER}
+				mkdir -p $BACKUP_LOCATION/${JAILS,,}${DEST_FOLDER}
 				rsync -a --delete $JAIL_LOCATION/${!JAIL_NAME}/root${FOLDER} $BACKUP_LOCATION/${JAILS,,}${DEST_FOLDER}
 			else
 				break
