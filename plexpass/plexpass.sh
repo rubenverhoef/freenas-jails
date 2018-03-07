@@ -16,6 +16,7 @@ pw useradd -n $USER_NAME -u $USER_ID -d /nonexistent -s /usr/sbin/nologin
 
 mkdir -p /usr/local/plexdata-plexpass/Plex\ Media\ Server/Mounts/
 ln -s /mnt/* /usr/local/plexdata-plexpass/Plex\ Media\ Server/Mounts/
+chown -R $USER_NAME:$USER_NAME /usr/local/plexdata-plexpass
 
 sysrc 'ifconfig_epair0_name=epair0b'
 sysrc 'plexmediaserver_plexpass_enable=YES'
