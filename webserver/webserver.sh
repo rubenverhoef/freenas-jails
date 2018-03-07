@@ -42,6 +42,7 @@ sed -i '' -e 's/DOMAIN_2/'$DOMAIN'/g'  /usr/local/etc/nginx/nginx.conf
 cp $(dirname $0)/letsencrypt.conf /usr/local/etc/nginx/letsencrypt.conf
 cp $(dirname $0)/ssl.conf /usr/local/etc/nginx/ssl.conf
 cp $(dirname $0)/proxy.conf /usr/local/etc/nginx/proxy.conf
+cp $(dirname $0)/php.conf /usr/local/etc/nginx/php.conf
 cp $(dirname $0)/standard.conf /usr/local/etc/nginx/standard.conf
 mkdir /usr/local/etc/nginx/sites
 
@@ -108,7 +109,6 @@ if [ "$WORDPRESS_WEB" == "YES" ]; then
 	sed -i '' -e 's/username_here/'$wordpress_MYSQL_USERNAME'/g'  /usr/local/www/wp-config.php
 	sed -i '' -e 's/password_here/'$wordpress_MYSQL_PASSWORD'/g'  /usr/local/www/wp-config.php
 	
-	cp $(dirname $0)/config.php /usr/local/www/organizr/config/config.php
 	bash /root/subdomain.sh organizr $webserver_IP 8080
 	echo "server {" >> /usr/local/etc/nginx/sites/organizr.conf
 	echo "	listen 8080;" >> /usr/local/etc/nginx/sites/organizr.conf
@@ -116,9 +116,10 @@ if [ "$WORDPRESS_WEB" == "YES" ]; then
 	echo "	include standard.conf;" >> /usr/local/etc/nginx/sites/organizr.conf
 	echo "}" >> /usr/local/etc/nginx/sites/organizr.conf
 else
-	mv /usr/local/www/organizr/* /usr/local/www
-	cp $(dirname $0)/config.php /usr/local/www/config/config.php
+	sed -i '' -e 's,/usr/local/www;,/usr/local/www/organizr;,g'  /usr/local/etc/nginx/nginx.conf
+	echo "location /phpmyadmin { include php.conf; root /usr/local/www; }" >> "/usr/local/etc/nginx/standard.conf"
 fi
+cp $(dirname $0)/config.php /usr/local/www/organizr/config/config.php
 
 chown -R $USER_NAME:$USER_NAME /usr/local/www
 
