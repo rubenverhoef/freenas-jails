@@ -100,14 +100,14 @@ if [ "$WORDPRESS_WEB" == "YES" ]; then
 	mv /usr/local/www/wordpress/* /usr/local/www/
 	rm wordpress.tar.gz && rm -R /usr/local/www/wordpress
 
-	mysql -u root -p$MYSQL_ROOT_PASSWORD -e "CREATE DATABASE IF NOT EXISTS $wordpress_MYSQL_DATABASE;"
-	mysql -u root -p$MYSQL_ROOT_PASSWORD -e "GRANT ALL PRIVILEGES ON $wordpress_MYSQL_DATABASE.* TO '$wordpress_MYSQL_USERNAME'@'%' IDENTIFIED BY '$wordpress_MYSQL_PASSWORD';"
+	mysql -u root -p$MYSQL_ROOT_PASSWORD -e "CREATE DATABASE IF NOT EXISTS $webserver_MYSQL_DATABASE;"
+	mysql -u root -p$MYSQL_ROOT_PASSWORD -e "GRANT ALL PRIVILEGES ON $webserver_MYSQL_DATABASE.* TO '$webserver_MYSQL_USERNAME'@'%' IDENTIFIED BY '$webserver_MYSQL_PASSWORD';"
 	mysql -u root -p$MYSQL_ROOT_PASSWORD -e "FLUSH PRIVILEGES;"
 
 	cp /usr/local/www/wp-config-sample.php /usr/local/www/wp-config.php
-	sed -i '' -e 's/database_name_here/'$wordpress_MYSQL_DATABASE'/g'  /usr/local/www/wp-config.php
-	sed -i '' -e 's/username_here/'$wordpress_MYSQL_USERNAME'/g'  /usr/local/www/wp-config.php
-	sed -i '' -e 's/password_here/'$wordpress_MYSQL_PASSWORD'/g'  /usr/local/www/wp-config.php
+	sed -i '' -e 's/database_name_here/'$webserver_MYSQL_DATABASE'/g'  /usr/local/www/wp-config.php
+	sed -i '' -e 's/username_here/'$webserver_MYSQL_USERNAME'/g'  /usr/local/www/wp-config.php
+	sed -i '' -e 's/password_here/'$webserver_MYSQL_PASSWORD'/g'  /usr/local/www/wp-config.php
 	
 	bash /root/subdomain.sh organizr $webserver_IP 8080
 	echo "server {" >> /usr/local/etc/nginx/sites/organizr.conf
