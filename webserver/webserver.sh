@@ -50,6 +50,16 @@ certbot register -m $EMAIL_ADDRESS --agree-tos --no-eff-email
 certbot certonly --standalone -d www.$DOMAIN --keep
 certbot certonly --standalone -d $DOMAIN --keep
 
+# change cerbot config to wwwroot
+sed -i '' -e 's,authenticator = standalone,authenticator = webroot,g'  /usr/local/etc/letsencrypt/renewal/*.conf
+
+echo -e "[[webroot_map]]" >> /usr/local/etc/letsencrypt/renewal/$DOMAIN.conf
+echo -e $DOMAIN" = /usr/local/www" >> /usr/local/etc/letsencrypt/renewal/$DOMAIN.conf
+
+echo -e "[[webroot_map]]" >> /usr/local/etc/letsencrypt/renewal/www.$DOMAIN.conf
+echo -e "www."$DOMAIN" = /usr/local/www" >> /usr/local/etc/letsencrypt/renewal/www.$DOMAIN.conf
+
+
 if [ "$EXTERNAL_GUI" == "YES" ]; then
 	bash /root/subdomain.sh freenas $FREENAS_IP $FREENAS_PORT
 fi
@@ -122,6 +132,13 @@ fi
 cp $(dirname $0)/config.php /usr/local/www/organizr/config/config.php
 
 chown -R $USER_NAME:$USER_NAME /usr/local/www
+
+# install cronjob for renewal ssl certificates
+crontab -l > mycron
+echo "0 0,12 * * * certbot renew >> /var/log/letsencrypt/renew.log" >> mycron
+echo "0 0,12 * * * service nginx reload" >> mycron
+crontab mycron
+rm mycron
 
 service nginx start
 service php-fpm start

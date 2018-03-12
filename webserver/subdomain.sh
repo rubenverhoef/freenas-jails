@@ -16,5 +16,12 @@ service nginx stop
 
 certbot certonly --standalone -d www.$1.$DOMAIN --keep
 certbot certonly --standalone -d $1.$DOMAIN --keep
+sed -i '' -e 's,authenticator = standalone,authenticator = webroot,g'  /usr/local/etc/letsencrypt/renewal/*.conf
+
+echo -e "[[webroot_map]]" >> /usr/local/etc/letsencrypt/renewal/$1.$DOMAIN.conf
+echo -e $1.$DOMAIN" = /usr/local/www" >> /usr/local/etc/letsencrypt/renewal/$1.$DOMAIN.conf
+
+echo -e "[[webroot_map]]" >> /usr/local/etc/letsencrypt/renewal/www.$1.$DOMAIN.conf
+echo -e "www."$1.$DOMAIN" = /usr/local/www" >> /usr/local/etc/letsencrypt/renewal/www.$1.$DOMAIN.conf
 
 service nginx start
