@@ -10,7 +10,7 @@
 
 # Globals:
 GLOBAL_CONFIG=$(dirname $0)"/config.sh"
-DATABASE_JAILS="nextcloud, gogs"
+DATABASE_JAILS="webserver, nextcloud, gogs"
 MEDIA_JAILS="plex, plexpass, sonarr, radarr, sabnzbd"
 FILE_JAILS="nextcloud"
 
@@ -59,28 +59,28 @@ first () {
 	2>&1 1>&3)
 	exit_status=$?
 	exec 3>&-
-
+	
 	if [ $exit_status != $DIALOG_OK ]; then
 		exit
 	fi
-
+	
 	case $CHOICE in
 		"Install jails")
 			install_dialog
 			;;
-
+		
 		"Upgrade jail")
 			upgrade_jail
 			;;
-
+		
 		"Backup jail")
 			backup_jail
 			;;
-
+			
 		"Delete jail")
 			delete_jail
 			;;
-
+		
 		"Mount storage")
 			mount_storage
 			;;
@@ -88,7 +88,7 @@ first () {
 }
 
 install_dialog () {
-
+	
 	if  [[ $1 == "" ]]; then
 		# initialize file with variables if they don't exists
 		if ! grep -q "JAIL_LOCATION" $GLOBAL_CONFIG; then
@@ -106,10 +106,10 @@ install_dialog () {
 		if ! grep -q "ROUTER_IP" $GLOBAL_CONFIG; then
 			echo -e "ROUTER_IP=\""$DEFAULT_ROUTER"\"" >> $GLOBAL_CONFIG
 		fi
-
+		
 		# load updated config file
 		. $GLOBAL_CONFIG
-
+		
 		exec 3>&1
 		JAIL=$(dialog --form "IOCAGE Jail location:" 0 0 0 \
 		"Jail location (starting with \"/\" and without last \"/\")" 1 1 "$JAIL_LOCATION" 1 60 25 0 \
@@ -121,13 +121,13 @@ install_dialog () {
 		2>&1 1>&3)
 		exit_status=$?
 		exec 3>&-
-
+		
 		if [ $exit_status != $DIALOG_OK ]; then
 			first
 		fi
-
+		
 		GLOBAL=( $JAIL )
-
+		
 		#save new config variables in global config file
 		sed -i '' -e 's,JAIL_LOCATION="'$JAIL_LOCATION'",JAIL_LOCATION="'${GLOBAL[0]}'",g' $GLOBAL_CONFIG
 		sed -i '' -e 's,BACKUP_LOCATION="'$BACKUP_LOCATION'",BACKUP_LOCATION="'${GLOBAL[1]}'",g' $GLOBAL_CONFIG
@@ -135,7 +135,7 @@ install_dialog () {
 		sed -i '' -e 's,USER_ID="'$USER_ID'",USER_ID="'${GLOBAL[3]}'",g' $GLOBAL_CONFIG
 		sed -i '' -e 's,ROUTER_IP="'$ROUTER_IP'",ROUTER_IP="'${GLOBAL[4]}'",g' $GLOBAL_CONFIG
     fi
-
+	
 	exec 3>&1
 	PROGRAM=$(dialog --menu "Install following program:" 0 0 0 \
 	Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" \
@@ -148,11 +148,11 @@ install_dialog () {
 	2>&1 1>&3)
 	exit_status=$?
 	exec 3>&-
-
+	
 	if [ $exit_status != $DIALOG_OK ]; then
 		first
 	fi
-
+	
 	config_jail ${PROGRAM,,}
 	install_jail ${PROGRAM,,}
 
@@ -172,7 +172,7 @@ config_jail () {
     # make directory and file if not exists already
 	mkdir -p ${JAIL_CONFIG%/*}/
 	touch  $JAIL_CONFIG || exit
-
+	
     # initialize file with variables if they don't exists
 	if ! grep -q $JAIL_NAME $JAIL_CONFIG; then
 		echo -e $JAIL_NAME"=\""$JAIL"_1\"" >> $JAIL_CONFIG
@@ -195,11 +195,11 @@ config_jail () {
 	if ! grep -q $IP $JAIL_CONFIG; then
 		echo -e $IP"=\""${!DEFAULT_IP}"\"" >> $JAIL_CONFIG
 	fi
-
+	
 	# load updated config files
 	. $JAIL_CONFIG
 	. $GLOBAL_CONFIG
-
+	
 	exec 3>&1
 	if [[ $JAIL == "webserver" ]]; then
 		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
@@ -218,17 +218,17 @@ config_jail () {
 	fi
 	exit_status=$?
 	exec 3>&-
-
+	
 	if [ $exit_status != $DIALOG_OK ]; then
 		install_dialog second_time
 	fi
-
+	
     # save new variables in jail config file
 	JAIL_VALUES=( $VALUES )
 	sed -i '' -e 's,'$JAIL_NAME'="'${!JAIL_NAME}'",'$JAIL_NAME'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
     sed -i '' -e 's,'$IP'="'${!IP}'",'$IP'="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
 	sed -i '' -e 's,'$PORT'="'${!PORT}'",'$PORT'="'${JAIL_VALUES[2]}'",g' $JAIL_CONFIG
-
+    
 	if [[ $JAIL == "webserver" ]]; then #make webserver ip and domain config global
 		sed -i '' -e 's,'$IP'="'${!IP}'",'$IP'="'${JAIL_VALUES[1]}'",g' $GLOBAL_CONFIG
         sed -i '' -e 's,DOMAIN="'$DOMAIN'",DOMAIN="'${JAIL_VALUES[2]}'",g' $GLOBAL_CONFIG
@@ -246,10 +246,10 @@ config_jail () {
 		fi
 		if ! grep -q "EXTERNAL_GUI" $JAIL_CONFIG; then
 			echo -e "EXTERNAL_GUI=\"NO\"" >> $JAIL_CONFIG
-		fi
+		fi			
 		if ! grep -q "WORDPRESS_WEB" $JAIL_CONFIG; then
 			echo -e "WORDPRESS_WEB=\"NO\"" >> $JAIL_CONFIG
-		fi
+		fi			
 
 		# load updated config file
 		. $JAIL_CONFIG
@@ -259,13 +259,13 @@ config_jail () {
         if [ $exit_status == $DIALOG_OK ]; then
 			if ! grep -q "FREENAS_IP" $JAIL_CONFIG; then
 				echo -e "FREENAS_IP=\"\"" >> $JAIL_CONFIG
-			fi
+			fi	
 			if ! grep -q "FREENAS_PORT" $JAIL_CONFIG; then
 				echo -e "FREENAS_PORT=\"80\"" >> $JAIL_CONFIG
-			fi
+			fi	
 			# load updated config file
 			. $JAIL_CONFIG
-
+			
 			exec 3>&1
 			FREENASIP=$(dialog --form "Webserver configuration:" 0 0 0 \
 			"FreeNAS webGUI IP:" 1 1 "$FREENAS_IP" 1 30 25 0 \
@@ -273,7 +273,7 @@ config_jail () {
 			2>&1 1>&3)
 			exit_status=$?
 			exec 3>&-
-
+			
             if [ $exit_status != $DIALOG_OK ]; then
 				install_dialog second_time
 			else
@@ -287,18 +287,18 @@ config_jail () {
         else
             install_dialog second_time
 		fi
-
+			
 		exec 3>&1
 		VALUE=$(dialog --form "Webserver configuration:" 0 0 0 \
 		"Email address:" 1 1 "$EMAIL_ADDRESS" 1 30 25 0 \
 		2>&1 1>&3)
 		exit_status=$?
 		exec 3>&-
-
+        
 		if [ $exit_status != $DIALOG_OK ]; then
 			install_dialog second_time
 		fi
-
+		
 		sed -i '' -e 's,EMAIL_ADDRESS="'$EMAIL_ADDRESS'",EMAIL_ADDRESS="'$VALUE'",g' $JAIL_CONFIG
 
 		exec 3>&1
@@ -309,43 +309,42 @@ config_jail () {
 		2>&1 1>&3)
 		exit_status=$?
 		exec 3>&-
-
+        
 		if [ $exit_status != $DIALOG_OK ]; then
 			install_dialog second_time
         fi
-
+		
         sed -i '' -e 's,MYSQL_ROOT_PASSWORD="'$MYSQL_ROOT_PASSWORD'",MYSQL_ROOT_PASSWORD="'$PASS'",g' $JAIL_CONFIG
-
+		
 		dialog --title "Hosting WordPress Website?" --yesno "Do you want to host a WordPress website?" 7 60
 		exit_status=$?
         if [ $exit_status == $DIALOG_OK ]; then
-			if ! grep -q "SUB_DOMAIN" $JAIL_CONFIG; then
-				echo -e "SUB_DOMAIN=\"organizr\"" >> $JAIL_CONFIG
-			fi
+			if ! grep -q "organizr_SUB_DOMAIN" $JAIL_CONFIG; then
+				echo -e "organizr_SUB_DOMAIN=\"organizr\"" >> $JAIL_CONFIG
+			fi	
 			# load updated config file
 			. $JAIL_CONFIG
-
+			
 			exec 3>&1
 			VALUE1=$(dialog --form "Organizr subdomain:" 0 0 0 \
-			"Organizr subdomain:" 1 1 "$SUB_DOMAIN" 1 30 25 0 \
+			"Organizr subdomain:" 1 1 "$organizr_SUB_DOMAIN" 1 30 25 0 \
 			2>&1 1>&3)
 			exit_status=$?
 			exec 3>&-
-
+            
 			if [ $exit_status != $DIALOG_OK ]; then
 				install_dialog second_time
 			fi
-
+			
 			sed -i '' -e 's,WORDPRESS_WEB="NO",WORDPRESS_WEB="YES",g' $JAIL_CONFIG
-			sed -i '' -e 's,'SUB_DOMAIN'="'$SUB_DOMAIN'",'SUB_DOMAIN'="'$VALUE1'",g' $JAIL_CONFIG
-			config_mysql $JAIL
+			sed -i '' -e 's,organizr_SUB_DOMAIN="'$organizr_SUB_DOMAIN'",organizr_SUB_DOMAIN="'$VALUE1'",g' $JAIL_CONFIG
 		elif [ $exit_status == $DIALOG_CANCEL ]; then
 			sed -i '' -e 's,WORDPRESS_WEB="YES",WORDPRESS_WEB="NO",g' $JAIL_CONFIG
         else
             install_dialog second_time
 		fi
 	fi
-
+	
 	if [[ $DATABASE_JAILS == *$JAIL* ]]; then  # configure mysql if needed
 		config_mysql $JAIL
 	fi
@@ -359,7 +358,7 @@ config_mysql () {
 	DEFAULT_USER=$JAIL\_DEFAULT_USERNAME
 	DEFAULT_DATA=$JAIL\_DEFAULT_DATABASE
 	JAIL_CONFIG=$(dirname $0)"/"$JAIL"/"$JAIL"_config.sh"
-
+	
 	if ! grep -q $MYSQL_USER $JAIL_CONFIG; then
 		echo -e $MYSQL_USER"=\""${!DEFAULT_USER}"\"" >> $JAIL_CONFIG
 	fi
@@ -369,10 +368,10 @@ config_mysql () {
 	if ! grep -q $MYSQL_PASS $JAIL_CONFIG; then
 		echo -e $MYSQL_PASS"=\"\"" >> $JAIL_CONFIG
 	fi
-
+	
 	#load updated config file
 	. $JAIL_CONFIG
-
+	
 	exec 3>&1
 	VALUES=$(dialog --form "Webserver configuration:" 0 0 0 \
 	"$1 MySQL User:" 1 1 "${!MYSQL_USER}" 1 30 25 0 \
@@ -380,11 +379,11 @@ config_mysql () {
 	2>&1 1>&3)
 	exit_status=$?
 	exec 3>&-
-
+	
 	if [ $exit_status != $DIALOG_OK ]; then
 		install_dialog second_time
 	fi
-
+	
 	VALUES_ARR=( $VALUES )
 	sed -i '' -e 's,'$MYSQL_USER'="'${!MYSQL_USER}'",'$MYSQL_USER'="'${VALUES_ARR[0]}'",g' $JAIL_CONFIG
 	sed -i '' -e 's,'$MYSQL_DATA'="'${!MYSQL_DATA}'",'$MYSQL_DATA'="'${VALUES_ARR[1]}'",g' $JAIL_CONFIG
@@ -397,7 +396,7 @@ config_mysql () {
 	2>&1 1>&3)
 	exit_status=$?
 	exec 3>&-
-
+	
 	if [ $exit_status != $DIALOG_OK ]; then
 		install_dialog second_time
 	fi
@@ -411,48 +410,51 @@ install_jail () {
 	# load config files
 	. $JAIL_CONFIG
 	. $GLOBAL_CONFIG
-
+	
 	JAIL_NAME=$JAIL\_JAIL_NAME
 	IP=$JAIL\_IP
 	PORT=$JAIL\_PORT
 	SUB_DOMAIN=$JAIL\_SUB_DOMAIN
 
+
 	VERSION="$(uname -r)"
 	VERSION=${VERSION//[!0-9,.]/}-RELEASE # take only the version number and pick the RELEASE as IOCAGE base
 
 	if [[ $(iocage list) != *${!JAIL_NAME}* ]]; then
-
+		
 		iocage create -n ${!JAIL_NAME} -p ${JAIL_CONFIG%/*}/$JAIL.json -r $VERSION ip4_addr="vnet0|${!IP}/24" defaultrouter="$ROUTER_IP" vnet="on" allow_raw_sockets="1" boot="on"
-
+		
 		mount_storage $JAIL
-
+		
 		cp ${JAIL_CONFIG%/*}/* $JAIL_LOCATION/${!JAIL_NAME}/root/root/
 		cp $GLOBAL_CONFIG $JAIL_LOCATION/${!JAIL_NAME}/root/root/
-
+		
 		if [ -d "$BACKUP_LOCATION/$JAIL/usr/local/etc/letsencrypt/" ]; then # copy certificates before installing, otherwise certificates will be requested when not necessary
 			echo "restoring certificates..."
 			mkdir -p $JAIL_LOCATION/${!JAIL_NAME}/root/usr/local/etc/letsencrypt
 			rsync -a $BACKUP_LOCATION/$JAIL/usr/local/etc/letsencrypt/ $JAIL_LOCATION/${!JAIL_NAME}/root/usr/local/etc/letsencrypt
 			chown -R $USER_NAME:$USER_NAME $JAIL_LOCATION/${!JAIL_NAME}/root/usr/local/etc/letsencrypt/
 		fi
-
+		
 		# config everything inside the jail
 		iocage exec ${!JAIL_NAME} bash /root/$JAIL.sh
 
 		if [[ $JAIL != "webserver" ]]; then  # configure subdomain
 			. $(dirname $0)/webserver/webserver_config.sh
-			if [ -z "${!SUB_DOMAIN}" ]; then
-				iocage exec $webserver_JAIL_NAME bash /root/suburl.sh $JAIL ${!IP} ${!PORT}
-			else
+			if [ "${!SUB_DOMAIN}" ]; then
 				iocage exec $webserver_JAIL_NAME bash /root/subdomain.sh ${!SUB_DOMAIN} ${!IP} ${!PORT}
+			else
+				iocage exec $webserver_JAIL_NAME bash /root/suburl.sh $JAIL ${!IP} ${!PORT}
 			fi
-		elif grep -q "MYSQL" $JAIL_CONFIG; then # configure mysql if needed
+		fi
+		
+		if grep -q "MYSQL" $JAIL_CONFIG; then # configure mysql if needed
 			DATABASE=$JAIL\_MYSQL_DATABASE
 			USER=$JAIL\_MYSQL_USERNAME
 			PASS=$JAIL\_MYSQL_PASSWORD
 			iocage exec $webserver_JAIL_NAME bash /root/mysql.sh ${!DATABASE} ${!USER} ${!PASS}
 		fi
-
+		
 		if [ -d "$BACKUP_LOCATION/$JAIL" ]; then
 			dialog --title "Restore backup?" --yesno "Do you want to restore the backup?\"?" 7 60
 			exit_status=$?
@@ -463,7 +465,7 @@ install_jail () {
 					DEST_FOLDER="$(sed -n ''$i'p' ${JAIL_CONFIG%/*}/backup.conf | cut -d " " -f1)"
 					DEST_FOLDER=${DEST_FOLDER%/*}/
 					(( i++ ))
-					if [ ! -z $FOLDER ]; then
+					if [ "$FOLDER" ]; then
 						rsync -a $BACKUP_LOCATION/$JAIL$FOLDER $JAIL_LOCATION/${!JAIL_NAME}/root$DEST_FOLDER
 						chown -R $USER_NAME:$USER_NAME $JAIL_LOCATION/${!JAIL_NAME}/root$DEST_FOLDER
 					else
@@ -489,7 +491,7 @@ install_jail () {
 }
 
 mount_storage () {
-
+	
 	JAIL=$1
 
 	if [[ $JAIL == "" ]]; then # only show dialog when coming from main dialog
@@ -505,20 +507,20 @@ mount_storage () {
 		2>&1 1>&3)
 		exit_status=$?
 		exec 3>&-
-
+		
 		if [ $exit_status != $DIALOG_OK ]; then
 			first
 		fi
 		JAIL=${JAIL,,}
-
+		
 	fi
-
+	
 	JAIL_CONFIG=$(dirname $0)"/"$JAIL"/"$JAIL"_config.sh"
 	# load config files
 	. $JAIL_CONFIG
 	. $GLOBAL_CONFIG
 	JAIL_NAME=$JAIL\_JAIL_NAME
-
+	
 	if [[ $(iocage list) == *${!JAIL_NAME}* ]] && [ -f $JAIL_CONFIG ]; then
 		if [[ $FILE_JAILS == *$JAIL* ]]; then  # if fileserver jail mount user files
 			DATA=$(dialog --title "Mounting storage" --stdout --title "Please choose a folder for the use of user data on $JAIL" --fselect /mnt/ 14 48)
@@ -548,7 +550,7 @@ mount_storage () {
 				mount_storage $JAIL
 			fi
 		fi
-
+		
 		exit_status="0"
 		while [ $exit_status == $DIALOG_OK ]; do
 		{
@@ -561,7 +563,7 @@ mount_storage () {
 					chown -R $USER_NAME:$USER_NAME $DATA
 					iocage fstab -a ${!JAIL_NAME} $DATA /mnt/$(basename $DATA) nullfs rw 0 0
 				fi
-			fi
+			fi		
 		}
 		done
 	else
@@ -587,33 +589,33 @@ delete_jail () {
 	2>&1 1>&3)
 	exit_status=$?
 	exec 3>&-
-
+	
 	if [ $exit_status != $DIALOG_OK ]; then
 		first
 	fi
-
+	
 	JAIL=${JAIL,,}
 	JAIL_CONFIG=$(dirname $0)"/"$JAIL"/"$JAIL"_config.sh"
 	# load config files
 	. $JAIL_CONFIG
 	. $GLOBAL_CONFIG
 	. $(dirname $0)/webserver/webserver_config.sh
-
+	
 	JAIL_NAME=$JAIL\_JAIL_NAME
-
+	
 	if [[ $(iocage list) == *${!JAIL_NAME}* ]]; then
 		dialog --title "Backup before deleting" \
 		--yesno "Do you want to make a config backup before deleting ${!JAIL_NAME}?" 7 60
 		exit_status=$?
 		if [ $exit_status == $DIALOG_OK ]; then
 			backup="1"
-			backup_jail $JAIL
+			backup_jail $JAIL			
 		elif [ $exit_status == $DIALOG_CANCEL ]; then
 			backup="0"
 		else
 			delete_jail
 		fi
-
+		
 		dialog --title "Delete Program/Jail" \
 		--yesno "Are you sure you want to permanently delete ${!JAIL_NAME}?" 7 60
 		exit_status=$?
@@ -655,7 +657,7 @@ backup_jail () {
 	if ! grep -q "BACKUP_LOCATION" $GLOBAL_CONFIG; then
 		echo -e "\nBACKUP_LOCATION=\""$DEFAULT_BACKUP_LOCATION"\"" >> $GLOBAL_CONFIG
 	fi
-
+	
 	#load updated config file
 	. $GLOBAL_CONFIG
 	if [[ $JAIL == "" ]]; then
@@ -666,16 +668,16 @@ backup_jail () {
 		2>&1 1>&3)
 		exit_status=$?
 		exec 3>&-
-
+		
 		if [ $exit_status != $DIALOG_OK ]; then
 			first
 		fi
-
+		
 		JAIL_VALUES=( $JAIL )
 		sed -i '' -e 's,JAIL_LOCATION="'$JAIL_LOCATION'",JAIL_LOCATION="'${JAIL_VALUES[0]}'",g' $GLOBAL_CONFIG
 		sed -i '' -e 's,BACKUP_LOCATION="'$BACKUP_LOCATION'",BACKUP_LOCATION="'${JAIL_VALUES[1]}'",g' $GLOBAL_CONFIG
 		mkdir -p $BACKUP_LOCATION
-
+		
 		exec 3>&1
 		JAIL=$(dialog --menu "Backup following programs:" 0 0 0 \
 		Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" \
@@ -688,20 +690,20 @@ backup_jail () {
 		2>&1 1>&3)
 		exit_status=$?
 		exec 3>&-
-
+		
 		if [ $exit_status != $DIALOG_OK ]; then
 			first
 		fi
 	fi
 	JAIL=${JAIL,,}
-
+	
 	JAIL_CONFIG=$(dirname $0)"/"$JAIL"/"$JAIL"_config.sh"
 	JAIL_BACKUP=$(dirname $0)"/"$JAIL"/backup.conf"
 	# load config files
 	. $JAIL_CONFIG
 	. $GLOBAL_CONFIG
 	JAIL_NAME=$JAIL\_JAIL_NAME
-
+	
 	mkdir -p $BACKUP_LOCATION/$JAIL
 	iocage stop ${!JAIL_NAME}
 	i=1
@@ -710,14 +712,14 @@ backup_jail () {
 		DEST_FOLDER="$(sed -n ''$i'p' $JAIL_BACKUP | cut -d " " -f1)"
 		DEST_FOLDER=${DEST_FOLDER%/*}/
 		(( i++ ))
-		if [ ! -z $FOLDER ]; then
+		if [ "$FOLDER" ]; then
 			mkdir -p $BACKUP_LOCATION/$JAIL$DEST_FOLDER
 			rsync -a --delete $JAIL_LOCATION/${!JAIL_NAME}/root${FOLDER} $BACKUP_LOCATION/$JAIL$DEST_FOLDER
 		else
 			break
 		fi
 	done
-
+	iocage start ${!JAIL_NAME}
 	if grep -q "MYSQL" $JAIL_CONFIG; then
 		. $(dirname $0)/webserver/webserver_config.sh
 		MYSQL_DATA=$JAIL\_MYSQL_DATABASE
@@ -726,9 +728,9 @@ backup_jail () {
 			iocage exec $webserver_JAIL_NAME mysqldump --opt --all-databases --set-gtid-purged=OFF -u root -p$MYSQL_ROOT_PASSWORD > $BACKUP_LOCATION/$JAIL/all-databases.sql
 		fi
 	fi
-	iocage start ${!JAIL_NAME}
+	
 	dialog --msgbox "Config of ${!JAIL_NAME} backuped!" 5 50
-
+	
 	if [[ $1 == "" ]]; then
 		first
 	fi
