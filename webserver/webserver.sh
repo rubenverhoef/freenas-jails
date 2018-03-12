@@ -109,12 +109,12 @@ if [ "$WORDPRESS_WEB" == "YES" ]; then
 	sed -i '' -e 's/username_here/'$webserver_MYSQL_USERNAME'/g'  /usr/local/www/wp-config.php
 	sed -i '' -e 's/password_here/'$webserver_MYSQL_PASSWORD'/g'  /usr/local/www/wp-config.php
 	
-	bash /root/subdomain.sh organizr $webserver_IP 8080
-	echo "server {" >> /usr/local/etc/nginx/sites/organizr.conf
-	echo "	listen 8080;" >> /usr/local/etc/nginx/sites/organizr.conf
-	echo "	root /usr/local/www/organizr;" >> /usr/local/etc/nginx/sites/organizr.conf
-	echo "	include standard.conf;" >> /usr/local/etc/nginx/sites/organizr.conf
-	echo "}" >> /usr/local/etc/nginx/sites/organizr.conf
+	bash /root/subdomain.sh $organizr_SUB_DOMAIN $webserver_IP 8080
+	echo "server {" >> /usr/local/etc/nginx/sites/$organizr_SUB_DOMAIN.conf
+	echo "	listen 8080;" >> /usr/local/etc/nginx/sites/$organizr_SUB_DOMAIN.conf
+	echo "	root /usr/local/www/organizr;" >> /usr/local/etc/nginx/sites/$organizr_SUB_DOMAIN.conf
+	echo "	include standard.conf;" >> /usr/local/etc/nginx/sites/$organizr_SUB_DOMAIN.conf
+	echo "}" >> /usr/local/etc/nginx/sites/$organizr_SUB_DOMAIN.conf
 else
 	sed -i '' -e 's,/usr/local/www;,/usr/local/www/organizr;,g'  /usr/local/etc/nginx/nginx.conf
 	echo "location /phpmyadmin { include php.conf; root /usr/local/www; }" >> "/usr/local/etc/nginx/standard.conf"
