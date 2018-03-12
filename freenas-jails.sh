@@ -477,7 +477,7 @@ install_jail () {
 					MYSQL_DATA=$JAIL\_MYSQL_DATABASE
 					iocage exec $webserver_JAIL_NAME mysql -u root -p$MYSQL_ROOT_PASSWORD ${!MYSQL_DATA} < $BACKUP_LOCATION/$JAIL/${!MYSQL_DATA}.sql
 				fi
-				if [[ $JAIl == *"webserver"* ]]; then
+				if [[ $JAIL == *"webserver"* ]]; then
 					iocage exec $webserver_JAIL_NAME mysql -u root -p$MYSQL_ROOT_PASSWORD < $BACKUP_LOCATION/$JAIL/all-databases.sql
 				fi
 			fi
