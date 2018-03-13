@@ -744,4 +744,9 @@ upgrade_jail () {
 touch $GLOBAL_CONFIG || exit
 . $GLOBAL_CONFIG
 
-first
+if [[ $1 == "" ]]; then 
+	cd /root/freenas-jails && git pull
+	bash /root/freenas-jails/freenas-jails.sh second_time
+else
+	first
+fi
