@@ -33,10 +33,10 @@ sed -i '' -e 's/;env\[PATH\] /env\[PATH\] /g' /usr/local/etc/php-fpm.d/www.conf
 cd / && fetch "https://download.nextcloud.com/server/releases/latest.tar.bz2"
 tar jxf latest.tar.bz2 -C /usr/local/www
 rm latest.tar.bz2
-if [ -z "$nextcloud_SUB_DOMAIN" ]; then
-	cp $(dirname $0)/nginx-sub.conf /usr/local/etc/nginx/nginx.conf
-else
+if [ "$nextcloud_SUB_DOMAIN" ]; then
 	cp $(dirname $0)/nginx.conf /usr/local/etc/nginx/nginx.conf
+else
+	cp $(dirname $0)/nginx-sub.conf /usr/local/etc/nginx/nginx.conf
 fi
 
 cp $(dirname $0)/autoconfig.php /usr/local/www/nextcloud/config/autoconfig.php
@@ -62,10 +62,10 @@ service redis start
 service php-fpm start
 service nginx start
 
-if [ -z "$nextcloud_SUB_DOMAIN" ]; then
-	curl -s $nextcloud_IP/nextcloud/ > /dev/null #create config.php
-else
+if [ "$nextcloud_SUB_DOMAIN" ]; then
 	curl -s $nextcloud_IP > /dev/null #create config.php
+else
+	curl -s $nextcloud_IP/nextcloud/ > /dev/null #create config.php
 fi
 
 sudo -u $USER_NAME mkdir -p /media/nextcloud/temp
@@ -79,11 +79,11 @@ echo "    'host' => '/tmp/redis.sock'," >> "/usr/local/www/nextcloud/config/conf
 echo "    'port' => 0," >> "/usr/local/www/nextcloud/config/config.php"
 echo "  )," >> "/usr/local/www/nextcloud/config/config.php"
 echo "  'overwriteprotocol' => 'https'," >> "/usr/local/www/nextcloud/config/config.php"
-if [ -z "$nextcloud_SUB_DOMAIN" ]; then
+if [ "$nextcloud_SUB_DOMAIN" ]; then
+	echo "  'overwrite.cli.url' => 'https://$nextcloud_SUB_DOMAIN.$DOMAIN'," >> "/usr/local/www/nextcloud/config/config.php"
+else
 	echo "  'overwritewebroot' => '/nextcloud'," >> "/usr/local/www/nextcloud/config/config.php"
 	echo "  'overwrite.cli.url' => 'https://$DOMAIN/nextcloud'," >> "/usr/local/www/nextcloud/config/config.php"
-else
-	echo "  'overwrite.cli.url' => 'https://$nextcloud_SUB_DOMAIN.$DOMAIN'," >> "/usr/local/www/nextcloud/config/config.php"
 fi
 echo "  'filesystem_check_changes' => 1," >> "/usr/local/www/nextcloud/config/config.php"
 echo "  'skeletondirectory' => ''," >> "/usr/local/www/nextcloud/config/config.php"
