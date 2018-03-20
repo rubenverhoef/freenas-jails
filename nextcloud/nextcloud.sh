@@ -83,7 +83,7 @@ if [ "$nextcloud_SUB_DOMAIN" ]; then
 	echo "  'overwrite.cli.url' => 'https://$nextcloud_SUB_DOMAIN.$DOMAIN'," >> "/usr/local/www/nextcloud/config/config.php"
 else
 	echo "  'overwritewebroot' => '/nextcloud'," >> "/usr/local/www/nextcloud/config/config.php"
-	echo "  'overwrite.cli.url' => 'https://$DOMAIN/nextcloud'," >> "/usr/local/www/nextcloud/config/config.php"
+	echo "  'overwrite.cli.url' => 'https://www.$DOMAIN/nextcloud'," >> "/usr/local/www/nextcloud/config/config.php"
 fi
 echo "  'filesystem_check_changes' => 1," >> "/usr/local/www/nextcloud/config/config.php"
 echo "  'skeletondirectory' => ''," >> "/usr/local/www/nextcloud/config/config.php"
@@ -93,6 +93,15 @@ echo "  'enable_previews' => true," >> "/usr/local/www/nextcloud/config/config.p
 echo "  'quota_include_external_storage' => true," >> "/usr/local/www/nextcloud/config/config.php"
 echo "  'tempdirectory' => '/media/nextcloud/temp'," >> "/usr/local/www/nextcloud/config/config.php"
 echo "  'cache_path' => '/media/nextcloud/cache'," >> "/usr/local/www/nextcloud/config/config.php"
+echo "  'trusted_domains' => array(" >> "/usr/local/www/nextcloud/config/config.php"
+if [ "$nextcloud_SUB_DOMAIN" ]; then
+	echo "    0 => '$nextcloud_SUB_DOMAIN.$DOMAIN'," >> "/usr/local/www/nextcloud/config/config.php"
+	echo "    1 => 'www.$nextcloud_SUB_DOMAIN.$DOMAIN'," >> "/usr/local/www/nextcloud/config/config.php"
+else
+	echo "    0 => '$DOMAIN'," >> "/usr/local/www/nextcloud/config/config.php"
+	echo "    1 => 'www.$DOMAIN'," >> "/usr/local/www/nextcloud/config/config.php"
+fi
+echo "  )," >> "/usr/local/www/nextcloud/config/config.php"
 echo ");" >> "/usr/local/www/nextcloud/config/config.php"
 
 service php-fpm restart
