@@ -124,6 +124,7 @@ if [ "$WORDPRESS_WEB" == "YES" ]; then
 	echo "	listen 8080;" >> /usr/local/etc/nginx/sites/$organizr_SUB_DOMAIN.conf
 	echo "	root /usr/local/www/organizr;" >> /usr/local/etc/nginx/sites/$organizr_SUB_DOMAIN.conf
 	echo "	include standard.conf;" >> /usr/local/etc/nginx/sites/$organizr_SUB_DOMAIN.conf
+	echo "	include php.conf;" >> /usr/local/etc/nginx/sites/$organizr_SUB_DOMAIN.conf
 	echo "}" >> /usr/local/etc/nginx/sites/$organizr_SUB_DOMAIN.conf
 else
 	sed -i '' -e 's,/usr/local/www;,/usr/local/www/organizr;,g'  /usr/local/etc/nginx/nginx.conf
