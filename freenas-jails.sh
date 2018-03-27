@@ -320,7 +320,7 @@ config_jail () {
 		exit_status=$?
         if [ $exit_status == $DIALOG_OK ]; then
 			if ! grep -q "organizr_SUB_DOMAIN" $JAIL_CONFIG; then
-				echo -e "organizr_SUB_DOMAIN=\"organizr\"" >> $JAIL_CONFIG
+				echo -e "organizr_SUB_DOMAIN=\"\"" >> $JAIL_CONFIG
 			fi	
 			# load updated config file
 			. $JAIL_CONFIG
