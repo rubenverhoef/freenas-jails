@@ -11,8 +11,8 @@
 # Globals:
 GLOBAL_CONFIG=$(dirname $0)"/config.sh"
 DATABASE_JAILS="webserver, nextcloud, gogs"
-MEDIA_JAILS="plex, plexpass, sonarr, radarr, sabnzbd"
-FILE_JAILS="nextcloud"
+MEDIA_JAILS=(plex plexpass sonarr radarr sabnzbd)
+FILE_JAILS=(nextcloud)
 
 # DEFAULT VALUES:
 {
@@ -496,14 +496,11 @@ mount_storage () {
 
 	if [[ $JAIL == "" ]]; then # only show dialog when coming from main dialog
 		exec 3>&1
-		JAIL=$(dialog --menu "Mount storage to:" 0 0 0 \
-		Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" \
-		Nextcloud "Nextcloud 12" \
-		SABnzbd "SABnzbd" \
-		Sonarr "Sonarr automatic serice downloader" \
-		Radarr "Radarr automatic movie downloader" \
-		Plex "Plex Media Server" \
-		Plexpass "Plex Media Server plexpass version" \
+		CHOICE=$(dialog --menu "What would you like to do:" 0 0 0 \
+		"Edit userdata location" "Edit the userdata folder location" \
+		"Edit media location" "Edit the media folder location" \
+		"Edit downloads location" "Edit the downloads folder location" \
+		"Mount extra storage" "Mount extra storage to a jail/plugin" \
 		2>&1 1>&3)
 		exit_status=$?
 		exec 3>&-
@@ -511,82 +508,179 @@ mount_storage () {
 		if [ $exit_status != $DIALOG_OK ]; then
 			first
 		fi
-		JAIL=${JAIL,,}
 		
+		if [[ $CHOICE == "Edit userdata location" ]]; then
+			sed -i '' -e 's,FILE_LOCATION="'$FILE_LOCATION'",FILE_LOCATION="",g' $GLOBAL_CONFIG
+		elif [[ $CHOICE == "Edit media location" ]]; then
+			sed -i '' -e 's,MEDIA_LOCATION="'$MEDIA_LOCATION'",MEDIA_LOCATION="",g' $GLOBAL_CONFIG
+		elif [[ $CHOICE == "Edit downloads location" ]]; then
+			sed -i '' -e 's,DOWNLOADS_LOCATION="'$DOWNLOADS_LOCATION'",DOWNLOADS_LOCATION="",g' $GLOBAL_CONFIG
+		elif [[ $CHOICE == "Mount extra storage" ]]; then
+			exec 3>&1
+			JAIL=$(dialog --menu "Mount storage to:" 0 0 0 \
+			Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" \
+			Nextcloud "Nextcloud 12" \
+			SABnzbd "SABnzbd" \
+			Sonarr "Sonarr automatic serice downloader" \
+			Radarr "Radarr automatic movie downloader" \
+			Plex "Plex Media Server" \
+			Plexpass "Plex Media Server plexpass version" \
+			2>&1 1>&3)
+			exit_status=$?
+			exec 3>&-
+			
+			if [ $exit_status != $DIALOG_OK ]; then
+				mount_storage
+			fi
+			JAIL=${JAIL,,}
+			JAIL_CONFIG=$(dirname $0)"/"$JAIL"/"$JAIL"_config.sh"
+			# load config files
+			. $JAIL_CONFIG
+			. $GLOBAL_CONFIG
+			JAIL_NAME=$JAIL\_JAIL_NAME
+			
+			if [[ $(iocage list) == *${!JAIL_NAME}* ]] && [ -f $JAIL_CONFIG ]; then
+				exit_status="0"
+				while [ $exit_status == $DIALOG_OK ]; do
+				{
+					dialog --title "Mount more storage to $JAIL?" --yesno "Do you want to mount more storage to $JAIL?\"?" 7 60
+					exit_status=$?
+					if [ $exit_status == $DIALOG_OK ]; then
+						DATA=$(dialog --title "Mounting storage" --stdout --title "Please choose a folder to mount at /mnt on $JAIL" --fselect /mnt/ 14 48)
+						exit_status=$?
+						if [ $exit_status == $DIALOG_OK ]; then
+							chown -R $USER_NAME:$USER_NAME $DATA
+							iocage fstab -a ${!JAIL_NAME} $DATA /mnt/$(basename $DATA) nullfs rw 0 0
+						fi
+					fi		
+				}
+				done
+			else
+				dialog --msgbox "Jail does not exists!" 5 50
+			fi
+		fi
 	fi
 	
 	JAIL_CONFIG=$(dirname $0)"/"$JAIL"/"$JAIL"_config.sh"
 	# load config files
-	. $JAIL_CONFIG
+	if [[ $1 != "" ]]; then
+		. $JAIL_CONFIG
+	fi
 	. $GLOBAL_CONFIG
 	JAIL_NAME=$JAIL\_JAIL_NAME
 	
-	if [[ $(iocage list) == *${!JAIL_NAME}* ]] && [ -f $JAIL_CONFIG ]; then
-		if ! grep -q "FILE_LOCATION" $GLOBAL_CONFIG; then
-			echo -e "FILE_LOCATION=\"\"" >> $GLOBAL_CONFIG
-		fi
-		if ! grep -q "MEDIA_LOCATION" $GLOBAL_CONFIG; then
-			echo -e "MEDIA_LOCATION=\"\"" >> $GLOBAL_CONFIG
-		fi
-		if ! grep -q "DOWNLOADS_LOCATION" $GLOBAL_CONFIG; then
-			echo -e "DOWNLOADS_LOCATION=\"\"" >> $GLOBAL_CONFIG
-		fi
-		. $GLOBAL_CONFIG
-		
-		if [[ $FILE_JAILS == *$JAIL* ]] && [[ $FILE_LOCATION == "" ]]; then  # if fileserver jail mount user files
-			DATA=$(dialog --title "Mounting storage" --stdout --title "Please choose a folder for the use of user data on $JAIL" --fselect /mnt/ 14 48)
+	if ! grep -q "FILE_LOCATION" $GLOBAL_CONFIG; then
+		echo -e "FILE_LOCATION=\"\"" >> $GLOBAL_CONFIG
+	fi
+	if ! grep -q "MEDIA_LOCATION" $GLOBAL_CONFIG; then
+		echo -e "MEDIA_LOCATION=\"\"" >> $GLOBAL_CONFIG
+	fi
+	if ! grep -q "DOWNLOADS_LOCATION" $GLOBAL_CONFIG; then
+		echo -e "DOWNLOADS_LOCATION=\"\"" >> $GLOBAL_CONFIG
+	fi
+	. $GLOBAL_CONFIG
+
+	if [[ ${FILE_JAILS[*]} == *$JAIL* ]]; then
+		if [[ $FILE_LOCATION == "" ]]; then  # if fileserver jail mount user files
+			echo "FILE!"
+			DATA=$(dialog --title "Mounting storage" --stdout --title "Please choose the userdata dataset location" --fselect /mnt/ 14 48)
 			exit_status=$?
 			if [ $exit_status == $DIALOG_OK ]; then
 				sed -i '' -e 's,FILE_LOCATION="'$FILE_LOCATION'",FILE_LOCATION="'$DATA'",g' $GLOBAL_CONFIG
-				chown -R $USER_NAME:$USER_NAME $DATA
-				iocage fstab -a ${!JAIL_NAME} $DATA /media nullfs rw 0 0
+				if [[ $1 == "" ]]; then
+					count=0
+					while [ "x${FILE_JAILS[count]}" != "x" ]
+					do
+						JAIL=${FILE_JAILS[count]}
+						JAIL_CONFIG=$(dirname $0)"/"$JAIL"/"$JAIL"_config.sh"
+						if [ -f $JAIL_CONFIG ]; then
+							. $JAIL_CONFIG
+							JAIL_NAME=$JAIL\_JAIL_NAME
+							iocage fstab -R 0 ${!JAIL_NAME} $DATA /media nullfs rw 0 0
+						fi
+						count=$(( $count + 1 ))
+					done
+				else
+					. $GLOBAL_CONFIG
+					chown -R $USER_NAME:$USER_NAME $FILE_LOCATION
+					iocage fstab -a ${!JAIL_NAME} $FILE_LOCATION /media nullfs rw 0 0
+				fi
 			else
 				mount_storage $JAIL
 			fi
+		elif [[ $1 != "" ]]; then
+			. $GLOBAL_CONFIG
+			chown -R $USER_NAME:$USER_NAME $FILE_LOCATION
+			iocage fstab -a ${!JAIL_NAME} $FILE_LOCATION /media nullfs rw 0 0
 		fi
-		if [[ $MEDIA_JAILS == *$JAIL* ]]; then  # if media jail mount media/download files
-			if [[ $MEDIA_LOCATION == "" ]]; then
-				DATA=$(dialog --title "Mounting storage" --stdout --title "Please choose the media folder for $JAIL" --fselect /mnt/ 14 48)
-				exit_status=$?
-				if [ $exit_status == $DIALOG_OK ]; then
-					sed -i '' -e 's,MEDIA_LOCATION="'$MEDIA_LOCATION'",MEDIA_LOCATION="'$DATA'",g' $GLOBAL_CONFIG
-					chown -R $USER_NAME:$USER_NAME $DATA
-					iocage fstab -a ${!JAIL_NAME} $DATA /mnt/media nullfs rw 0 0
-				else
-					mount_storage $JAIL
-				fi
-			fi
-			if [[ $DOWNLOADS_LOCATION == "" ]]; then
-				DATA=$(dialog --title "Mounting storage" --stdout --title "Please choose the download folder for $JAIL" --fselect /mnt/ 14 48)
-				exit_status=$?
-				if [ $exit_status == $DIALOG_OK ]; then
-					sed -i '' -e 's,DOWNLOADS_LOCATION="'$DOWNLOADS_LOCATION'",DOWNLOADS_LOCATION="'$DATA'",g' $GLOBAL_CONFIG
-					chown -R $USER_NAME:$USER_NAME $DATA
-					iocage fstab -a ${!JAIL_NAME} $DATA /mnt/downloads nullfs rw 0 0
-				else
-					mount_storage $JAIL
-				fi
-			fi
-		fi
-		
-		exit_status="0"
-		while [ $exit_status == $DIALOG_OK ]; do
-		{
-			dialog --title "Mount more storage to $JAIL?" --yesno "Do you want to mount more storage to $JAIL?\"?" 7 60
+	fi
+
+	if [[ ${MEDIA_JAILS[*]} == *$JAIL* ]]; then  # if media jail mount media/download files
+		if [[ $MEDIA_LOCATION == "" ]]; then
+			DATA=$(dialog --title "Mounting storage" --stdout --title "Please set the media dataset location" --fselect /mnt/ 14 48)
 			exit_status=$?
 			if [ $exit_status == $DIALOG_OK ]; then
-				DATA=$(dialog --title "Mounting storage" --stdout --title "Please choose a folder to mount at /mnt on $JAIL" --fselect /mnt/ 14 48)
-				exit_status=$?
-                if [ $exit_status == $DIALOG_OK ]; then
-					chown -R $USER_NAME:$USER_NAME $DATA
-					iocage fstab -a ${!JAIL_NAME} $DATA /mnt/$(basename $DATA) nullfs rw 0 0
+				sed -i '' -e 's,MEDIA_LOCATION="'$MEDIA_LOCATION'",MEDIA_LOCATION="'$DATA'",g' $GLOBAL_CONFIG
+				if [[ $1 == "" ]]; then #edit all the X jails
+					count=0
+					while [ "x${MEDIA_JAILS[count]}" != "x" ]
+					do
+					   	JAIL=${MEDIA_JAILS[count]}
+						JAIL_CONFIG=$(dirname $0)"/"$JAIL"/"$JAIL"_config.sh"
+						if [ -f $JAIL_CONFIG ]; then
+					   		. $JAIL_CONFIG
+					   		JAIL_NAME=$JAIL\_JAIL_NAME
+					   		iocage fstab -R 0 ${!JAIL_NAME} $DATA /mnt/media nullfs rw 0 0
+						fi
+						count=$(( $count + 1 ))
+					done
+				else
+					. $GLOBAL_CONFIG
+					chown -R $USER_NAME:$USER_NAME $MEDIA_LOCATION
+					iocage fstab -a ${!JAIL_NAME} $DATA /mnt/media nullfs rw 0 0
 				fi
-			fi		
-		}
-		done
-	else
-		dialog --msgbox "Jail does not exists!" 5 50
+			else
+				mount_storage $JAIL
+			fi
+		elif [[ $1 != "" ]]; then
+			. $GLOBAL_CONFIG
+			chown -R $USER_NAME:$USER_NAME $MEDIA_LOCATION
+			iocage fstab -a ${!JAIL_NAME} $MEDIA_LOCATION /mnt/media nullfs rw 0 0
+		fi
+
+		if [[ $DOWNLOADS_LOCATION == "" ]]; then
+			DATA=$(dialog --title "Mounting storage" --stdout --title "Please set the download dataset location" --fselect /mnt/ 14 48)
+			exit_status=$?
+			if [ $exit_status == $DIALOG_OK ]; then
+				sed -i '' -e 's,DOWNLOADS_LOCATION="'$DOWNLOADS_LOCATION'",DOWNLOADS_LOCATION="'$DATA'",g' $GLOBAL_CONFIG
+				if [[ $1 == "" ]]; then
+					count=0
+					while [ "x${MEDIA_JAILS[count]}" != "x" ]
+					do
+					   	JAIL=${MEDIA_JAILS[count]}
+					   	JAIL_CONFIG=$(dirname $0)"/"$JAIL"/"$JAIL"_config.sh"
+						if [ -f $JAIL_CONFIG ]; then
+							. $JAIL_CONFIG
+					   		JAIL_NAME=$JAIL\_JAIL_NAME
+							iocage fstab -R 1 ${!JAIL_NAME} $DATA /mnt/downloads nullfs rw 0 0
+						fi
+						count=$(( $count + 1 ))
+					done
+				else
+					. $GLOBAL_CONFIG
+					chown -R $USER_NAME:$USER_NAME $DOWNLOADS_LOCATION
+					iocage fstab -a ${!JAIL_NAME} $DOWNLOADS_LOCATION /mnt/downloads nullfs rw 0 0
+				fi
+			else
+				mount_storage $JAIL
+			fi
+		elif [[ $1 != "" ]]; then
+			. $GLOBAL_CONFIG
+			chown -R $USER_NAME:$USER_NAME $DOWNLOADS_LOCATION
+			iocage fstab -a ${!JAIL_NAME} $DOWNLOADS_LOCATION /mnt/downloads nullfs rw 0 0
+		fi
 	fi
+
 	if [[ $1 == "" ]]; then # if from main dialog, stay in mount_storage
 		mount_storage
 	fi
@@ -762,10 +856,10 @@ upgrade_jail () {
 touch $GLOBAL_CONFIG || exit
 . $GLOBAL_CONFIG
 
-if [[ $1 == "" ]]; then 
+if [[ $1 == "" ]]; then
 	cd /root/freenas-jails && git pull
 	bash /root/freenas-jails/freenas-jails.sh second_time
 else
-	#first
-	mount_storage sonarr
+	#mount_storage sabnzbd
+	first
 fi
