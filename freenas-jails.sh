@@ -18,6 +18,7 @@ FILE_JAILS=(nextcloud)
 {
 DEFAULT_DOMAIN="example.com"
 DEFAULT_ROUTER="192.168.0.1"
+DEFAULT_IOCAGE_ZPOOL="ssd"
 DEFAULT_JAIL_LOCATION="/mnt/iocage/jails"
 DEFAULT_BACKUP_LOCATION="/mnt/data/backup_jails"
 DEFAULT_EMAIL_ADDRESS="admin@example.com"
@@ -94,6 +95,9 @@ install_dialog () {
 		if ! grep -q "JAIL_LOCATION" $GLOBAL_CONFIG; then
 			echo -e "JAIL_LOCATION=\""$DEFAULT_JAIL_LOCATION"\"" >> $GLOBAL_CONFIG
 		fi
+		if ! grep -q "IOCAGE_ZPOOL" $GLOBAL_CONFIG; then
+			echo -e "IOCAGE_ZPOOL=\""$DEFAULT_IOCAGE_ZPOOL"\"" >> $GLOBAL_CONFIG
+		fi
 		if ! grep -q "BACKUP_LOCATION" $GLOBAL_CONFIG; then
 			echo -e "BACKUP_LOCATION=\""$DEFAULT_BACKUP_LOCATION"\"" >> $GLOBAL_CONFIG
 		fi
@@ -112,7 +116,7 @@ install_dialog () {
 		
 		exec 3>&1
 		JAIL=$(dialog --form "IOCAGE Jail location:" 0 0 0 \
-		"Jail location (starting with \"/\" and without last \"/\")" 1 1 "$JAIL_LOCATION" 1 60 25 0 \
+		"Iocage ZPOOL" 1 1 "$IOCAGE_ZPOOL" 1 60 25 0 \
 		"Backup location (starting with \"/\" and without last \"/\")" 2 1 "$BACKUP_LOCATION" 2 60 25 0 \
 		"Please create a USER in the FreeNAS WebGUI!!" 3 1 "" 3 60 0 0 \
 		"User name:" 4 1 "$USER_NAME" 4 60 25 0 \
@@ -129,7 +133,7 @@ install_dialog () {
 		GLOBAL=( $JAIL )
 		
 		#save new config variables in global config file
-		sed -i '' -e 's,JAIL_LOCATION="'$JAIL_LOCATION'",JAIL_LOCATION="'${GLOBAL[0]}'",g' $GLOBAL_CONFIG
+		sed -i '' -e 's,IOCAGE_ZPOOL="'$IOCAGE_ZPOOL'",IOCAGE_ZPOOL="'${GLOBAL[0]}'",g' $GLOBAL_CONFIG
 		sed -i '' -e 's,BACKUP_LOCATION="'$BACKUP_LOCATION'",BACKUP_LOCATION="'${GLOBAL[1]}'",g' $GLOBAL_CONFIG
 		sed -i '' -e 's,USER_NAME="'$USER_NAME'",USER_NAME="'${GLOBAL[2]}'",g' $GLOBAL_CONFIG
 		sed -i '' -e 's,USER_ID="'$USER_ID'",USER_ID="'${GLOBAL[3]}'",g' $GLOBAL_CONFIG
@@ -419,7 +423,8 @@ install_jail () {
 
 	VERSION="$(uname -r)"
 	VERSION=${VERSION//[!0-9,.]/}-RELEASE # take only the version number and pick the RELEASE as IOCAGE base
-
+	iocage activate $IOCAGE_ZPOOL
+	
 	if [[ $(iocage list) != *${!JAIL_NAME}* ]]; then
 		
 		iocage create -n ${!JAIL_NAME} -p ${JAIL_CONFIG%/*}/$JAIL.json -r $VERSION ip4_addr="vnet0|${!IP}/24" defaultrouter="$ROUTER_IP" vnet="on" allow_raw_sockets="1" boot="on"
@@ -860,6 +865,5 @@ if [[ $1 == "" ]]; then
 	cd /root/freenas-jails && git pull
 	bash /root/freenas-jails/freenas-jails.sh second_time
 else
-	#mount_storage sabnzbd
 	first
 fi
