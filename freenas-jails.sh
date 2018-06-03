@@ -556,6 +556,7 @@ mount_storage () {
 						if [ $exit_status == $DIALOG_OK ]; then
 							chown -R $USER_NAME:$USER_NAME $DATA
 							iocage fstab -a ${!JAIL_NAME} $DATA /mnt/$(basename $DATA) nullfs rw 0 0
+							iocage restart ${!JAIL_NAME}
 						fi
 					fi		
 				}
@@ -602,6 +603,7 @@ mount_storage () {
 							. $JAIL_CONFIG
 							JAIL_NAME=$JAIL\_JAIL_NAME
 							iocage fstab -R 0 ${!JAIL_NAME} $DATA /media nullfs rw 0 0
+							iocage restart ${!JAIL_NAME}
 						fi
 						count=$(( $count + 1 ))
 					done
@@ -609,6 +611,7 @@ mount_storage () {
 					. $GLOBAL_CONFIG
 					chown -R $USER_NAME:$USER_NAME $FILE_LOCATION
 					iocage fstab -a ${!JAIL_NAME} $FILE_LOCATION /media nullfs rw 0 0
+					iocage restart ${!JAIL_NAME}
 				fi
 			else
 				mount_storage $JAIL
@@ -617,6 +620,7 @@ mount_storage () {
 			. $GLOBAL_CONFIG
 			chown -R $USER_NAME:$USER_NAME $FILE_LOCATION
 			iocage fstab -a ${!JAIL_NAME} $FILE_LOCATION /media nullfs rw 0 0
+			iocage restart ${!JAIL_NAME}
 		fi
 	fi
 
@@ -636,6 +640,7 @@ mount_storage () {
 					   		. $JAIL_CONFIG
 					   		JAIL_NAME=$JAIL\_JAIL_NAME
 					   		iocage fstab -R 0 ${!JAIL_NAME} $DATA /mnt/media nullfs rw 0 0
+							iocage restart ${!JAIL_NAME}
 						fi
 						count=$(( $count + 1 ))
 					done
@@ -643,6 +648,7 @@ mount_storage () {
 					. $GLOBAL_CONFIG
 					chown -R $USER_NAME:$USER_NAME $MEDIA_LOCATION
 					iocage fstab -a ${!JAIL_NAME} $DATA /mnt/media nullfs rw 0 0
+					iocage restart ${!JAIL_NAME}
 				fi
 			else
 				mount_storage $JAIL
@@ -651,6 +657,7 @@ mount_storage () {
 			. $GLOBAL_CONFIG
 			chown -R $USER_NAME:$USER_NAME $MEDIA_LOCATION
 			iocage fstab -a ${!JAIL_NAME} $MEDIA_LOCATION /mnt/media nullfs rw 0 0
+			iocage restart ${!JAIL_NAME}
 		fi
 
 		if [[ $DOWNLOADS_LOCATION == "" ]]; then
@@ -668,6 +675,7 @@ mount_storage () {
 							. $JAIL_CONFIG
 					   		JAIL_NAME=$JAIL\_JAIL_NAME
 							iocage fstab -R 1 ${!JAIL_NAME} $DATA /mnt/downloads nullfs rw 0 0
+							iocage restart ${!JAIL_NAME}
 						fi
 						count=$(( $count + 1 ))
 					done
@@ -675,6 +683,7 @@ mount_storage () {
 					. $GLOBAL_CONFIG
 					chown -R $USER_NAME:$USER_NAME $DOWNLOADS_LOCATION
 					iocage fstab -a ${!JAIL_NAME} $DOWNLOADS_LOCATION /mnt/downloads nullfs rw 0 0
+					iocage restart ${!JAIL_NAME}
 				fi
 			else
 				mount_storage $JAIL
@@ -683,6 +692,7 @@ mount_storage () {
 			. $GLOBAL_CONFIG
 			chown -R $USER_NAME:$USER_NAME $DOWNLOADS_LOCATION
 			iocage fstab -a ${!JAIL_NAME} $DOWNLOADS_LOCATION /mnt/downloads nullfs rw 0 0
+			iocage restart ${!JAIL_NAME}
 		fi
 	fi
 
