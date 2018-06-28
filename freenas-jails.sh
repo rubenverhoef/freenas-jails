@@ -13,7 +13,7 @@ GLOBAL_CONFIG=$(dirname $0)"/config.sh"
 DATABASE_JAILS="webserver, nextcloud, gogs"
 MEDIA_JAILS=(plex plexpass sonarr radarr sabnzbd)
 FILE_JAILS=(nextcloud)
-CUSTOM_INSTALL=()
+CUSTOM_INSTALL=(webserver nextcloud plex plexpass radarr)
 CUSTOM_PLUGIN=(sabnzbd)
 
 # DEFAULT VALUES:
