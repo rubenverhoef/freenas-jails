@@ -13,6 +13,8 @@ GLOBAL_CONFIG=$(dirname $0)"/config.sh"
 DATABASE_JAILS="webserver, nextcloud, gogs"
 MEDIA_JAILS=(plex plexpass sonarr radarr sabnzbd)
 FILE_JAILS=(nextcloud)
+CUSTOM_INSTALL=()
+CUSTOM_PLUGIN=(sabnzbd)
 
 # DEFAULT VALUES:
 {
@@ -165,7 +167,6 @@ install_dialog () {
 
 config_jail () {
 	JAIL=$1
-	JAIL_NAME=$JAIL\_JAIL_NAME
 	SUB_DOMAIN=$1\_SUB_DOMAIN
 	DEFAULT_IP=$JAIL\_DEFAULT_IP
 	DEFAULT_PORT=$JAIL\_DEFAULT_PORT
@@ -178,9 +179,6 @@ config_jail () {
 	touch  $JAIL_CONFIG || exit
 	
     # initialize file with variables if they don't exists
-	if ! grep -q $JAIL_NAME $JAIL_CONFIG; then
-		echo -e $JAIL_NAME"=\""$JAIL"_1\"" >> $JAIL_CONFIG
-	fi
 	if [[ $JAIL == *"webserver"* ]]; then
 		if ! grep -q "DOMAIN" $GLOBAL_CONFIG; then
 			echo -e "DOMAIN=\""$DEFAULT_DOMAIN"\"" >> $GLOBAL_CONFIG
@@ -207,13 +205,11 @@ config_jail () {
 	exec 3>&1
 	if [[ $JAIL == "webserver" ]]; then
 		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
-		"Jail name:" 1 1 "${!JAIL_NAME}" 1 40 25 0 \
 		"IP address:" 2 1 "${!IP}" 2 40 15 0 \
 		"Domain name (without https://www.)" 3 1 "$DOMAIN" 3 40 25 0 \
 		2>&1 1>&3)
 	else
 		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
-		"Jail name:" 1 1 "${!JAIL_NAME}" 1 30 25 0 \
 		"IP address:" 2 1 "${!IP}" 2 30 15 0 \
 		"Application PORT:" 3 1 "${!PORT}" 3 30 5 0 \
 		"Keep emtpy for no Subdomain" 4 1 "" 4 30 0 0 \
@@ -229,15 +225,14 @@ config_jail () {
 	
     # save new variables in jail config file
 	JAIL_VALUES=( $VALUES )
-	sed -i '' -e 's,'$JAIL_NAME'="'${!JAIL_NAME}'",'$JAIL_NAME'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
-    sed -i '' -e 's,'$IP'="'${!IP}'",'$IP'="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
-	sed -i '' -e 's,'$PORT'="'${!PORT}'",'$PORT'="'${JAIL_VALUES[2]}'",g' $JAIL_CONFIG
-    
+    sed -i '' -e 's,'$IP'="'${!IP}'",'$IP'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
+	    
 	if [[ $JAIL == "webserver" ]]; then #make webserver ip and domain config global
-		sed -i '' -e 's,'$IP'="'${!IP}'",'$IP'="'${JAIL_VALUES[1]}'",g' $GLOBAL_CONFIG
-        sed -i '' -e 's,DOMAIN="'$DOMAIN'",DOMAIN="'${JAIL_VALUES[2]}'",g' $GLOBAL_CONFIG
+		sed -i '' -e 's,'$IP'="'${!IP}'",'$IP'="'${JAIL_VALUES[0]}'",g' $GLOBAL_CONFIG
+        sed -i '' -e 's,DOMAIN="'$DOMAIN'",DOMAIN="'${JAIL_VALUES[1]}'",g' $GLOBAL_CONFIG
 	else
-		sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[3]}'",g' $JAIL_CONFIG
+		sed -i '' -e 's,'$PORT'="'${!PORT}'",'$PORT'="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
+		sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[2]}'",g' $JAIL_CONFIG
 	fi
 
 	if [[ $JAIL == "webserver" ]]; then
@@ -415,34 +410,39 @@ install_jail () {
 	. $JAIL_CONFIG
 	. $GLOBAL_CONFIG
 	
-	JAIL_NAME=$JAIL\_JAIL_NAME
 	IP=$JAIL\_IP
 	PORT=$JAIL\_PORT
 	SUB_DOMAIN=$JAIL\_SUB_DOMAIN
 
-
 	VERSION="$(uname -r)"
+		
 	VERSION=${VERSION//[!0-9,.]/}-RELEASE # take only the version number and pick the RELEASE as IOCAGE base
 	iocage activate $IOCAGE_ZPOOL
 	
-	if [[ $(iocage list) != *${!JAIL_NAME}* ]]; then
+	if [[ $(iocage list) != *$JAIL* ]]; then
 		
-		iocage create -n ${!JAIL_NAME} -p ${JAIL_CONFIG%/*}/$JAIL.json -r $VERSION ip4_addr="vnet0|${!IP}/24" defaultrouter="$ROUTER_IP" vnet="on" allow_raw_sockets="1" boot="on"
-		
+		if [[ ${CUSTOM_INSTALL[*]} == *$JAIL* ]]; then
+			iocage create -n $JAIL -p ${JAIL_CONFIG%/*}/$JAIL.json -r $VERSION ip4_addr="vnet0|${!IP}" defaultrouter="$ROUTER_IP" vnet="on" allow_raw_sockets="1" boot="on"
+		elif [[ ${CUSTOM_PLUGIN[*]} == *$JAIL* ]]; then
+			iocage fetch -P --name $(dirname $0)/$JAIL/$JAIL.json ip4_addr="em0|${!IP}"
+		else
+			iocage fetch --plugins --name $JAIL ip4_addr="em0|${!IP}"
+		fi
+
 		mount_storage $JAIL
 		
-		cp ${JAIL_CONFIG%/*}/* $JAIL_LOCATION/${!JAIL_NAME}/root/root/
-		cp $GLOBAL_CONFIG $JAIL_LOCATION/${!JAIL_NAME}/root/root/
-		
+		cp ${JAIL_CONFIG%/*}/* $JAIL_LOCATION/$JAIL/root/root/
+		cp $GLOBAL_CONFIG $JAIL_LOCATION/$JAIL/root/root/
 		if [ -d "$BACKUP_LOCATION/$JAIL/usr/local/etc/letsencrypt/" ]; then # copy certificates before installing, otherwise certificates will be requested when not necessary
 			echo "restoring certificates..."
-			mkdir -p $JAIL_LOCATION/${!JAIL_NAME}/root/usr/local/etc/letsencrypt
-			rsync -a $BACKUP_LOCATION/$JAIL/usr/local/etc/letsencrypt/ $JAIL_LOCATION/${!JAIL_NAME}/root/usr/local/etc/letsencrypt
-			chown -R $USER_NAME:$USER_NAME $JAIL_LOCATION/${!JAIL_NAME}/root/usr/local/etc/letsencrypt/
+			mkdir -p $JAIL_LOCATION/$JAIL/root/usr/local/etc/letsencrypt
+			rsync -a $BACKUP_LOCATION/$JAIL/usr/local/etc/letsencrypt/ $JAIL_LOCATION/$JAIL/root/usr/local/etc/letsencrypt
+			chown -R $USER_NAME:$USER_NAME $JAIL_LOCATION/$JAIL/root/usr/local/etc/letsencrypt/
 		fi
 		
 		# config everything inside the jail
-		iocage exec ${!JAIL_NAME} bash /root/$JAIL.sh
+		iocage exec $JAIL pkg install -y bash
+		iocage exec $JAIL bash /root/$JAIL.sh
 
 		if [[ $JAIL != "webserver" ]]; then  # configure subdomain
 			. $(dirname $0)/webserver/webserver_config.sh
@@ -471,8 +471,8 @@ install_jail () {
 					DEST_FOLDER=${DEST_FOLDER%/*}/
 					(( i++ ))
 					if [ "$FOLDER" ]; then
-						rsync -a $BACKUP_LOCATION/$JAIL$FOLDER $JAIL_LOCATION/${!JAIL_NAME}/root$DEST_FOLDER
-						chown -R $USER_NAME:$USER_NAME $JAIL_LOCATION/${!JAIL_NAME}/root$DEST_FOLDER
+						rsync -a $BACKUP_LOCATION/$JAIL$FOLDER $JAIL_LOCATION/$JAIL/root$DEST_FOLDER
+						chown -R $USER_NAME:$USER_NAME $JAIL_LOCATION/$JAIL/root$DEST_FOLDER
 					else
 						break
 					fi
@@ -487,7 +487,18 @@ install_jail () {
 				fi
 			fi
 		fi
-		iocage restart ${!JAIL_NAME}
+
+		if [[ ${CUSTOM_INSTALL[*]} != *$JAIL* ]]; then
+			if [ "${!SUB_DOMAIN}" ]; then
+				echo "Change ui.json with subdomain"
+				sed -i '' -e 's,"adminportal.*,"adminportal": "https://'${!SUB_DOMAIN}'.'$DOMAIN'",g' /mnt/iocage/jails/sonarr/plugin/ui.json
+			else
+				echo "Change ui.json with suburl"
+				sed -i '' -e 's,"adminportal.*,"adminportal": "https://www.'$DOMAIN'/'$JAIL'",g' /mnt/iocage/jails/sonarr/plugin/ui.json
+			fi
+		fi
+
+		iocage restart $JAIL
 		dialog --msgbox "$JAIL installed" 0 0
 	else
 		dialog --msgbox "$JAIL already installed, use the upgrade function in main menu!" 0 0
@@ -544,7 +555,7 @@ mount_storage () {
 			. $GLOBAL_CONFIG
 			JAIL_NAME=$JAIL\_JAIL_NAME
 			
-			if [[ $(iocage list) == *${!JAIL_NAME}* ]] && [ -f $JAIL_CONFIG ]; then
+			if [[ $(iocage list) == *$JAIL* ]] && [ -f $JAIL_CONFIG ]; then
 				exit_status="0"
 				while [ $exit_status == $DIALOG_OK ]; do
 				{
@@ -555,8 +566,8 @@ mount_storage () {
 						exit_status=$?
 						if [ $exit_status == $DIALOG_OK ]; then
 							chown -R $USER_NAME:$USER_NAME $DATA
-							iocage fstab -a ${!JAIL_NAME} $DATA /mnt/$(basename $DATA) nullfs rw 0 0
-							iocage restart ${!JAIL_NAME}
+							iocage fstab -a $JAIL $DATA /mnt/$(basename $DATA) nullfs rw 0 0
+							iocage restart $JAIL
 						fi
 					fi		
 				}
@@ -602,16 +613,16 @@ mount_storage () {
 						if [ -f $JAIL_CONFIG ]; then
 							. $JAIL_CONFIG
 							JAIL_NAME=$JAIL\_JAIL_NAME
-							iocage fstab -R 0 ${!JAIL_NAME} $DATA /media nullfs rw 0 0
-							iocage restart ${!JAIL_NAME}
+							iocage fstab -R 0 $JAIL $DATA /media nullfs rw 0 0
+							iocage restart $JAIL
 						fi
 						count=$(( $count + 1 ))
 					done
 				else
 					. $GLOBAL_CONFIG
 					chown -R $USER_NAME:$USER_NAME $FILE_LOCATION
-					iocage fstab -a ${!JAIL_NAME} $FILE_LOCATION /media nullfs rw 0 0
-					iocage restart ${!JAIL_NAME}
+					iocage fstab -a $JAIL $FILE_LOCATION /media nullfs rw 0 0
+					iocage restart $JAIL
 				fi
 			else
 				mount_storage $JAIL
@@ -619,8 +630,8 @@ mount_storage () {
 		elif [[ $1 != "" ]]; then
 			. $GLOBAL_CONFIG
 			chown -R $USER_NAME:$USER_NAME $FILE_LOCATION
-			iocage fstab -a ${!JAIL_NAME} $FILE_LOCATION /media nullfs rw 0 0
-			iocage restart ${!JAIL_NAME}
+			iocage fstab -a $JAIL $FILE_LOCATION /media nullfs rw 0 0
+			iocage restart $JAIL
 		fi
 	fi
 
@@ -639,16 +650,16 @@ mount_storage () {
 						if [ -f $JAIL_CONFIG ]; then
 					   		. $JAIL_CONFIG
 					   		JAIL_NAME=$JAIL\_JAIL_NAME
-					   		iocage fstab -R 0 ${!JAIL_NAME} $DATA /mnt/media nullfs rw 0 0
-							iocage restart ${!JAIL_NAME}
+					   		iocage fstab -R 0 $JAIL $DATA /mnt/media nullfs rw 0 0
+							iocage restart $JAIL
 						fi
 						count=$(( $count + 1 ))
 					done
 				else
 					. $GLOBAL_CONFIG
 					chown -R $USER_NAME:$USER_NAME $MEDIA_LOCATION
-					iocage fstab -a ${!JAIL_NAME} $DATA /mnt/media nullfs rw 0 0
-					iocage restart ${!JAIL_NAME}
+					iocage fstab -a $JAIL $DATA /mnt/media nullfs rw 0 0
+					iocage restart $JAIL
 				fi
 			else
 				mount_storage $JAIL
@@ -656,8 +667,8 @@ mount_storage () {
 		elif [[ $1 != "" ]]; then
 			. $GLOBAL_CONFIG
 			chown -R $USER_NAME:$USER_NAME $MEDIA_LOCATION
-			iocage fstab -a ${!JAIL_NAME} $MEDIA_LOCATION /mnt/media nullfs rw 0 0
-			iocage restart ${!JAIL_NAME}
+			iocage fstab -a $JAIL $MEDIA_LOCATION /mnt/media nullfs rw 0 0
+			iocage restart $JAIL
 		fi
 
 		if [[ $DOWNLOADS_LOCATION == "" ]]; then
@@ -674,16 +685,16 @@ mount_storage () {
 						if [ -f $JAIL_CONFIG ]; then
 							. $JAIL_CONFIG
 					   		JAIL_NAME=$JAIL\_JAIL_NAME
-							iocage fstab -R 1 ${!JAIL_NAME} $DATA /mnt/downloads nullfs rw 0 0
-							iocage restart ${!JAIL_NAME}
+							iocage fstab -R 1 $JAIL $DATA /mnt/downloads nullfs rw 0 0
+							iocage restart $JAIL
 						fi
 						count=$(( $count + 1 ))
 					done
 				else
 					. $GLOBAL_CONFIG
 					chown -R $USER_NAME:$USER_NAME $DOWNLOADS_LOCATION
-					iocage fstab -a ${!JAIL_NAME} $DOWNLOADS_LOCATION /mnt/downloads nullfs rw 0 0
-					iocage restart ${!JAIL_NAME}
+					iocage fstab -a $JAIL $DOWNLOADS_LOCATION /mnt/downloads nullfs rw 0 0
+					iocage restart $JAIL
 				fi
 			else
 				mount_storage $JAIL
@@ -691,8 +702,8 @@ mount_storage () {
 		elif [[ $1 != "" ]]; then
 			. $GLOBAL_CONFIG
 			chown -R $USER_NAME:$USER_NAME $DOWNLOADS_LOCATION
-			iocage fstab -a ${!JAIL_NAME} $DOWNLOADS_LOCATION /mnt/downloads nullfs rw 0 0
-			iocage restart ${!JAIL_NAME}
+			iocage fstab -a $JAIL $DOWNLOADS_LOCATION /mnt/downloads nullfs rw 0 0
+			iocage restart $JAIL
 		fi
 	fi
 
@@ -730,9 +741,9 @@ delete_jail () {
 	
 	JAIL_NAME=$JAIL\_JAIL_NAME
 	
-	if [[ $(iocage list) == *${!JAIL_NAME}* ]]; then
+	if [[ $(iocage list) == *$JAIL* ]]; then
 		dialog --title "Backup before deleting" \
-		--yesno "Do you want to make a config backup before deleting ${!JAIL_NAME}?" 7 60
+		--yesno "Do you want to make a config backup before deleting $JAIL?" 7 60
 		exit_status=$?
 		if [ $exit_status == $DIALOG_OK ]; then
 			backup="1"
@@ -744,15 +755,15 @@ delete_jail () {
 		fi
 		
 		dialog --title "Delete Program/Jail" \
-		--yesno "Are you sure you want to permanently delete ${!JAIL_NAME}?" 7 60
+		--yesno "Are you sure you want to permanently delete $JAIL?" 7 60
 		exit_status=$?
 		if [ $exit_status == $DIALOG_OK ]; then
-			iocage stop ${!JAIL_NAME}
-			iocage destroy ${!JAIL_NAME} -f
-			iocage destroy ${!JAIL_NAME} -f
+			iocage stop $JAIL
+			iocage destroy $JAIL -f
+			iocage destroy $JAIL -f
 			if [ $backup != "1" ]; then
 				dialog --title "Delete backup" \
-				--yesno "Do you want to delete the backup of ${!JAIL_NAME} also?" 7 60
+				--yesno "Do you want to delete the backup of $JAIL also?" 7 60
 				exit_status=$?
 				if [ $exit_status == $DIALOG_OK ]; then
 					rm -R $BACKUP_LOCATION/$JAIL
@@ -764,12 +775,12 @@ delete_jail () {
 				MYSQL_DATA=$JAIL\_MYSQL_DATABASE
 				iocage exec $webserver_JAIL_NAME mysql -u root -p$MYSQL_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS ${!MYSQL_DATA};"
 			fi
-			dialog --msgbox "${!JAIL_NAME} deleted" 5 30
+			dialog --msgbox "$JAIL deleted" 5 30
 		else
-			dialog --msgbox "${!JAIL_NAME} NOT deleted, operation canceled by user!" 5 30
+			dialog --msgbox "$JAIL NOT deleted, operation canceled by user!" 5 30
 		fi
 	else
-		dialog --msgbox "${!JAIL_NAME} does not exists!" 5 50
+		dialog --msgbox "$JAIL does not exists!" 5 50
 	fi
 	delete_jail
 }
@@ -832,7 +843,7 @@ backup_jail () {
 	JAIL_NAME=$JAIL\_JAIL_NAME
 	
 	mkdir -p $BACKUP_LOCATION/$JAIL
-	iocage stop ${!JAIL_NAME}
+	iocage stop $JAIL
 	i=1
 	while true; do
 		FOLDER="$(sed -n ''$i'p' $JAIL_BACKUP)"
@@ -841,12 +852,12 @@ backup_jail () {
 		(( i++ ))
 		if [ "$FOLDER" ]; then
 			mkdir -p $BACKUP_LOCATION/$JAIL$DEST_FOLDER
-			rsync -a --delete $JAIL_LOCATION/${!JAIL_NAME}/root${FOLDER} $BACKUP_LOCATION/$JAIL$DEST_FOLDER
+			rsync -a --delete $JAIL_LOCATION/$JAIL/root${FOLDER} $BACKUP_LOCATION/$JAIL$DEST_FOLDER
 		else
 			break
 		fi
 	done
-	iocage start ${!JAIL_NAME}
+	iocage start $JAIL
 	if grep -q "MYSQL" $JAIL_CONFIG; then
 		. $(dirname $0)/webserver/webserver_config.sh
 		MYSQL_DATA=$JAIL\_MYSQL_DATABASE
@@ -856,7 +867,7 @@ backup_jail () {
 		fi
 	fi
 	
-	dialog --msgbox "Config of ${!JAIL_NAME} backuped!" 5 50
+	dialog --msgbox "Config of $JAIL backuped!" 5 50
 	
 	if [[ $1 == "" ]]; then
 		first
