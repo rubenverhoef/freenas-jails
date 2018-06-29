@@ -5,7 +5,7 @@
   "pkgs": [
     "curl",
     "wget",
-    "python27",
+    "python",
     "py27-pip",
     "unrar",
     "par2cmdline",
