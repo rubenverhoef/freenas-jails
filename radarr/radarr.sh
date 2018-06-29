@@ -3,6 +3,8 @@
 . $(dirname $0)/radarr_config.sh
 . $(dirname $0)/config.sh
 
+service radarr stop
+
 #create user
 pw useradd -n $USER_NAME -u $USER_ID -d /nonexistent -s /usr/sbin/nologin
 
@@ -10,11 +12,14 @@ mkdir -p /mnt/media/movies
 chown -R $USER_NAME:$USER_NAME /mnt/media/movies
 chown -R $USER_NAME:$USER_NAME /usr/local/share/radarr/
 
-sysrc 'radarr_enable=YES'
 sysrc 'radarr_user='$USER_NAME''
+echo "permissions set"
+
+rm -R /usr/local/sonarr
+
 service radarr start
 sleep 10
-service radarr stop
+
 if [ -z "$radarr_SUB_DOMAIN" ]; then
 	sed -i '' -e 's,<UrlBase></UrlBase>,<UrlBase>radarr</UrlBase>,g' /usr/local/radarr/config.xml
 fi

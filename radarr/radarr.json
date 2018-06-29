@@ -1,6 +1,21 @@
 {
+    "name": "Radarr",
+    "release": "11.1-RELEASE",
+    "artifact": "https://github.com/rubenverhoef/iocage-plugin-radarr.git",
     "pkgs": [
-	"bash",
-    "radarr"
-    ]
-}
+      "net-p2p/radarr"
+    ],
+    "properties": {
+       "allow_sysvipc": "1"
+    },
+    "packagesite": "http://pkg.cdn.trueos.org/iocage",
+    "fingerprints": {
+        "iocage-plugins": [
+            {
+            "function": "sha256",
+            "fingerprint": "226efd3a126fb86e71d60a37353d17f57af816d1c7ecad0623c21f0bf73eb0c7"
+        }
+        ]
+    },
+    "official": false
+  }
