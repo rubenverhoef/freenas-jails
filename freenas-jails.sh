@@ -13,8 +13,8 @@ GLOBAL_CONFIG=$(dirname $0)"/config.sh"
 DATABASE_JAILS="webserver, nextcloud, gogs"
 MEDIA_JAILS=(plex plexpass sonarr radarr sabnzbd)
 FILE_JAILS=(nextcloud)
-CUSTOM_INSTALL=(nextcloud)
-CUSTOM_PLUGIN=(sabnzbd radarr plex plexpass webserver)
+CUSTOM_INSTALL=()
+CUSTOM_PLUGIN=(sabnzbd radarr plex plexpass webserver nextcloud)
 
 # DEFAULT VALUES:
 {
@@ -491,10 +491,10 @@ install_jail () {
 		if [[ ${CUSTOM_INSTALL[*]} != *$JAIL* ]]; then
 			if [ "${!SUB_DOMAIN}" ]; then
 				echo "Change ui.json with subdomain"
-				sed -i '' -e 's,"adminportal.*,"adminportal": "https://'${!SUB_DOMAIN}'.'$DOMAIN'",g' /mnt/iocage/jails/sonarr/plugin/ui.json
+				sed -i '' -e 's,"adminportal.*,"adminportal": "https://'${!SUB_DOMAIN}'.'$DOMAIN'",g' $JAIL_LOCATION/$JAIL/plugin/ui.json
 			else
 				echo "Change ui.json with suburl"
-				sed -i '' -e 's,"adminportal.*,"adminportal": "https://www.'$DOMAIN'/'$JAIL'",g' /mnt/iocage/jails/sonarr/plugin/ui.json
+				sed -i '' -e 's,"adminportal.*,"adminportal": "https://www.'$DOMAIN'/'$JAIL'",g' $JAIL_LOCATION/$JAIL/plugin/ui.json
 			fi
 		fi
 
