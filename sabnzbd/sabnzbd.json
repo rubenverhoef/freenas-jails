@@ -3,17 +3,16 @@
   "release": "11.1-RELEASE",
   "artifact": "https://github.com/rubenverhoef/iocage-plugin-sabnzbd",
   "pkgs": [
-    "bash",
-	"curl",
-	"wget",
+    "curl",
+    "wget",
     "python27",
     "py27-pip",
-	"unrar",
-	"par2cmdline",
-	"par2cmdline-tbb",
-	"unzip",
-	"p7zip",
-	"py27-sqlite3"
+    "unrar",
+    "par2cmdline",
+    "par2cmdline-tbb",
+    "unzip",
+    "p7zip",
+    "py27-sqlite3"
   ],
   "packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
   "fingerprints": {
