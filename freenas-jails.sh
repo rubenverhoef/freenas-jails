@@ -14,7 +14,7 @@ DATABASE_JAILS="webserver, nextcloud, gogs"
 MEDIA_JAILS=(plex plexpass sonarr radarr sabnzbd)
 FILE_JAILS=(nextcloud)
 CUSTOM_INSTALL=()
-CUSTOM_PLUGIN=(sabnzbd radarr plex plexpass webserver nextcloud home-assistant)
+CUSTOM_PLUGIN=(sabnzbd radarr plex plexpass webserver nextcloud homeassistant)
 
 # DEFAULT VALUES:
 {
@@ -49,8 +49,8 @@ plex_DEFAULT_PORT="32400"
 plexpass_DEFAULT_IP="192.168.0.18"
 plexpass_DEFAULT_PORT="32400"
 
-home-assistant_DEFAULT_IP="192.168.0.19"
-home-assistant_DEFAULT_PORT="8123"
+homeassistant_DEFAULT_IP="192.168.0.19"
+homeassistant_DEFAULT_PORT="8123"
 }
 
 first () {
@@ -154,7 +154,7 @@ install_dialog () {
 	Radarr "Radarr automatic movie downloader" \
 	Plex "Plex Media Server" \
 	Plexpass "Plex Media Server plexpass version" \
-	Home-Assistant "Home-Assistant Python 3 home automation software"\
+	HomeAssistant "Home-Assistant Python 3 home automation software"\
 	2>&1 1>&3)
 	exit_status=$?
 	exec 3>&-
@@ -546,7 +546,7 @@ mount_storage () {
 			Radarr "Radarr automatic movie downloader" \
 			Plex "Plex Media Server" \
 			Plexpass "Plex Media Server plexpass version" \
-			Home-Assistant "Home-Assistant Python 3 home automation software"\
+			HomeAssistant "Home-Assistant Python 3 home automation software"\
 			2>&1 1>&3)
 			exit_status=$?
 			exec 3>&-
@@ -730,7 +730,7 @@ delete_jail () {
 	Radarr "Radarr automatic movie downloader" \
 	Plex "Plex Media Server" \
 	Plexpass "Plex Media Server plexpass version" \
-	Home-Assistant "Home-Assistant Python 3 home automation software"\
+	HomeAssistant "Home-Assistant Python 3 home automation software"\
 	2>&1 1>&3)
 	exit_status=$?
 	exec 3>&-
@@ -832,7 +832,7 @@ backup_jail () {
 		Radarr "Radarr automatic movie downloader" \
 		Plex "Plex Media Server" \
 		Plexpass "Plex Media Server plexpass version" \
-		Home-Assistant "Home-Assistant Python 3 home automation software"\
+		HomeAssistant "Home-Assistant Python 3 home automation software"\
 		2>&1 1>&3)
 		exit_status=$?
 		exec 3>&-
