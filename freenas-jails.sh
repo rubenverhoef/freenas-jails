@@ -425,9 +425,9 @@ install_jail () {
 		if [[ ${CUSTOM_INSTALL[*]} == *$JAIL* ]]; then
 			iocage create -n $JAIL -p ${JAIL_CONFIG%/*}/$JAIL.json -r $VERSION ip4_addr="vnet0|${!IP}" defaultrouter="$ROUTER_IP" vnet="on" allow_raw_sockets="1" boot="on"
 		elif [[ ${CUSTOM_PLUGIN[*]} == *$JAIL* ]]; then
-			iocage fetch -P --name $(dirname $0)/$JAIL/$JAIL.json ip4_addr="igb0|${!IP}"
+			iocage fetch -P --name $(dirname $0)/$JAIL/$JAIL.json ip4_addr="$INTERFACE|${!IP}"
 		else
-			iocage fetch --plugins --name $JAIL ip4_addr="em0|${!IP}"
+			iocage fetch --plugins --name $JAIL ip4_addr="$INTERFACE|${!IP}"
 		fi
 
 		mount_storage $JAIL
@@ -448,9 +448,9 @@ install_jail () {
 		if [[ $JAIL != "webserver" ]]; then  # configure subdomain
 			. $(dirname $0)/webserver/webserver_config.sh
 			if [ "${!SUB_DOMAIN}" ]; then
-				iocage exec $webserver_JAIL_NAME bash /root/subdomain.sh ${!SUB_DOMAIN} ${!IP} ${!PORT}
+				iocage exec webserver bash /root/subdomain.sh ${!SUB_DOMAIN} ${!IP} ${!PORT}
 			else
-				iocage exec $webserver_JAIL_NAME bash /root/suburl.sh $JAIL ${!IP} ${!PORT}
+				iocage exec webserver bash /root/suburl.sh $JAIL ${!IP} ${!PORT}
 			fi
 		fi
 		
@@ -458,7 +458,7 @@ install_jail () {
 			DATABASE=$JAIL\_MYSQL_DATABASE
 			USER=$JAIL\_MYSQL_USERNAME
 			PASS=$JAIL\_MYSQL_PASSWORD
-			iocage exec $webserver_JAIL_NAME bash /root/mysql.sh ${!DATABASE} ${!USER} ${!PASS}
+			iocage exec webserver bash /root/mysql.sh ${!DATABASE} ${!USER} ${!PASS}
 		fi
 		
 		if [ -d "$BACKUP_LOCATION/$JAIL" ]; then
@@ -481,10 +481,10 @@ install_jail () {
 				if grep -q "MYSQL" $JAIL_CONFIG; then
 					. $(dirname $0)/webserver/webserver_config.sh
 					MYSQL_DATA=$JAIL\_MYSQL_DATABASE
-					iocage exec $webserver_JAIL_NAME mysql -u root -p$MYSQL_ROOT_PASSWORD ${!MYSQL_DATA} < $BACKUP_LOCATION/$JAIL/${!MYSQL_DATA}.sql
+					iocage exec webserver mysql -u root -p$MYSQL_ROOT_PASSWORD ${!MYSQL_DATA} < $BACKUP_LOCATION/$JAIL/${!MYSQL_DATA}.sql
 				fi
 				if [[ $JAIL == *"webserver"* ]]; then
-					iocage exec $webserver_JAIL_NAME mysql -u root -p$MYSQL_ROOT_PASSWORD < $BACKUP_LOCATION/$JAIL/all-databases.sql
+					iocage exec webserver mysql -u root -p$MYSQL_ROOT_PASSWORD < $BACKUP_LOCATION/$JAIL/all-databases.sql
 				fi
 			fi
 		fi
@@ -770,11 +770,11 @@ delete_jail () {
 					rm -R $BACKUP_LOCATION/$JAIL
 				fi
 			fi
-			rm $JAIL_LOCATION/$webserver_JAIL_NAME/root/usr/local/etc/nginx/sites/$JAIL.conf
-			sed -i '' -e '/.*'$JAIL'.*/d' $JAIL_LOCATION/$webserver_JAIL_NAME/root/usr/local/etc/nginx/standard.conf
+			rm $JAIL_LOCATION/webserver/root/usr/local/etc/nginx/sites/$JAIL.conf
+			sed -i '' -e '/.*'$JAIL'.*/d' $JAIL_LOCATION/webserver/root/usr/local/etc/nginx/standard.conf
 			if grep -q "MYSQL" $JAIL_CONFIG; then
 				MYSQL_DATA=$JAIL\_MYSQL_DATABASE
-				iocage exec $webserver_JAIL_NAME mysql -u root -p$MYSQL_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS ${!MYSQL_DATA};"
+				iocage exec webserver mysql -u root -p$MYSQL_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS ${!MYSQL_DATA};"
 			fi
 			dialog --msgbox "$JAIL deleted" 5 30
 		else
@@ -862,9 +862,9 @@ backup_jail () {
 	if grep -q "MYSQL" $JAIL_CONFIG; then
 		. $(dirname $0)/webserver/webserver_config.sh
 		MYSQL_DATA=$JAIL\_MYSQL_DATABASE
-		iocage exec $webserver_JAIL_NAME mysqldump --opt --set-gtid-purged=OFF -u root -p$MYSQL_ROOT_PASSWORD ${!MYSQL_DATA} > $BACKUP_LOCATION/$JAIL/${!MYSQL_DATA}.sql
+		iocage exec webserver mysqldump --opt --set-gtid-purged=OFF -u root -p$MYSQL_ROOT_PASSWORD ${!MYSQL_DATA} > $BACKUP_LOCATION/$JAIL/${!MYSQL_DATA}.sql
 		if [[ $JAIL == *"webserver"* ]]; then
-			iocage exec $webserver_JAIL_NAME mysqldump --opt --all-databases --set-gtid-purged=OFF -u root -p$MYSQL_ROOT_PASSWORD > $BACKUP_LOCATION/$JAIL/all-databases.sql
+			iocage exec webserver mysqldump --opt --all-databases --set-gtid-purged=OFF -u root -p$MYSQL_ROOT_PASSWORD > $BACKUP_LOCATION/$JAIL/all-databases.sql
 		fi
 	fi
 	
