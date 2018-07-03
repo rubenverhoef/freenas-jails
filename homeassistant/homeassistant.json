@@ -4,6 +4,7 @@
     "artifact": "https://github.com/rubenverhoef/iocage-plugin-homeassistant.git",
     "pkgs": [
 	  "bash",
+	  "sudo",
 	  "python36",
 	  "py36-sqlite3"
     ],
