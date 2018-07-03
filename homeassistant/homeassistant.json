@@ -1,5 +1,5 @@
 {
-    "name": "Home-Assistant",
+    "name": "HomeAssistant",
     "release": "11.1-RELEASE",
     "artifact": "https://github.com/rubenverhoef/iocage-plugin-homeassistant.git",
     "pkgs": [
