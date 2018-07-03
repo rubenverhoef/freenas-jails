@@ -337,15 +337,16 @@ config_jail () {
 			
 			sed -i '' -e 's,WORDPRESS_WEB="NO",WORDPRESS_WEB="YES",g' $JAIL_CONFIG
 			sed -i '' -e 's,organizr_SUB_DOMAIN="'$organizr_SUB_DOMAIN'",organizr_SUB_DOMAIN="'$VALUE1'",g' $JAIL_CONFIG
+			config_mysql $JAIL
 		elif [ $exit_status == $DIALOG_CANCEL ]; then
 			sed -i '' -e 's,WORDPRESS_WEB="YES",WORDPRESS_WEB="NO",g' $JAIL_CONFIG
         else
             install_dialog second_time
 		fi
-	fi
-	
-	if [[ $DATABASE_JAILS == *$JAIL* ]]; then  # configure mysql if needed
-		config_mysql $JAIL
+	else
+		if [[ $DATABASE_JAILS == *$JAIL* ]]; then  # configure mysql if needed
+			config_mysql $JAIL
+		fi
 	fi
 }
 
@@ -415,8 +416,8 @@ install_jail () {
 	SUB_DOMAIN=$JAIL\_SUB_DOMAIN
 
 	VERSION="$(uname -r)"
-		
 	VERSION=${VERSION//[!0-9,.]/}-RELEASE # take only the version number and pick the RELEASE as IOCAGE base
+	INTERFACE="$(ifconfig | head -n1 | sed -e 's/:.*$//')"
 	iocage activate $IOCAGE_ZPOOL
 	
 	if [[ $(iocage list) != *$JAIL* ]]; then
@@ -424,7 +425,7 @@ install_jail () {
 		if [[ ${CUSTOM_INSTALL[*]} == *$JAIL* ]]; then
 			iocage create -n $JAIL -p ${JAIL_CONFIG%/*}/$JAIL.json -r $VERSION ip4_addr="vnet0|${!IP}" defaultrouter="$ROUTER_IP" vnet="on" allow_raw_sockets="1" boot="on"
 		elif [[ ${CUSTOM_PLUGIN[*]} == *$JAIL* ]]; then
-			iocage fetch -P --name $(dirname $0)/$JAIL/$JAIL.json ip4_addr="em0|${!IP}"
+			iocage fetch -P --name $(dirname $0)/$JAIL/$JAIL.json ip4_addr="igb0|${!IP}"
 		else
 			iocage fetch --plugins --name $JAIL ip4_addr="em0|${!IP}"
 		fi
