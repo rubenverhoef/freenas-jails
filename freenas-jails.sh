@@ -48,6 +48,9 @@ plex_DEFAULT_PORT="32400"
 
 plexpass_DEFAULT_IP="192.168.0.18"
 plexpass_DEFAULT_PORT="32400"
+
+home-assistant_DEFAULT_IP="192.168.0.19"
+home-assistant_DEFAULT_PORT="8123"
 }
 
 first () {
