@@ -15,6 +15,7 @@ MEDIA_JAILS=(plex plexpass sonarr radarr sabnzbd)
 FILE_JAILS=(nextcloud)
 CUSTOM_INSTALL=()
 CUSTOM_PLUGIN=(sabnzbd radarr plex plexpass webserver nextcloud homeassistant)
+VNET_PLUGIN=(plex plexpass)
 
 # DEFAULT VALUES:
 {
@@ -421,6 +422,7 @@ install_jail () {
 
 	VERSION="$(uname -r)"
 	VERSION=${VERSION//[!0-9,.]/}-RELEASE # take only the version number and pick the RELEASE as IOCAGE base
+
 	INTERFACE="$(ifconfig | head -n1 | sed -e 's/:.*$//')"
 	iocage activate $IOCAGE_ZPOOL
 	
@@ -429,7 +431,12 @@ install_jail () {
 		if [[ ${CUSTOM_INSTALL[*]} == *$JAIL* ]]; then
 			iocage create -n $JAIL -p ${JAIL_CONFIG%/*}/$JAIL.json -r $VERSION ip4_addr="vnet0|${!IP}" defaultrouter="$ROUTER_IP" vnet="on" allow_raw_sockets="1" boot="on"
 		elif [[ ${CUSTOM_PLUGIN[*]} == *$JAIL* ]]; then
-			iocage fetch -P --name $(dirname $0)/$JAIL/$JAIL.json ip4_addr="$INTERFACE|${!IP}"
+			if [[ ${VNET_PLUGIN[*]} == *$JAIL* ]]; then
+				INTERFACE="vnet0"
+				iocage fetch -P --name $(dirname $0)/$JAIL/$JAIL.json ip4_addr="$INTERFACE|${!IP}" defaultrouter="$ROUTER_IP" vnet="on"
+			else
+				iocage fetch -P --name $(dirname $0)/$JAIL/$JAIL.json ip4_addr="$INTERFACE|${!IP}"
+			fi
 		else
 			iocage fetch --plugins --name $JAIL ip4_addr="$INTERFACE|${!IP}"
 		fi
