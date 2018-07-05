@@ -479,7 +479,7 @@ install_jail () {
 		# config everything inside the jail
 		iocage exec $JAIL pkg install -y bash
 		if [ $PLEX_USER ]; then
-			iocage exec $JAIL bash /root/plexpass.sh
+			iocage exec $JAIL bash /root/plex_pass.sh
 		else
 			iocage exec $JAIL bash /root/$JAIL.sh
 		fi
