@@ -202,6 +202,14 @@ config_jail () {
 	if ! grep -q $IP $JAIL_CONFIG; then
 		echo -e $IP"=\""${!DEFAULT_IP}"\"" >> $JAIL_CONFIG
 	fi
+	if [[ $JAIL == "plexpass"]]; then
+		if ! grep -q "PLEX_USER" $JAIL_CONFIG; then
+			echo -e "PLEX_USER=\""$PLEX_USER"\"" >> $JAIL_CONFIG
+		fi
+		if ! grep -q "PLEX_PASS" $JAIL_CONFIG; then
+			echo -e "PLEX_PASS=\""$PLEX_PASS"\"" >> $JAIL_CONFIG
+		fi
+	fi
 	
 	# load updated config files
 	. $JAIL_CONFIG
@@ -212,6 +220,16 @@ config_jail () {
 		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
 		"IP address:" 2 1 "${!IP}" 2 40 15 0 \
 		"Domain name (without https://www.)" 3 1 "$DOMAIN" 3 40 25 0 \
+		2>&1 1>&3)
+	elif [[ $JAIL == "plexpass"]]; then
+		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
+		"IP address:" 2 1 "${!IP}" 2 30 15 0 \
+		"Application PORT:" 3 1 "${!PORT}" 3 30 5 0 \
+		"Keep emtpy for no Subdomain" 4 1 "" 4 30 0 0 \
+		"Subdomain name" 5 1 "${!SUB_DOMAIN}" 5 30 25 0 \
+		"Plex.tv plexpass user" 6 1 "" 6 30 0 0 \
+		"Plex.tv username" 7 1 "$PLEX_USER" 7 30 25 0 \
+		"Plex.tv password" 8 1 "$PLEX_PASS" 8 30 25 0 \
 		2>&1 1>&3)
 	else
 		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
@@ -238,6 +256,11 @@ config_jail () {
 	else
 		sed -i '' -e 's,'$PORT'="'${!PORT}'",'$PORT'="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
 		sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[2]}'",g' $JAIL_CONFIG
+	fi
+
+	if [[ $JAIL == "plexpass"]]; then
+		sed -i '' -e 's,PLEX_USER="'$PLEX_USER'",PLEX_USER="'${JAIL_VALUES[3]}'",g' $JAIL_CONFIG
+		sed -i '' -e 's,PLEX_PASS="'$PLEX_PASS'",PLEX_PASS="'${JAIL_VALUES[4]}'",g' $JAIL_CONFIG
 	fi
 
 	if [[ $JAIL == "webserver" ]]; then
