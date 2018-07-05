@@ -223,9 +223,8 @@ config_jail () {
 		"Application PORT:" 3 1 "${!PORT}" 3 30 5 0 \
 		"Keep emtpy for no Subdomain" 4 1 "" 4 30 0 0 \
 		"Subdomain name" 5 1 "${!SUB_DOMAIN}" 5 30 25 0 \
-		"Plex.tv plexpass user" 6 1 "" 6 30 0 0 \
+		"Blank for normal plex" 6 1 "" 6 30 0 0 \
 		"Plex.tv username" 7 1 "$PLEX_USER" 7 30 25 0 \
-		"Plex.tv password" 8 1 "$PLEX_PASS" 8 30 25 0 \
 		2>&1 1>&3)
 	else
 		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
@@ -237,11 +236,11 @@ config_jail () {
 	fi
 	exit_status=$?
 	exec 3>&-
-	
+
 	if [ $exit_status != $DIALOG_OK ]; then
 		install_dialog second_time
 	fi
-	
+
     # save new variables in jail config file
 	JAIL_VALUES=( $VALUES )
     sed -i '' -e 's,'$IP'="'${!IP}'",'$IP'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
@@ -256,7 +255,22 @@ config_jail () {
 
 	if [[ $JAIL == "plex" ]]; then
 		sed -i '' -e 's,PLEX_USER="'$PLEX_USER'",PLEX_USER="'${JAIL_VALUES[3]}'",g' $JAIL_CONFIG
-		sed -i '' -e 's,PLEX_PASS="'$PLEX_PASS'",PLEX_PASS="'${JAIL_VALUES[4]}'",g' $JAIL_CONFIG
+	fi
+
+	if [ $PLEX_USER ]; then
+		exec 3>&1
+		PASS=$(dialog --title "PlexPass Password:" \
+		--clear \
+		--insecure \
+		--passwordbox "Plex.tv PlexPass password:" 0 0 "$PLEX_PASS" \
+		2>&1 1>&3)
+		exit_status=$?
+		exec 3>&-
+		
+		if [ $exit_status != $DIALOG_OK ]; then
+			install_dialog second_time
+		fi
+		sed -i '' -e 's,PLEX_PASS="'$PLEX_PASS'",PLEX_PASS="'$PASS'",g' $JAIL_CONFIG
 	fi
 
 	if [[ $JAIL == "webserver" ]]; then
