@@ -154,7 +154,6 @@ install_dialog () {
 	Sonarr "Sonarr automatic serice downloader" \
 	Radarr "Radarr automatic movie downloader" \
 	Plex "Plex Media Server" \
-	Plexpass "Plex Media Server plexpass version" \
 	HomeAssistant "Home-Assistant Python 3 home automation software"\
 	2>&1 1>&3)
 	exit_status=$?
@@ -202,7 +201,7 @@ config_jail () {
 	if ! grep -q $IP $JAIL_CONFIG; then
 		echo -e $IP"=\""${!DEFAULT_IP}"\"" >> $JAIL_CONFIG
 	fi
-	if [[ $JAIL == "plexpass" ]]; then
+	if [[ $JAIL == "plex" ]]; then
 		if ! grep -q "PLEX_USER" $JAIL_CONFIG; then
 			echo -e "PLEX_USER=\""$PLEX_USER"\"" >> $JAIL_CONFIG
 		fi
@@ -221,7 +220,7 @@ config_jail () {
 		"IP address:" 2 1 "${!IP}" 2 40 15 0 \
 		"Domain name (without https://www.)" 3 1 "$DOMAIN" 3 40 25 0 \
 		2>&1 1>&3)
-	elif [[ $JAIL == "plexpass" ]]; then
+	elif [[ $JAIL == "plex" ]]; then
 		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
 		"IP address:" 2 1 "${!IP}" 2 30 15 0 \
 		"Application PORT:" 3 1 "${!PORT}" 3 30 5 0 \
@@ -482,7 +481,11 @@ install_jail () {
 		
 		# config everything inside the jail
 		iocage exec $JAIL pkg install -y bash
-		iocage exec $JAIL bash /root/$JAIL.sh
+		if [ $PLEX_USER ]; then
+			iocage exec $JAIL bash /root/plexpass.sh
+		else
+			iocage exec $JAIL bash /root/$JAIL.sh
+		fi
 
 		if [[ $JAIL != "webserver" ]]; then  # configure subdomain
 			. $(dirname $0)/webserver/webserver_config.sh
@@ -506,9 +509,15 @@ install_jail () {
 			if [ $exit_status == $DIALOG_OK ]; then
 				i=1
 				while true; do
-					FOLDER="$(sed -n ''$i'p' ${JAIL_CONFIG%/*}/backup.conf)"
-					DEST_FOLDER="$(sed -n ''$i'p' ${JAIL_CONFIG%/*}/backup.conf | cut -d " " -f1)"
-					DEST_FOLDER=${DEST_FOLDER%/*}/
+					if [ $PLEX_USER ]; then
+						FOLDER="$(sed -n ''$i'p' ${JAIL_CONFIG%/*}/backup_pass.conf)"
+						DEST_FOLDER="$(sed -n ''$i'p' ${JAIL_CONFIG%/*}/backup_pass.conf | cut -d " " -f1)"
+						DEST_FOLDER=${DEST_FOLDER%/*}/
+					else
+						FOLDER="$(sed -n ''$i'p' ${JAIL_CONFIG%/*}/backup.conf)"
+						DEST_FOLDER="$(sed -n ''$i'p' ${JAIL_CONFIG%/*}/backup.conf | cut -d " " -f1)"
+						DEST_FOLDER=${DEST_FOLDER%/*}/
+					fi
 					(( i++ ))
 					if [ "$FOLDER" ]; then
 						rsync -a $BACKUP_LOCATION/$JAIL$FOLDER $JAIL_LOCATION/$JAIL/root$DEST_FOLDER
@@ -879,7 +888,11 @@ backup_jail () {
 	JAIL=${JAIL,,}
 	
 	JAIL_CONFIG=$(dirname $0)"/"$JAIL"/"$JAIL"_config.sh"
-	JAIL_BACKUP=$(dirname $0)"/"$JAIL"/backup.conf"
+	if [ $PLEX_USER ]; then
+		JAIL_BACKUP=$(dirname $0)"/"$JAIL"/backup_pass.conf"
+	else
+		JAIL_BACKUP=$(dirname $0)"/"$JAIL"/backup.conf"
+	fi
 	# load config files
 	. $JAIL_CONFIG
 	. $GLOBAL_CONFIG
