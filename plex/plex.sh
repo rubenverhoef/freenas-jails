@@ -9,7 +9,12 @@ pkg install -y ca_root_nss wget perl5.28
 
 ln -s /usr/local/bin/perl5.28.0 /usr/local/bin/perl
 
-sh $(dirname $0)/PMS_Updater.sh -n -a
+
+if [ $PLEX_USER ]; then
+    sh $(dirname $0)/PMS_Updater.sh -u $PLEX_USER -p$PLEX_PASS -a
+else
+    sh $(dirname $0)/PMS_Updater.sh -n -a
+fi
 
 #create user
 pw useradd -n $USER_NAME -u $USER_ID -d /nonexistent -s /usr/sbin/nologin

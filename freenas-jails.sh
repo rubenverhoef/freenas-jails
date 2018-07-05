@@ -478,11 +478,7 @@ install_jail () {
 		
 		# config everything inside the jail
 		iocage exec $JAIL pkg install -y bash
-		if [ $PLEX_USER ]; then
-			iocage exec $JAIL bash /root/plex_pass.sh
-		else
-			iocage exec $JAIL bash /root/$JAIL.sh
-		fi
+		iocage exec $JAIL bash /root/$JAIL.sh
 
 		if [[ $JAIL != "webserver" ]]; then  # configure subdomain
 			. $(dirname $0)/webserver/webserver_config.sh
@@ -506,15 +502,9 @@ install_jail () {
 			if [ $exit_status == $DIALOG_OK ]; then
 				i=1
 				while true; do
-					if [ $PLEX_USER ]; then
-						FOLDER="$(sed -n ''$i'p' ${JAIL_CONFIG%/*}/backup_pass.conf)"
-						DEST_FOLDER="$(sed -n ''$i'p' ${JAIL_CONFIG%/*}/backup_pass.conf | cut -d " " -f1)"
-						DEST_FOLDER=${DEST_FOLDER%/*}/
-					else
-						FOLDER="$(sed -n ''$i'p' ${JAIL_CONFIG%/*}/backup.conf)"
-						DEST_FOLDER="$(sed -n ''$i'p' ${JAIL_CONFIG%/*}/backup.conf | cut -d " " -f1)"
-						DEST_FOLDER=${DEST_FOLDER%/*}/
-					fi
+					FOLDER="$(sed -n ''$i'p' ${JAIL_CONFIG%/*}/backup.conf)"
+					DEST_FOLDER="$(sed -n ''$i'p' ${JAIL_CONFIG%/*}/backup.conf | cut -d " " -f1)"
+					DEST_FOLDER=${DEST_FOLDER%/*}/
 					(( i++ ))
 					if [ "$FOLDER" ]; then
 						rsync -a $BACKUP_LOCATION/$JAIL$FOLDER $JAIL_LOCATION/$JAIL/root$DEST_FOLDER
@@ -882,11 +872,8 @@ backup_jail () {
 	JAIL=${JAIL,,}
 	
 	JAIL_CONFIG=$(dirname $0)"/"$JAIL"/"$JAIL"_config.sh"
-	if [ $PLEX_USER ]; then
-		JAIL_BACKUP=$(dirname $0)"/"$JAIL"/backup_pass.conf"
-	else
-		JAIL_BACKUP=$(dirname $0)"/"$JAIL"/backup.conf"
-	fi
+	JAIL_BACKUP=$(dirname $0)"/"$JAIL"/backup.conf"
+
 	# load config files
 	. $JAIL_CONFIG
 	. $GLOBAL_CONFIG
