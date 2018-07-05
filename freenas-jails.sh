@@ -221,7 +221,7 @@ config_jail () {
 		"IP address:" 2 1 "${!IP}" 2 40 15 0 \
 		"Domain name (without https://www.)" 3 1 "$DOMAIN" 3 40 25 0 \
 		2>&1 1>&3)
-	elif [[ $JAIL == "plexpass"]]; then
+	elif [[ $JAIL == "plexpass" ]]; then
 		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
 		"IP address:" 2 1 "${!IP}" 2 30 15 0 \
 		"Application PORT:" 3 1 "${!PORT}" 3 30 5 0 \
