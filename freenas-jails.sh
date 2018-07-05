@@ -202,7 +202,7 @@ config_jail () {
 	if ! grep -q $IP $JAIL_CONFIG; then
 		echo -e $IP"=\""${!DEFAULT_IP}"\"" >> $JAIL_CONFIG
 	fi
-	if [[ $JAIL == "plexpass"]]; then
+	if [[ $JAIL == "plexpass" ]]; then
 		if ! grep -q "PLEX_USER" $JAIL_CONFIG; then
 			echo -e "PLEX_USER=\""$PLEX_USER"\"" >> $JAIL_CONFIG
 		fi
@@ -258,7 +258,7 @@ config_jail () {
 		sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[2]}'",g' $JAIL_CONFIG
 	fi
 
-	if [[ $JAIL == "plexpass"]]; then
+	if [[ $JAIL == "plexpass" ]]; then
 		sed -i '' -e 's,PLEX_USER="'$PLEX_USER'",PLEX_USER="'${JAIL_VALUES[3]}'",g' $JAIL_CONFIG
 		sed -i '' -e 's,PLEX_PASS="'$PLEX_PASS'",PLEX_PASS="'${JAIL_VALUES[4]}'",g' $JAIL_CONFIG
 	fi
