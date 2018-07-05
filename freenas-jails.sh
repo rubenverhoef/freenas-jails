@@ -47,9 +47,6 @@ radarr_DEFAULT_PORT="7878"
 plex_DEFAULT_IP="192.168.0.18"
 plex_DEFAULT_PORT="32400"
 
-plexpass_DEFAULT_IP="192.168.0.18"
-plexpass_DEFAULT_PORT="32400"
-
 homeassistant_DEFAULT_IP="192.168.0.19"
 homeassistant_DEFAULT_PORT="8123"
 }
@@ -257,7 +254,7 @@ config_jail () {
 		sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[2]}'",g' $JAIL_CONFIG
 	fi
 
-	if [[ $JAIL == "plexpass" ]]; then
+	if [[ $JAIL == "plex" ]]; then
 		sed -i '' -e 's,PLEX_USER="'$PLEX_USER'",PLEX_USER="'${JAIL_VALUES[3]}'",g' $JAIL_CONFIG
 		sed -i '' -e 's,PLEX_PASS="'$PLEX_PASS'",PLEX_PASS="'${JAIL_VALUES[4]}'",g' $JAIL_CONFIG
 	fi
@@ -589,7 +586,6 @@ mount_storage () {
 			Sonarr "Sonarr automatic serice downloader" \
 			Radarr "Radarr automatic movie downloader" \
 			Plex "Plex Media Server" \
-			Plexpass "Plex Media Server plexpass version" \
 			HomeAssistant "Home-Assistant Python 3 home automation software"\
 			2>&1 1>&3)
 			exit_status=$?
@@ -773,7 +769,6 @@ delete_jail () {
 	Sonarr "Sonarr automatic serice downloader" \
 	Radarr "Radarr automatic movie downloader" \
 	Plex "Plex Media Server" \
-	Plexpass "Plex Media Server plexpass version" \
 	HomeAssistant "Home-Assistant Python 3 home automation software"\
 	2>&1 1>&3)
 	exit_status=$?
@@ -875,7 +870,6 @@ backup_jail () {
 		Sonarr "Sonarr automatic serice downloader" \
 		Radarr "Radarr automatic movie downloader" \
 		Plex "Plex Media Server" \
-		Plexpass "Plex Media Server plexpass version" \
 		HomeAssistant "Home-Assistant Python 3 home automation software"\
 		2>&1 1>&3)
 		exit_status=$?
