@@ -14,7 +14,7 @@ DATABASE_JAILS="webserver, nextcloud, gogs"
 MEDIA_JAILS=(plex plexpass sonarr radarr sabnzbd)
 FILE_JAILS=(nextcloud)
 CUSTOM_INSTALL=()
-CUSTOM_PLUGIN=(sabnzbd radarr plex plexpass webserver nextcloud homeassistant)
+CUSTOM_PLUGIN=(sabnzbd radarr webserver nextcloud homeassistant)
 VNET_PLUGIN=(plex plexpass)
 
 # DEFAULT VALUES:
@@ -438,7 +438,12 @@ install_jail () {
 				iocage fetch -P --name $(dirname $0)/$JAIL/$JAIL.json ip4_addr="$INTERFACE|${!IP}"
 			fi
 		else
-			iocage fetch --plugins --name $JAIL ip4_addr="$INTERFACE|${!IP}"
+			if [[ ${VNET_PLUGIN[*]} == *$JAIL* ]]; then
+				INTERFACE="vnet0"
+				iocage fetch --plugins --name $JAIL ip4_addr="$INTERFACE|${!IP}" defaultrouter="$ROUTER_IP" vnet="on"
+			else
+				iocage fetch --plugins --name $JAIL ip4_addr="$INTERFACE|${!IP}"
+			fi
 		fi
 
 		mount_storage $JAIL
