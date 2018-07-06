@@ -9,24 +9,28 @@
 : ${DIALOG_ESC=255}
 
 # Globals:
+INTERFACE="$(ifconfig | head -n1 | sed -e 's/:.*$//')"
+LOCAL_IP="$(ifconfig $INTERFACE | grep 'inet' -m 1 | cut -d' ' -f2)"
+LOCAL_IP_LSV="$(echo $LOCAL_IP | cut -d. -f4)"
+BASE_IP="$(echo $LOCAL_IP | cut -d. -f1-3)"
+ROUTER_IP="$(netstat -rn | grep 'default' -m 1 | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")"
 GLOBAL_CONFIG=$(dirname $0)"/config.sh"
 DATABASE_JAILS="webserver, nextcloud, gogs"
 MEDIA_JAILS=(plex sonarr radarr sabnzbd)
 FILE_JAILS=(nextcloud)
 CUSTOM_INSTALL=()
 CUSTOM_PLUGIN=(plex sabnzbd radarr webserver nextcloud homeassistant)
-VNET_PLUGIN=(plex)
+VNET_PLUGIN=(plex webserver)
 
 # DEFAULT VALUES:
 {
 DEFAULT_DOMAIN="example.com"
-DEFAULT_ROUTER="192.168.0.1"
 DEFAULT_IOCAGE_ZPOOL="ssd"
 DEFAULT_JAIL_LOCATION="/mnt/iocage/jails"
 DEFAULT_BACKUP_LOCATION="/mnt/data/backup_jails"
 DEFAULT_EMAIL_ADDRESS="admin@example.com"
 
-webserver_DEFAULT_IP="192.168.0.12"
+webserver_DEFAULT_IP=$BASE_IP.$((LOCAL_IP_LSV + 1))
 webserver_DEFAULT_USERNAME="wordpress_user"
 webserver_DEFAULT_DATABASE="wordpress"
 
@@ -110,9 +114,6 @@ install_dialog () {
 		if ! grep -q "USER_ID" $GLOBAL_CONFIG; then
 			echo -e "USER_ID=\"\"" >> $GLOBAL_CONFIG
 		fi
-		if ! grep -q "ROUTER_IP" $GLOBAL_CONFIG; then
-			echo -e "ROUTER_IP=\""$DEFAULT_ROUTER"\"" >> $GLOBAL_CONFIG
-		fi
 		
 		# load updated config file
 		. $GLOBAL_CONFIG
@@ -124,7 +125,6 @@ install_dialog () {
 		"Please create a USER in the FreeNAS WebGUI!!" 3 1 "" 3 60 0 0 \
 		"User name:" 4 1 "$USER_NAME" 4 60 25 0 \
 		"User ID (UID):" 5 1 "$USER_ID" 5 60 25 0 \
-		"Router (DHCP server) IP:" 7 1 "$ROUTER_IP" 7 60 15 0 \
 		2>&1 1>&3)
 		exit_status=$?
 		exec 3>&-
@@ -140,7 +140,6 @@ install_dialog () {
 		sed -i '' -e 's,BACKUP_LOCATION="'$BACKUP_LOCATION'",BACKUP_LOCATION="'${GLOBAL[1]}'",g' $GLOBAL_CONFIG
 		sed -i '' -e 's,USER_NAME="'$USER_NAME'",USER_NAME="'${GLOBAL[2]}'",g' $GLOBAL_CONFIG
 		sed -i '' -e 's,USER_ID="'$USER_ID'",USER_ID="'${GLOBAL[3]}'",g' $GLOBAL_CONFIG
-		sed -i '' -e 's,ROUTER_IP="'$ROUTER_IP'",ROUTER_IP="'${GLOBAL[4]}'",g' $GLOBAL_CONFIG
     fi
 	
 	exec 3>&1
@@ -456,8 +455,7 @@ install_jail () {
 	VERSION="$(uname -r)"
 	VERSION=${VERSION//[!0-9,.]/}-RELEASE # take only the version number and pick the RELEASE as IOCAGE base
 
-	INTERFACE="$(ifconfig | head -n1 | sed -e 's/:.*$//')"
-	iocage activate $IOCAGE_ZPOOL
+		iocage activate $IOCAGE_ZPOOL
 	
 	if [[ $(iocage list) != *$JAIL* ]]; then
 		
