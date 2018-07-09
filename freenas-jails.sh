@@ -22,9 +22,9 @@ FILE_JAILS=(nextcloud)
 CUSTOM_INSTALL=()
 CUSTOM_PLUGIN=(plex sabnzbd radarr webserver nextcloud homeassistant)
 VNET_PLUGIN=(plex webserver)
+CHANGEABLE_PORT=(sonarr radarr sabnzbd)
 
 # DEFAULT VALUES:
-{
 DEFAULT_DOMAIN="example.com"
 DEFAULT_IOCAGE_ZPOOL="ssd"
 DEFAULT_JAIL_LOCATION="/mnt/iocage/jails"
@@ -44,8 +44,6 @@ homeassistant_DEFAULT_PORT="8123"
 nextcloud_DEFAULT_PORT="80"
 nextcloud_DEFAULT_USERNAME="nextcloud_user"
 nextcloud_DEFAULT_DATABASE="nextcloud"
-
-}
 
 first () {
 
@@ -216,7 +214,9 @@ config_jail () {
 	elif [[ $JAIL == "plex" ]]; then
 		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
 		"IP address:" 2 1 "${!IP}" 2 30 15 0 \
-		"Application PORT:" 3 1 "${!PORT}" 3 30 5 0 \
+		if [[ ${CHANGEABLE_PORT[*]} == *$JAIL* ]]; then
+			"Application PORT:" 3 1 "${!PORT}" 3 30 5 0 \
+		fi
 		"Keep emtpy for no Subdomain" 4 1 "" 4 30 0 0 \
 		"Subdomain name" 5 1 "${!SUB_DOMAIN}" 5 30 25 0 \
 		"Blank for normal plex" 6 1 "" 6 30 0 0 \
@@ -225,13 +225,17 @@ config_jail () {
 	elif [[ ${VNET_PLUGIN[*]} == *$JAIL* ]]; then
 		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
 		"IP address:" 2 1 "${!IP}" 2 30 15 0 \
-		"Application PORT:" 3 1 "${!PORT}" 3 30 5 0 \
+		if [[ ${CHANGEABLE_PORT[*]} == *$JAIL* ]]; then
+			"Application PORT:" 3 1 "${!PORT}" 3 30 5 0 \
+		fi
 		"Keep emtpy for no Subdomain" 4 1 "" 4 30 0 0 \
 		"Subdomain name" 5 1 "${!SUB_DOMAIN}" 5 30 25 0 \
 		2>&1 1>&3)
 	else
 		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
-		"Application PORT:" 3 1 "${!PORT}" 3 30 5 0 \
+		if [[ ${CHANGEABLE_PORT[*]} == *$JAIL* ]]; then
+			"Application PORT:" 3 1 "${!PORT}" 3 30 5 0 \
+		fi
 		"Keep emtpy for no Subdomain" 4 1 "" 4 30 0 0 \
 		"Subdomain name" 5 1 "${!SUB_DOMAIN}" 5 30 25 0 \
 		2>&1 1>&3)
@@ -252,10 +256,14 @@ config_jail () {
 		sed -i '' -e 's,DOMAIN="'$DOMAIN'",DOMAIN="'${JAIL_VALUES[1]}'",g' $GLOBAL_CONFIG
 	elif [[ $JAIL == "plex" ]]; then
 		sed -i '' -e 's,'$IP'="'${!IP}'",'$IP'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
-		sed -i '' -e 's,'$PORT'="'${!PORT}'",'$PORT'="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
-		sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[2]}'",g' $JAIL_CONFIG
-		sed -i '' -e 's,PLEX_USER="'$PLEX_USER'",PLEX_USER="'${JAIL_VALUES[3]}'",g' $JAIL_CONFIG
-		
+		if [[ ${CHANGEABLE_PORT[*]} == *$JAIL* ]]; then
+			sed -i '' -e 's,'$PORT'="'${!PORT}'",'$PORT'="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
+			sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[2]}'",g' $JAIL_CONFIG
+			sed -i '' -e 's,PLEX_USER="'$PLEX_USER'",PLEX_USER="'${JAIL_VALUES[3]}'",g' $JAIL_CONFIG
+		else	
+			sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
+			sed -i '' -e 's,PLEX_USER="'$PLEX_USER'",PLEX_USER="'${JAIL_VALUES[2]}'",g' $JAIL_CONFIG
+		fi
 		exec 3>&1
 		PASS=$(dialog --title "PlexPass Password:" \
 		--clear \
@@ -271,11 +279,19 @@ config_jail () {
 		sed -i '' -e 's,PLEX_PASS="'$PLEX_PASS'",PLEX_PASS="'$PASS'",g' $JAIL_CONFIG
 	elif [[ ${VNET_PLUGIN[*]} == *$JAIL* ]]; then
 		sed -i '' -e 's,'$IP'="'${!IP}'",'$IP'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
-		sed -i '' -e 's,'$PORT'="'${!PORT}'",'$PORT'="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
-		sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[2]}'",g' $JAIL_CONFIG
+		if [[ ${CHANGEABLE_PORT[*]} == *$JAIL* ]]; then
+			sed -i '' -e 's,'$PORT'="'${!PORT}'",'$PORT'="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
+			sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[2]}'",g' $JAIL_CONFIG
+		else
+			sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
+		fi
 	else
-		sed -i '' -e 's,'$PORT'="'${!PORT}'",'$PORT'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
-		sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
+		if [[ ${CHANGEABLE_PORT[*]} == *$JAIL* ]]; then
+			sed -i '' -e 's,'$PORT'="'${!PORT}'",'$PORT'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
+			sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
+		else
+			sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
+		fi
 		sed -i '' -e 's,'$IP'="'${!IP}'",'$IP'="'$IOCAGE_SHARED_IP'",g' $JAIL_CONFIG
 	fi
 
@@ -460,7 +476,7 @@ install_jail () {
 	VERSION="$(uname -r)"
 	VERSION=${VERSION//[!0-9,.]/}-RELEASE # take only the version number and pick the RELEASE as IOCAGE base
 
-		iocage activate $IOCAGE_ZPOOL
+	iocage activate $IOCAGE_ZPOOL
 	
 	if [[ $(iocage list) != *$JAIL* ]]; then
 		
