@@ -14,6 +14,7 @@ LOCAL_IP="$(ifconfig $INTERFACE | grep 'inet' -m 1 | cut -d' ' -f2)"
 LOCAL_IP_LSV="$(echo $LOCAL_IP | cut -d. -f4)"
 BASE_IP="$(echo $LOCAL_IP | cut -d. -f1-3)"
 ROUTER_IP="$(netstat -rn | grep 'default' -m 1 | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")"
+IOCAGE_SHARED_IP=$BASE_IP.$((LOCAL_IP_LSV + 2))
 GLOBAL_CONFIG=$(dirname $0)"/config.sh"
 DATABASE_JAILS="webserver, nextcloud, gogs"
 MEDIA_JAILS=(plex sonarr radarr sabnzbd)
@@ -34,25 +35,16 @@ webserver_DEFAULT_IP=$BASE_IP.$((LOCAL_IP_LSV + 1))
 webserver_DEFAULT_USERNAME="wordpress_user"
 webserver_DEFAULT_DATABASE="wordpress"
 
-nextcloud_DEFAULT_IP="192.168.0.13"
+plex_DEFAULT_IP=$BASE_IP.$((LOCAL_IP_LSV + 3))
+plex_DEFAULT_PORT="32400"
+sabnzbd_DEFAULT_PORT="8080"
+sonarr_DEFAULT_PORT="8989"
+radarr_DEFAULT_PORT="7878"
+homeassistant_DEFAULT_PORT="8123"
 nextcloud_DEFAULT_PORT="80"
 nextcloud_DEFAULT_USERNAME="nextcloud_user"
 nextcloud_DEFAULT_DATABASE="nextcloud"
 
-sabnzbd_DEFAULT_IP="192.168.0.14"
-sabnzbd_DEFAULT_PORT="8080"
-
-sonarr_DEFAULT_IP="192.168.0.15"
-sonarr_DEFAULT_PORT="8989"
-
-radarr_DEFAULT_IP="192.168.0.16"
-radarr_DEFAULT_PORT="7878"
-
-plex_DEFAULT_IP="192.168.0.18"
-plex_DEFAULT_PORT="32400"
-
-homeassistant_DEFAULT_IP="192.168.0.19"
-homeassistant_DEFAULT_PORT="8123"
 }
 
 first () {
@@ -105,6 +97,9 @@ install_dialog () {
 		if ! grep -q "IOCAGE_ZPOOL" $GLOBAL_CONFIG; then
 			echo -e "IOCAGE_ZPOOL=\""$DEFAULT_IOCAGE_ZPOOL"\"" >> $GLOBAL_CONFIG
 		fi
+		if ! grep -q "IOCAGE_SHARED_IP" $GLOBAL_CONFIG; then
+			echo -e "IOCAGE_SHARED_IP=\""$IOCAGE_SHARED_IP"\"" >> $GLOBAL_CONFIG
+		fi
 		if ! grep -q "BACKUP_LOCATION" $GLOBAL_CONFIG; then
 			echo -e "BACKUP_LOCATION=\""$DEFAULT_BACKUP_LOCATION"\"" >> $GLOBAL_CONFIG
 		fi
@@ -121,6 +116,7 @@ install_dialog () {
 		exec 3>&1
 		JAIL=$(dialog --form "IOCAGE Jail location:" 0 0 0 \
 		"Iocage ZPOOL" 1 1 "$IOCAGE_ZPOOL" 1 60 25 0 \
+		"Iocage Shared IP" 1 1 "$IOCAGE_SHARED_IP" 1 60 15 0 \
 		"Backup location (starting with \"/\" and without last \"/\")" 2 1 "$BACKUP_LOCATION" 2 60 25 0 \
 		"Please create a USER in the FreeNAS WebGUI!!" 3 1 "" 3 60 0 0 \
 		"User name:" 4 1 "$USER_NAME" 4 60 25 0 \
@@ -137,9 +133,10 @@ install_dialog () {
 		
 		#save new config variables in global config file
 		sed -i '' -e 's,IOCAGE_ZPOOL="'$IOCAGE_ZPOOL'",IOCAGE_ZPOOL="'${GLOBAL[0]}'",g' $GLOBAL_CONFIG
-		sed -i '' -e 's,BACKUP_LOCATION="'$BACKUP_LOCATION'",BACKUP_LOCATION="'${GLOBAL[1]}'",g' $GLOBAL_CONFIG
-		sed -i '' -e 's,USER_NAME="'$USER_NAME'",USER_NAME="'${GLOBAL[2]}'",g' $GLOBAL_CONFIG
-		sed -i '' -e 's,USER_ID="'$USER_ID'",USER_ID="'${GLOBAL[3]}'",g' $GLOBAL_CONFIG
+		sed -i '' -e 's,IOCAGE_SHARED_IP="'$IOCAGE_SHARED_IP'",IOCAGE_SHARED_IP="'${GLOBAL[1]}'",g' $GLOBAL_CONFIG
+		sed -i '' -e 's,BACKUP_LOCATION="'$BACKUP_LOCATION'",BACKUP_LOCATION="'${GLOBAL[2]}'",g' $GLOBAL_CONFIG
+		sed -i '' -e 's,USER_NAME="'$USER_NAME'",USER_NAME="'${GLOBAL[3]}'",g' $GLOBAL_CONFIG
+		sed -i '' -e 's,USER_ID="'$USER_ID'",USER_ID="'${GLOBAL[4]}'",g' $GLOBAL_CONFIG
     fi
 	
 	exec 3>&1
@@ -225,9 +222,15 @@ config_jail () {
 		"Blank for normal plex" 6 1 "" 6 30 0 0 \
 		"Plex.tv username" 7 1 "$PLEX_USER" 7 30 25 0 \
 		2>&1 1>&3)
-	else
+	elif [[ ${VNET_PLUGIN[*]} == *$JAIL* ]]; then
 		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
 		"IP address:" 2 1 "${!IP}" 2 30 15 0 \
+		"Application PORT:" 3 1 "${!PORT}" 3 30 5 0 \
+		"Keep emtpy for no Subdomain" 4 1 "" 4 30 0 0 \
+		"Subdomain name" 5 1 "${!SUB_DOMAIN}" 5 30 25 0 \
+		2>&1 1>&3)
+	else
+		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
 		"Application PORT:" 3 1 "${!PORT}" 3 30 5 0 \
 		"Keep emtpy for no Subdomain" 4 1 "" 4 30 0 0 \
 		"Subdomain name" 5 1 "${!SUB_DOMAIN}" 5 30 25 0 \
@@ -242,21 +245,17 @@ config_jail () {
 
     # save new variables in jail config file
 	JAIL_VALUES=( $VALUES )
-    sed -i '' -e 's,'$IP'="'${!IP}'",'$IP'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
-	    
-	if [[ $JAIL == "webserver" ]]; then #make webserver ip and domain config global
+
+	if [[ $JAIL == "webserver" ]]; then
+		sed -i '' -e 's,'$IP'="'${!IP}'",'$IP'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
 		sed -i '' -e 's,'$IP'="'${!IP}'",'$IP'="'${JAIL_VALUES[0]}'",g' $GLOBAL_CONFIG
-        sed -i '' -e 's,DOMAIN="'$DOMAIN'",DOMAIN="'${JAIL_VALUES[1]}'",g' $GLOBAL_CONFIG
-	else
+		sed -i '' -e 's,DOMAIN="'$DOMAIN'",DOMAIN="'${JAIL_VALUES[1]}'",g' $GLOBAL_CONFIG
+	elif [[ $JAIL == "plex" ]]; then
+		sed -i '' -e 's,'$IP'="'${!IP}'",'$IP'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
 		sed -i '' -e 's,'$PORT'="'${!PORT}'",'$PORT'="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
 		sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[2]}'",g' $JAIL_CONFIG
-	fi
-
-	if [[ $JAIL == "plex" ]]; then
 		sed -i '' -e 's,PLEX_USER="'$PLEX_USER'",PLEX_USER="'${JAIL_VALUES[3]}'",g' $JAIL_CONFIG
-	fi
-
-	if [ $PLEX_USER ]; then
+		
 		exec 3>&1
 		PASS=$(dialog --title "PlexPass Password:" \
 		--clear \
@@ -270,6 +269,14 @@ config_jail () {
 			install_dialog second_time
 		fi
 		sed -i '' -e 's,PLEX_PASS="'$PLEX_PASS'",PLEX_PASS="'$PASS'",g' $JAIL_CONFIG
+	elif [[ ${VNET_PLUGIN[*]} == *$JAIL* ]]; then
+		sed -i '' -e 's,'$IP'="'${!IP}'",'$IP'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
+		sed -i '' -e 's,'$PORT'="'${!PORT}'",'$PORT'="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
+		sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[2]}'",g' $JAIL_CONFIG
+	else
+		sed -i '' -e 's,'$PORT'="'${!PORT}'",'$PORT'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
+		sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
+		sed -i '' -e 's,'$IP'="'${!IP}'",'$IP'="'$IOCAGE_SHARED_IP'",g' $JAIL_CONFIG
 	fi
 
 	if [[ $JAIL == "webserver" ]]; then
@@ -294,7 +301,7 @@ config_jail () {
 		exit_status=$?
         if [ $exit_status == $DIALOG_OK ]; then
 			if ! grep -q "FREENAS_IP" $JAIL_CONFIG; then
-				echo -e "FREENAS_IP=\"\"" >> $JAIL_CONFIG
+				echo -e "FREENAS_IP=\""$LOCAL_IP"\"" >> $JAIL_CONFIG
 			fi	
 			if ! grep -q "FREENAS_PORT" $JAIL_CONFIG; then
 				echo -e "FREENAS_PORT=\"80\"" >> $JAIL_CONFIG
@@ -304,7 +311,6 @@ config_jail () {
 			
 			exec 3>&1
 			FREENASIP=$(dialog --form "Webserver configuration:" 0 0 0 \
-			"FreeNAS webGUI IP:" 1 1 "$FREENAS_IP" 1 30 25 0 \
 			"FreeNAS webGUI Port:" 2 2 "$FREENAS_PORT" 2 30 5 0 \
 			2>&1 1>&3)
 			exit_status=$?
@@ -315,8 +321,7 @@ config_jail () {
 			else
                 FREENASARR=( $FREENASIP )
                 sed -i '' -e 's,EXTERNAL_GUI="NO",EXTERNAL_GUI="YES",g' $JAIL_CONFIG
-                sed -i '' -e 's,FREENAS_IP="'$FREENAS_IP'",FREENAS_IP="'${FREENASARR[0]}'",g' $JAIL_CONFIG
-                sed -i '' -e 's,FREENAS_PORT="'$FREENAS_PORT'",FREENAS_PORT="'${FREENASARR[1]}'",g' $JAIL_CONFIG
+                sed -i '' -e 's,FREENAS_PORT="'$FREENAS_PORT'",FREENAS_PORT="'${FREENASARR[0]}'",g' $JAIL_CONFIG
             fi
 		elif [ $exit_status == $DIALOG_CANCEL ]; then
 			sed -i '' -e 's,EXTERNAL_GUI="YES",EXTERNAL_GUI="NO",g' $JAIL_CONFIG
@@ -326,7 +331,7 @@ config_jail () {
 			
 		exec 3>&1
 		VALUE=$(dialog --form "Webserver configuration:" 0 0 0 \
-		"Email address:" 1 1 "$EMAIL_ADDRESS" 1 30 25 0 \
+		"Email address:" 1 1 "$EMAIL_ADDRESS" 1 30 60 0 \
 		2>&1 1>&3)
 		exit_status=$?
 		exec 3>&-
