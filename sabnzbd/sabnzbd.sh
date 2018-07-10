@@ -8,17 +8,12 @@ service sabnzbd stop
 #create user
 pw useradd -n $USER_NAME -u $USER_ID -d /nonexistent -s /usr/sbin/nologin
 
-rm -R /.sabnzbd
-mkdir /.sabnzbd
-chown $USER_NAME:$USER_NAME /.sabnzbd
-chown $USER_NAME:$USER_NAME /var/run/sabnzbd
+mkdir -p /usr/local/sabnzbd
+chown -R $USER_NAME:$USER_NAME /usr/local/sabnzbd
+chown -R $USER_NAME:$USER_NAME /var/run/sabnzbd
 
 sysrc 'sabnzbd_user='$USER_NAME''
 sysrc 'sabnzbd_group='$USER_NAME''
-
-service sabnzbd start
-sleep 10
-service sabnzbd stop
 
 sed -i '' -e 's,port = 8080,port = '$sabnzbd_PORT',g' /.sabnzbd/sabnzbd.ini
 sed -i '' -e 's,host = 127.0.0.1,host = 0.0.0.0,g' /.sabnzbd/sabnzbd.ini
