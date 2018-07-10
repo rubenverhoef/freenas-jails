@@ -114,11 +114,11 @@ install_dialog () {
 		exec 3>&1
 		JAIL=$(dialog --form "IOCAGE Jail location:" 0 0 0 \
 		"Iocage ZPOOL" 1 1 "$IOCAGE_ZPOOL" 1 60 25 0 \
-		"Iocage Shared IP" 1 1 "$IOCAGE_SHARED_IP" 1 60 15 0 \
-		"Backup location (starting with \"/\" and without last \"/\")" 2 1 "$BACKUP_LOCATION" 2 60 25 0 \
-		"Please create a USER in the FreeNAS WebGUI!!" 3 1 "" 3 60 0 0 \
-		"User name:" 4 1 "$USER_NAME" 4 60 25 0 \
-		"User ID (UID):" 5 1 "$USER_ID" 5 60 25 0 \
+		"Iocage Shared IP" 2 1 "$IOCAGE_SHARED_IP" 2 60 15 0 \
+		"Backup location (starting with \"/\" and without last \"/\")" 3 1 "$BACKUP_LOCATION" 3 60 25 0 \
+		"Please create a USER in the FreeNAS WebGUI!!" 4 1 "" 4 60 0 0 \
+		"User name:" 5 1 "$USER_NAME" 5 60 25 0 \
+		"User ID (UID):" 6 1 "$USER_ID" 6 60 25 0 \
 		2>&1 1>&3)
 		exit_status=$?
 		exec 3>&-
@@ -212,33 +212,52 @@ config_jail () {
 		"Domain name (without https://www.)" 3 1 "$DOMAIN" 3 40 25 0 \
 		2>&1 1>&3)
 	elif [[ $JAIL == "plex" ]]; then
-		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
-		"IP address:" 2 1 "${!IP}" 2 30 15 0 \
 		if [[ ${CHANGEABLE_PORT[*]} == *$JAIL* ]]; then
+			VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
+			"IP address:" 2 1 "${!IP}" 2 30 15 0 \
 			"Application PORT:" 3 1 "${!PORT}" 3 30 5 0 \
+			"Keep emtpy for no Subdomain" 4 1 "" 4 30 0 0 \
+			"Subdomain name" 5 1 "${!SUB_DOMAIN}" 5 30 25 0 \
+			"Blank for normal plex" 6 1 "" 6 30 0 0 \
+			"Plex.tv username" 7 1 "$PLEX_USER" 7 30 25 0 \
+			2>&1 1>&3)
+		else
+			VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
+			"IP address:" 2 1 "${!IP}" 2 30 15 0 \
+			"Keep emtpy for no Subdomain" 3 1 "" 3 30 0 0 \
+			"Subdomain name" 4 1 "${!SUB_DOMAIN}" 4 30 25 0 \
+			"Blank for normal plex" 5 1 "" 5 30 0 0 \
+			"Plex.tv username" 6 1 "$PLEX_USER" 6 30 25 0 \
+			2>&1 1>&3)
 		fi
-		"Keep emtpy for no Subdomain" 4 1 "" 4 30 0 0 \
-		"Subdomain name" 5 1 "${!SUB_DOMAIN}" 5 30 25 0 \
-		"Blank for normal plex" 6 1 "" 6 30 0 0 \
-		"Plex.tv username" 7 1 "$PLEX_USER" 7 30 25 0 \
-		2>&1 1>&3)
 	elif [[ ${VNET_PLUGIN[*]} == *$JAIL* ]]; then
-		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
-		"IP address:" 2 1 "${!IP}" 2 30 15 0 \
 		if [[ ${CHANGEABLE_PORT[*]} == *$JAIL* ]]; then
+			VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
+			"IP address:" 2 1 "${!IP}" 2 30 15 0 \
 			"Application PORT:" 3 1 "${!PORT}" 3 30 5 0 \
+			"Keep emtpy for no Subdomain" 4 1 "" 4 30 0 0 \
+			"Subdomain name" 5 1 "${!SUB_DOMAIN}" 5 30 25 0 \
+			2>&1 1>&3)
+		else
+			VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
+			"IP address:" 2 1 "${!IP}" 2 30 15 0 \
+			"Keep emtpy for no Subdomain" 3 1 "" 3 30 0 0 \
+			"Subdomain name" 4 1 "${!SUB_DOMAIN}" 4 30 25 0 \
+			2>&1 1>&3)
 		fi
-		"Keep emtpy for no Subdomain" 4 1 "" 4 30 0 0 \
-		"Subdomain name" 5 1 "${!SUB_DOMAIN}" 5 30 25 0 \
-		2>&1 1>&3)
 	else
-		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
 		if [[ ${CHANGEABLE_PORT[*]} == *$JAIL* ]]; then
+			VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
 			"Application PORT:" 3 1 "${!PORT}" 3 30 5 0 \
+			"Keep emtpy for no Subdomain" 4 1 "" 4 30 0 0 \
+			"Subdomain name" 5 1 "${!SUB_DOMAIN}" 5 30 25 0 \
+			2>&1 1>&3)
+		else
+			VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
+			"Keep emtpy for no Subdomain" 3 1 "" 3 30 0 0 \
+			"Subdomain name" 4 1 "${!SUB_DOMAIN}" 4 30 25 0 \
+			2>&1 1>&3)
 		fi
-		"Keep emtpy for no Subdomain" 4 1 "" 4 30 0 0 \
-		"Subdomain name" 5 1 "${!SUB_DOMAIN}" 5 30 25 0 \
-		2>&1 1>&3)
 	fi
 	exit_status=$?
 	exec 3>&-
