@@ -208,54 +208,54 @@ config_jail () {
 	exec 3>&1
 	if [[ $JAIL == "webserver" ]]; then
 		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
-		"IP address:" 2 1 "${!IP}" 2 40 15 0 \
-		"Domain name (without https://www.)" 3 1 "$DOMAIN" 3 40 25 0 \
+		"IP address:" 1 1 "${!IP}" 1 40 15 0 \
+		"Domain name (without https://www.)" 2 1 "$DOMAIN" 2 40 25 0 \
 		2>&1 1>&3)
 	elif [[ $JAIL == "plex" ]]; then
 		if [[ ${CHANGEABLE_PORT[*]} == *$JAIL* ]]; then
 			VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
-			"IP address:" 2 1 "${!IP}" 2 30 15 0 \
-			"Application PORT:" 3 1 "${!PORT}" 3 30 5 0 \
-			"Keep emtpy for no Subdomain" 4 1 "" 4 30 0 0 \
-			"Subdomain name" 5 1 "${!SUB_DOMAIN}" 5 30 25 0 \
-			"Blank for normal plex" 6 1 "" 6 30 0 0 \
-			"Plex.tv username" 7 1 "$PLEX_USER" 7 30 25 0 \
-			2>&1 1>&3)
-		else
-			VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
-			"IP address:" 2 1 "${!IP}" 2 30 15 0 \
+			"IP address:" 1 1 "${!IP}" 1 30 15 0 \
+			"Application PORT:" 2 1 "${!PORT}" 2 30 5 0 \
 			"Keep emtpy for no Subdomain" 3 1 "" 3 30 0 0 \
 			"Subdomain name" 4 1 "${!SUB_DOMAIN}" 4 30 25 0 \
 			"Blank for normal plex" 5 1 "" 5 30 0 0 \
 			"Plex.tv username" 6 1 "$PLEX_USER" 6 30 25 0 \
 			2>&1 1>&3)
+		else
+			VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
+			"IP address:" 1 1 "${!IP}" 1 30 15 0 \
+			"Keep emtpy for no Subdomain" 2 1 "" 2 30 0 0 \
+			"Subdomain name" 3 1 "${!SUB_DOMAIN}" 3 30 25 0 \
+			"Blank for normal plex" 4 1 "" 4 30 0 0 \
+			"Plex.tv username" 5 1 "$PLEX_USER" 5 30 25 0 \
+			2>&1 1>&3)
 		fi
 	elif [[ ${VNET_PLUGIN[*]} == *$JAIL* ]]; then
 		if [[ ${CHANGEABLE_PORT[*]} == *$JAIL* ]]; then
 			VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
-			"IP address:" 2 1 "${!IP}" 2 30 15 0 \
-			"Application PORT:" 3 1 "${!PORT}" 3 30 5 0 \
-			"Keep emtpy for no Subdomain" 4 1 "" 4 30 0 0 \
-			"Subdomain name" 5 1 "${!SUB_DOMAIN}" 5 30 25 0 \
+			"IP address:" 1 1 "${!IP}" 1 30 15 0 \
+			"Application PORT:" 2 1 "${!PORT}" 2 30 5 0 \
+			"Keep emtpy for no Subdomain" 3 1 "" 3 30 0 0 \
+			"Subdomain name" 4 1 "${!SUB_DOMAIN}" 4 30 25 0 \
 			2>&1 1>&3)
 		else
 			VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
-			"IP address:" 2 1 "${!IP}" 2 30 15 0 \
-			"Keep emtpy for no Subdomain" 3 1 "" 3 30 0 0 \
-			"Subdomain name" 4 1 "${!SUB_DOMAIN}" 4 30 25 0 \
+			"IP address:" 1 1 "${!IP}" 1 30 15 0 \
+			"Keep emtpy for no Subdomain" 2 1 "" 2 30 0 0 \
+			"Subdomain name" 3 1 "${!SUB_DOMAIN}" 3 30 25 0 \
 			2>&1 1>&3)
 		fi
 	else
 		if [[ ${CHANGEABLE_PORT[*]} == *$JAIL* ]]; then
 			VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
-			"Application PORT:" 3 1 "${!PORT}" 3 30 5 0 \
-			"Keep emtpy for no Subdomain" 4 1 "" 4 30 0 0 \
-			"Subdomain name" 5 1 "${!SUB_DOMAIN}" 5 30 25 0 \
+			"Application PORT:" 1 1 "${!PORT}" 1 30 5 0 \
+			"Keep emtpy for no Subdomain" 2 1 "" 2 30 0 0 \
+			"Subdomain name" 3 1 "${!SUB_DOMAIN}" 3 30 25 0 \
 			2>&1 1>&3)
 		else
 			VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
-			"Keep emtpy for no Subdomain" 3 1 "" 3 30 0 0 \
-			"Subdomain name" 4 1 "${!SUB_DOMAIN}" 4 30 25 0 \
+			"Keep emtpy for no Subdomain" 1 1 "" 1 30 0 0 \
+			"Subdomain name" 2 1 "${!SUB_DOMAIN}" 2 30 25 0 \
 			2>&1 1>&3)
 		fi
 	fi
