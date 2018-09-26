@@ -109,6 +109,6 @@ service nginx restart
 
 crontab -u $USER_NAME -l > mycron
 echo "*/15 * * * * /usr/local/bin/php -f /usr/local/www/nextcloud/cron.php" >> mycron
-echo "*/15 * * * * /usr/local/bin/php /usr/local/www/nextcloud/occ preview:pre-generate" >> mycron
+echo "*/15 * * * * /usr/local/bin/php -f /usr/local/www/nextcloud/occ preview:pre-generate" >> mycron
 crontab -u $USER_NAME mycron
 rm mycron
