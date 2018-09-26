@@ -1,6 +1,6 @@
 {
     "name": "Nextcloud",
-    "release": "11.1-RELEASE",
+    "release": "11.2-RELEASE",
     "artifact": "https://github.com/rubenverhoef/iocage-plugin-nextcloud.git",
     "pkgs": [
 	  "bash",

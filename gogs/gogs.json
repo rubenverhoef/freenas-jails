@@ -1,12 +1,9 @@
 {
-    "name": "HomeAssistant",
+    "name": "Gogs",
     "release": "11.2-RELEASE",
-    "artifact": "https://github.com/rubenverhoef/iocage-plugin-homeassistant.git",
+    "artifact": "https://github.com/rubenverhoef/iocage-plugin-gogs.git",
     "pkgs": [
-	  "bash",
-	  "sudo",
-	  "python36",
-	  "py36-sqlite3"
+	  "bash"
     ],
 	"packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
 	"fingerprints": {

@@ -1,6 +1,6 @@
 {
     "name": "Radarr",
-    "release": "11.1-RELEASE",
+    "release": "11.2-RELEASE",
     "artifact": "https://github.com/rubenverhoef/iocage-plugin-radarr.git",
     "pkgs": [
       "radarr"
