@@ -848,7 +848,7 @@ delete_jail () {
 					rm -rf $BACKUP_LOCATION/$JAIL
 				fi
 			fi
-			rm $JAIL_LOCATION/webserver/root/usr/local/etc/nginx/sites/$JAIL.conf
+			rm -f $JAIL_LOCATION/webserver/root/usr/local/etc/nginx/sites/$JAIL.conf
 			sed -i '' -e '/.*'$JAIL'.*/d' $JAIL_LOCATION/webserver/root/usr/local/etc/nginx/standard.conf
 			if grep -q "MYSQL" $JAIL_CONFIG; then
 				MYSQL_DATA=$JAIL\_MYSQL_DATABASE
