@@ -19,7 +19,6 @@ GLOBAL_CONFIG=$(dirname $0)"/config.sh"
 DATABASE_JAILS="webserver, nextcloud, gogs"
 MEDIA_JAILS=(plex sonarr radarr sabnzbd)
 FILE_JAILS=(nextcloud)
-CUSTOM_INSTALL=()
 CUSTOM_PLUGIN=(plex sabnzbd radarr webserver nextcloud homeassistant)
 VNET_PLUGIN=(plex webserver)
 CHANGEABLE_PORT=(sonarr radarr sabnzbd)
@@ -499,9 +498,7 @@ install_jail () {
 	
 	if [[ $(iocage list) != *$JAIL* ]]; then
 		
-		if [[ ${CUSTOM_INSTALL[*]} == *$JAIL* ]]; then
-			iocage create -n $JAIL -p ${JAIL_CONFIG%/*}/$JAIL.json -r $VERSION ip4_addr="vnet0|${!IP}" defaultrouter="$ROUTER_IP" vnet="on" allow_raw_sockets="1" boot="on"
-		elif [[ ${CUSTOM_PLUGIN[*]} == *$JAIL* ]]; then
+		if [[ ${CUSTOM_PLUGIN[*]} == *$JAIL* ]]; then
 			if [[ ${VNET_PLUGIN[*]} == *$JAIL* ]]; then
 				INTERFACE="vnet0"
 				iocage fetch -P --name $(dirname $0)/$JAIL/$JAIL.json ip4_addr="$INTERFACE|${!IP}" defaultrouter="$ROUTER_IP" vnet="on"
@@ -576,14 +573,15 @@ install_jail () {
 			fi
 		fi
 
-		if [[ ${CUSTOM_INSTALL[*]} != *$JAIL* ]]; then
-			if [ "${!SUB_DOMAIN}" ]; then
-				echo "Change ui.json with subdomain"
-				sed -i '' -e 's,"adminportal.*,"adminportal": "https://'${!SUB_DOMAIN}'.'$DOMAIN'",g' $JAIL_LOCATION/$JAIL/plugin/ui.json
-			else
-				echo "Change ui.json with suburl"
-				sed -i '' -e 's,"adminportal.*,"adminportal": "https://www.'$DOMAIN'/'$JAIL'",g' $JAIL_LOCATION/$JAIL/plugin/ui.json
-			fi
+		if [ "${!SUB_DOMAIN}" ]; then
+			echo "Change ui.json with subdomain"
+			sed -i '' -e 's,"adminportal.*,"adminportal": "https://'${!SUB_DOMAIN}'.'$DOMAIN'",g' $JAIL_LOCATION/$JAIL/plugin/ui.json
+		elif [[ $JAIL == "webserver" ]]; then
+			echo "Change ui.json for webserver"
+			sed -i '' -e 's,"adminportal.*,"adminportal": "https://www.'$DOMAIN'",g' $JAIL_LOCATION/$JAIL/plugin/ui.json
+		else
+			echo "Change ui.json with suburl"
+			sed -i '' -e 's,"adminportal.*,"adminportal": "https://www.'$DOMAIN'/'$JAIL'",g' $JAIL_LOCATION/$JAIL/plugin/ui.json
 		fi
 
 		iocage restart $JAIL
