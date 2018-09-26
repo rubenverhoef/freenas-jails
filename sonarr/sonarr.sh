@@ -15,7 +15,7 @@ chown -R $USER_NAME:$USER_NAME /usr/local/share/sonarr/
 sysrc 'sonarr_user='$USER_NAME''
 echo "permissions set"
 
-rm -R /usr/local/sonarr
+rm -rf /usr/local/sonarr
 
 service sonarr start
 sleep 10

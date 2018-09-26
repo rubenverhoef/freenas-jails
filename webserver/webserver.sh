@@ -29,7 +29,7 @@ sed -i '' -e 's/;env\[PATH\] /env\[PATH\] /g' /usr/local/etc/php-fpm.d/www.conf
 cd /root && fetch "https://www.phpmyadmin.net/downloads/phpMyAdmin-latest-all-languages.tar.gz" -o phpmyadmin.tar.gz
 tar -zxvf phpmyadmin.tar.gz -C /usr/local/www/
 mkdir /usr/local/www/phpmyadmin && mv /usr/local/www/phpMyAdmin*/* /usr/local/www/phpmyadmin
-rm phpmyadmin.tar.gz && rm -R /usr/local/www/phpMyAdmin*
+rm phpmyadmin.tar.gz && rm -rf /usr/local/www/phpMyAdmin*
 
 cp /usr/local/www/phpmyadmin/config.sample.inc.php /usr/local/www/phpmyadmin/config.inc.php
 sed -i '' -e 's/\$cfg\['\''blowfish_secret'\''\] = '\'''\'';/\$cfg\['\''blowfish_secret'\''\] = '\'''$BLOWFISH_SECRET\''\'';/g' /usr/local/www/phpmyadmin/config.inc.php
@@ -102,7 +102,7 @@ if [ "$WORDPRESS_WEB" == "YES" ]; then
 	cd /root && fetch "http://wordpress.org/latest.tar.gz" -o wordpress.tar.gz
 	tar -zxvf wordpress.tar.gz -C /usr/local/www/
 	mv /usr/local/www/wordpress/* /usr/local/www/
-	rm wordpress.tar.gz && rm -R /usr/local/www/wordpress
+	rm wordpress.tar.gz && rm -rf /usr/local/www/wordpress
 
 	mysql -u root -p$MYSQL_ROOT_PASSWORD -e "CREATE DATABASE IF NOT EXISTS $webserver_MYSQL_DATABASE;"
 	mysql -u root -p$MYSQL_ROOT_PASSWORD -e "GRANT ALL PRIVILEGES ON $webserver_MYSQL_DATABASE.* TO '$webserver_MYSQL_USERNAME'@'%' IDENTIFIED BY '$webserver_MYSQL_PASSWORD';"

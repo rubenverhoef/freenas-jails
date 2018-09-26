@@ -854,7 +854,7 @@ delete_jail () {
 				--yesno "Do you want to delete the backup of $JAIL also?" 7 60
 				exit_status=$?
 				if [ $exit_status == $DIALOG_OK ]; then
-					rm -R $BACKUP_LOCATION/$JAIL
+					rm -rf $BACKUP_LOCATION/$JAIL
 				fi
 			fi
 			rm $JAIL_LOCATION/webserver/root/usr/local/etc/nginx/sites/$JAIL.conf

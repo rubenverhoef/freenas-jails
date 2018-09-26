@@ -15,7 +15,7 @@ chown -R $USER_NAME:$USER_NAME /usr/local/share/radarr/
 sysrc 'radarr_user='$USER_NAME''
 echo "permissions set"
 
-rm -R /usr/local/radarr
+rm -rf /usr/local/radarr
 
 service radarr start
 sleep 10
