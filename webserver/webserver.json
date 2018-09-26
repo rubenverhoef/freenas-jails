@@ -6,7 +6,7 @@
 	  "bash",
 	  "nginx",
 	  "git",
-	  "mysql57-server",
+	  "mysql80-server",
 	  "php71",
 	  "mod_php71",
 	  "php71-session",
