@@ -639,7 +639,6 @@ mount_storage () {
 			# load config files
 			. $JAIL_CONFIG
 			. $GLOBAL_CONFIG
-			JAIL_NAME=$JAIL\_JAIL_NAME
 			
 			if [[ $(iocage list) == *$JAIL* ]] && [ -f $JAIL_CONFIG ]; then
 				exit_status="0"
@@ -670,7 +669,6 @@ mount_storage () {
 		. $JAIL_CONFIG
 	fi
 	. $GLOBAL_CONFIG
-	JAIL_NAME=$JAIL\_JAIL_NAME
 	
 	if ! grep -q "FILE_LOCATION" $GLOBAL_CONFIG; then
 		echo -e "FILE_LOCATION=\"\"" >> $GLOBAL_CONFIG
@@ -698,7 +696,6 @@ mount_storage () {
 						JAIL_CONFIG=$(dirname $0)"/"$JAIL"/"$JAIL"_config.sh"
 						if [ -f $JAIL_CONFIG ]; then
 							. $JAIL_CONFIG
-							JAIL_NAME=$JAIL\_JAIL_NAME
 							iocage fstab -R 0 $JAIL $DATA /media nullfs rw 0 0
 							iocage restart $JAIL
 						fi
@@ -735,7 +732,6 @@ mount_storage () {
 						JAIL_CONFIG=$(dirname $0)"/"$JAIL"/"$JAIL"_config.sh"
 						if [ -f $JAIL_CONFIG ]; then
 					   		. $JAIL_CONFIG
-					   		JAIL_NAME=$JAIL\_JAIL_NAME
 					   		iocage fstab -R 0 $JAIL $DATA /mnt/media nullfs rw 0 0
 							iocage restart $JAIL
 						fi
@@ -770,7 +766,6 @@ mount_storage () {
 					   	JAIL_CONFIG=$(dirname $0)"/"$JAIL"/"$JAIL"_config.sh"
 						if [ -f $JAIL_CONFIG ]; then
 							. $JAIL_CONFIG
-					   		JAIL_NAME=$JAIL\_JAIL_NAME
 							iocage fstab -R 1 $JAIL $DATA /mnt/downloads nullfs rw 0 0
 							iocage restart $JAIL
 						fi
@@ -824,9 +819,7 @@ delete_jail () {
 	. $JAIL_CONFIG
 	. $GLOBAL_CONFIG
 	. $(dirname $0)/webserver/webserver_config.sh
-	
-	JAIL_NAME=$JAIL\_JAIL_NAME
-	
+
 	if [[ $(iocage list) == *$JAIL* ]]; then
 		dialog --title "Backup before deleting" \
 		--yesno "Do you want to make a config backup before deleting $JAIL?" 7 60
@@ -927,7 +920,6 @@ backup_jail () {
 	# load config files
 	. $JAIL_CONFIG
 	. $GLOBAL_CONFIG
-	JAIL_NAME=$JAIL\_JAIL_NAME
 	
 	mkdir -p $BACKUP_LOCATION/$JAIL
 	iocage stop $JAIL
