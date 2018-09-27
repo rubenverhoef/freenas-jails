@@ -90,7 +90,7 @@ expect eof
 
 echo "$SECURE_MYSQL"
 
-mysql -u root -p$MYSQL_ROOT_PASSWORD -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$MYSQL_ROOT_PASSWORD';" --connect-expired-password
+#mysql -u root -p$MYSQL_ROOT_PASSWORD -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$MYSQL_ROOT_PASSWORD';" --connect-expired-password
 
 ## Wordpress & Organizr Installation
 mkdir /usr/local/organizr
@@ -103,7 +103,8 @@ if [ "$WORDPRESS_WEB" == "YES" ]; then
 	rm wordpress.tar.gz && rm -rf /usr/local/www/wordpress
 
 	mysql -u root -p$MYSQL_ROOT_PASSWORD -e "CREATE DATABASE IF NOT EXISTS $webserver_MYSQL_DATABASE;"
-	mysql -u root -p$MYSQL_ROOT_PASSWORD -e "GRANT ALL PRIVILEGES ON $webserver_MYSQL_DATABASE.* TO '$webserver_MYSQL_USERNAME'@'%' IDENTIFIED BY '$webserver_MYSQL_PASSWORD';"
+	mysql -u root -p$MYSQL_ROOT_PASSWORD -e "CREATE USER IF NOT EXISTS '$webserver_MYSQL_USERNAME'@'%' IDENTIFIED BY '$webserver_MYSQL_PASSWORD';"
+	mysql -u root -p$MYSQL_ROOT_PASSWORD -e "GRANT ALL PRIVILEGES ON $webserver_MYSQL_DATABASE.* TO '$webserver_MYSQL_USERNAME'@'%' WITH GRANT OPTION;"
 	mysql -u root -p$MYSQL_ROOT_PASSWORD -e "FLUSH PRIVILEGES;"
 
 	cp /usr/local/www/wp-config-sample.php /usr/local/www/wp-config.php
