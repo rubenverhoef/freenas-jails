@@ -3,7 +3,10 @@
 	"release": "11.2-RELEASE",
 	"artifact": "https://github.com/freenas/iocage-plugin-plexmediaserver.git",
 	"pkgs": [
-	  "multimedia/plexmediaserver"
+		"multimedia/plexmediaserver",
+		"ca_root_nss",
+		"wget",
+		"perl5.28"
 	],
 	"packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
 	"fingerprints": {

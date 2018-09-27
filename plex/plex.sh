@@ -5,10 +5,7 @@
 
 service plexmediaserver stop
 
-pkg install -y ca_root_nss wget perl5.28
-
 ln -s /usr/local/bin/perl5.28.0 /usr/local/bin/perl
-
 
 if [ $PLEX_USER ]; then
     sh $(dirname $0)/PMS_Updater.sh -u $PLEX_USER -p$PLEX_PASS -a
@@ -25,7 +22,7 @@ chown -R $USER_NAME:$USER_NAME /usr/local/plexdata
 chown -R $USER_NAME:$USER_NAME /var/run/plex
 
 #sysrc 'ifconfig_epair0_name=epair0b'
-sysrc 'plexmediaserver_user=jailuser'
-sysrc 'plexmediaserver_group=jailuser'
+sysrc 'plexmediaserver_user='$USER_NAME''
+sysrc 'plexmediaserver_group='$USER_NAME''
 
 service plexmediaserver start
