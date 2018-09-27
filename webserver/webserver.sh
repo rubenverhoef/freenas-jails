@@ -90,7 +90,7 @@ expect eof
 
 echo "$SECURE_MYSQL"
 
-#mysql -u root -p$MYSQL_ROOT_PASSWORD -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '$MYSQL_ROOT_PASSWORD';" --connect-expired-password
+mysql -u root -p$MYSQL_ROOT_PASSWORD -e "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '$MYSQL_ROOT_PASSWORD';"
 
 ## Wordpress & Organizr Installation
 mkdir /usr/local/organizr
