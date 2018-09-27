@@ -105,6 +105,7 @@ if [ "$WORDPRESS_WEB" == "YES" ]; then
 	mysql -u root -p$MYSQL_ROOT_PASSWORD -e "CREATE DATABASE IF NOT EXISTS $webserver_MYSQL_DATABASE;"
 	mysql -u root -p$MYSQL_ROOT_PASSWORD -e "CREATE USER IF NOT EXISTS '$webserver_MYSQL_USERNAME'@'localhost' IDENTIFIED BY '$webserver_MYSQL_PASSWORD';"
 	mysql -u root -p$MYSQL_ROOT_PASSWORD -e "GRANT ALL PRIVILEGES ON $webserver_MYSQL_DATABASE.* TO '$webserver_MYSQL_USERNAME'@'localhost' WITH GRANT OPTION;"
+	mysql -u root -p$MYSQL_ROOT_PASSWORD -e "ALTER USER '$webserver_MYSQL_USERNAME'@'localhost' IDENTIFIED WITH mysql_native_password BY '$webserver_MYSQL_PASSWORD';"
 	mysql -u root -p$MYSQL_ROOT_PASSWORD -e "FLUSH PRIVILEGES;"
 
 	cp /usr/local/www/wp-config-sample.php /usr/local/www/wp-config.php
