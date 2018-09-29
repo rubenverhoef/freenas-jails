@@ -1,9 +1,9 @@
 {
-    "name": "Radarr",
+    "name": "Sonarr",
     "release": "11.2-RELEASE",
-    "artifact": "https://github.com/freenas/iocage-plugin-radarr.git",
+    "artifact": "https://github.com/freenas/iocage-plugin-sonarr.git",
     "pkgs": [
-      "radarr"
+      "sonarr"
     ],
     "packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
     "fingerprints": {

@@ -19,7 +19,7 @@ GLOBAL_CONFIG=$(dirname $0)"/config.sh"
 DATABASE_JAILS="webserver, nextcloud, gogs"
 MEDIA_JAILS=(plex sonarr radarr sabnzbd)
 FILE_JAILS=(nextcloud)
-CUSTOM_PLUGIN=(plex sabnzbd radarr webserver nextcloud homeassistant)
+CUSTOM_PLUGIN=(plex sabnzbd radarr sonarr webserver nextcloud homeassistant)
 VNET_PLUGIN=(plex webserver)
 CHANGEABLE_PORT=(sonarr radarr sabnzbd)
 
