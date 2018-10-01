@@ -3,18 +3,23 @@
 . $(dirname $0)/sabnzbd_config.sh
 . $(dirname $0)/config.sh
 
-service sabnzbd stop
+sed -i '' -e 's,#!/usr/bin/python*,#!/usr/local/bin/python2.7,g' /usr/local/bin/SABnzbd.py
+
+sysrc 'sabnzbd_enable=YES'
+sysrc 'sabnzbd_user='$USER_NAME''
+sysrc 'sabnzbd_group='$USER_NAME''
+sysrc 'sabnzbd_conf_dir="/usr/local/sabnzbd"'
+sysrc 'sabnzbd_pidfile="/var/run/sabnzbd/sabnzbd.pid"'
 
 #create user
 pw useradd -n $USER_NAME -u $USER_ID -d /nonexistent -s /usr/sbin/nologin
 
-rm -R /.sabnzbd
-mkdir /.sabnzbd
-chown $USER_NAME:$USER_NAME /.sabnzbd
-chown $USER_NAME:$USER_NAME /var/run/sabnzbd
+rm -rf /usr/local/sabnzbd
+mkdir /usr/local/sabnzbd
+mkdir /var/run/sabnzbd
 
-sysrc 'sabnzbd_user='$USER_NAME''
-sysrc 'sabnzbd_group='$USER_NAME''
+chown $USER_NAME:$USER_NAME /usr/local/sabnzbd
+chown $USER_NAME:$USER_NAME /var/run/sabnzbd
 
 service sabnzbd start
 sleep 10
