@@ -3,9 +3,9 @@
 . $(dirname $0)/sabnzbd_config.sh
 . $(dirname $0)/config.sh
 
-sed -i '' -e 's,#!/usr/bin/python*,#!/usr/local/bin/python2.7,g' /root/SABnzbd/SABnzbd.py
+sed -i '' -e 's,#!/usr/bin/python*,#!/usr/local/bin/python2.7,g' /usr/local/share/SABnzbd/SABnzbd.py
 
-ln -s /root/SABnzbd/SABnzbd.py /usr/local/bin/SABnzbd.py
+ln -s /usr/local/share/SABnzbd/SABnzbd.py /usr/local/bin/SABnzbd.py
 
 sysrc 'sabnzbd_enable=YES'
 sysrc 'sabnzbd_user='$USER_NAME''
