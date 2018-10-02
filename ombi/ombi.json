@@ -3,7 +3,11 @@
     "release": "11.2-RELEASE",
     "artifact": "https://github.com/rubenverhoef/iocage-plugin-ombi.git",
     "pkgs": [
-	  "bash"
+		"curl",
+		"wget",
+		"unzip",
+		"mono",
+		"sqlite3"
     ],
 	"packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
 	"fingerprints": {
