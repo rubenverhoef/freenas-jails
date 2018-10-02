@@ -8,12 +8,9 @@ service sonarr stop
 #create user
 pw useradd -n $USER_NAME -u $USER_ID -d /nonexistent -s /usr/sbin/nologin
 
-mkdir -p /mnt/media/series
-chown -R $USER_NAME:$USER_NAME /mnt/media/series
 chown -R $USER_NAME:$USER_NAME /usr/local/share/sonarr/
 
 sysrc 'sonarr_user='$USER_NAME''
-echo "permissions set"
 
 rm -rf /usr/local/sonarr
 
