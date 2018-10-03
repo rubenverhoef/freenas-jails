@@ -37,6 +37,7 @@ webserver_DEFAULT_DATABASE="wordpress"
 plex_DEFAULT_IP=$BASE_IP.$((LOCAL_IP_LSV + 3))
 plex_DEFAULT_PORT="32400"
 sabnzbd_DEFAULT_PORT="8080"
+ombi_DEFAULT_PORT="3579"
 sonarr_DEFAULT_PORT="8989"
 radarr_DEFAULT_PORT="7878"
 homeassistant_DEFAULT_PORT="8123"

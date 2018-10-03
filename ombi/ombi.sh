@@ -16,6 +16,7 @@ rm -rf /usr/local/ombi
 mkdir /usr/local/ombi
 mkdir /var/run/ombi
 
+chown -R $USER_NAME:$USER_NAME /root/ombi
 chown $USER_NAME:$USER_NAME /usr/local/ombi
 chown $USER_NAME:$USER_NAME /var/run/ombi
 
