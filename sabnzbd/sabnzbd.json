@@ -5,6 +5,7 @@
   "pkgs": [
     "curl",
     "wget",
+    "openssl",
     "python",
     "py27-pip",
     "unrar",
