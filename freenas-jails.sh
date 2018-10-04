@@ -980,6 +980,7 @@ touch $GLOBAL_CONFIG || exit
 . $GLOBAL_CONFIG
 
 if [[ $1 == "" ]]; then
+	cd /root/freenas-jails && git reset --hard
 	cd /root/freenas-jails && git pull
 	bash /root/freenas-jails/freenas-jails.sh second_time
 else
