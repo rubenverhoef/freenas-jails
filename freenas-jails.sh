@@ -19,7 +19,7 @@ GLOBAL_CONFIG=$(dirname $0)"/config.sh"
 DATABASE_JAILS="webserver, nextcloud, gogs"
 MEDIA_JAILS=(plex sonarr radarr sabnzbd)
 FILE_JAILS=(nextcloud)
-CUSTOM_PLUGIN=(ombi plex sabnzbd radarr sonarr webserver nextcloud homeassistant)
+CUSTOM_PLUGIN=(plex sabnzbd radarr sonarr webserver nextcloud homeassistant)
 VNET_PLUGIN=(plex webserver)
 CHANGEABLE_PORT=(sonarr radarr sabnzbd)
 
@@ -37,7 +37,6 @@ webserver_DEFAULT_DATABASE="wordpress"
 plex_DEFAULT_IP=$BASE_IP.$((LOCAL_IP_LSV + 3))
 plex_DEFAULT_PORT="32400"
 sabnzbd_DEFAULT_PORT="8080"
-ombi_DEFAULT_PORT="3579"
 sonarr_DEFAULT_PORT="8989"
 radarr_DEFAULT_PORT="7878"
 homeassistant_DEFAULT_PORT="8123"
@@ -142,7 +141,6 @@ install_dialog () {
 	Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" \
 	Nextcloud "Nextcloud 12" \
 	SABnzbd "SABnzbd" \
-	Ombi "Ombi request service" \
 	Sonarr "Sonarr automatic serice downloader" \
 	Radarr "Radarr automatic movie downloader" \
 	Plex "Plex Media Server" \
@@ -625,7 +623,6 @@ mount_storage () {
 			Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" \
 			Nextcloud "Nextcloud 12" \
 			SABnzbd "SABnzbd" \
-			Ombi "Ombi request service" \
 			Sonarr "Sonarr automatic serice downloader" \
 			Radarr "Radarr automatic movie downloader" \
 			Plex "Plex Media Server" \
@@ -804,7 +801,6 @@ delete_jail () {
 	Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" \
 	Nextcloud "Nextcloud 12" \
 	SABnzbd "SABnzbd" \
-	Ombi "Ombi request service" \
 	Sonarr "Sonarr automatic serice downloader" \
 	Radarr "Radarr automatic movie downloader" \
 	Plex "Plex Media Server" \
@@ -904,7 +900,6 @@ backup_jail () {
 		Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" \
 		Nextcloud "Nextcloud 12" \
 		SABnzbd "SABnzbd" \
-		Ombi "Ombi request service" \
 		Sonarr "Sonarr automatic serice downloader" \
 		Radarr "Radarr automatic movie downloader" \
 		Plex "Plex Media Server" \
