@@ -652,6 +652,7 @@ mount_storage () {
 						if [ $exit_status == $DIALOG_OK ]; then
 							chown -R $USER_NAME:$USER_NAME $DATA
 							iocage fstab -a $JAIL $DATA /mnt/$(basename $DATA) nullfs rw 0 0
+							iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/$(basename $DATA)
 							iocage restart $JAIL
 						fi
 					fi		
@@ -696,15 +697,18 @@ mount_storage () {
 						JAIL_CONFIG=$(dirname $0)"/"$JAIL"/"$JAIL"_config.sh"
 						if [ -f $JAIL_CONFIG ]; then
 							. $JAIL_CONFIG
+							chown -R $USER_NAME:$USER_NAME $DATA
 							iocage fstab -R 0 $JAIL $DATA /media nullfs rw 0 0
+							iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/$(basename $DATA)
 							iocage restart $JAIL
 						fi
 						count=$(( $count + 1 ))
 					done
 				else
 					. $GLOBAL_CONFIG
-					chown -R $USER_NAME:$USER_NAME $FILE_LOCATION
-					iocage fstab -a $JAIL $FILE_LOCATION /media nullfs rw 0 0
+					chown -R $USER_NAME:$USER_NAME $DATA
+					iocage fstab -a $JAIL $DATA /media nullfs rw 0 0
+					iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/$(basename $DATA)
 					iocage restart $JAIL
 				fi
 			else
@@ -714,6 +718,7 @@ mount_storage () {
 			. $GLOBAL_CONFIG
 			chown -R $USER_NAME:$USER_NAME $FILE_LOCATION
 			iocage fstab -a $JAIL $FILE_LOCATION /media nullfs rw 0 0
+			iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/$(basename $FILE_LOCATION)
 			iocage restart $JAIL
 		fi
 	fi
@@ -732,15 +737,18 @@ mount_storage () {
 						JAIL_CONFIG=$(dirname $0)"/"$JAIL"/"$JAIL"_config.sh"
 						if [ -f $JAIL_CONFIG ]; then
 					   		. $JAIL_CONFIG
+							chown -R $USER_NAME:$USER_NAME $DATA
 					   		iocage fstab -R 0 $JAIL $DATA /mnt/media nullfs rw 0 0
+							iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/$(basename $DATA)
 							iocage restart $JAIL
 						fi
 						count=$(( $count + 1 ))
 					done
 				else
 					. $GLOBAL_CONFIG
-					chown -R $USER_NAME:$USER_NAME $MEDIA_LOCATION
+					chown -R $USER_NAME:$USER_NAME $DATA
 					iocage fstab -a $JAIL $DATA /mnt/media nullfs rw 0 0
+					iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/$(basename $DATA)
 					iocage restart $JAIL
 				fi
 			else
@@ -750,6 +758,7 @@ mount_storage () {
 			. $GLOBAL_CONFIG
 			chown -R $USER_NAME:$USER_NAME $MEDIA_LOCATION
 			iocage fstab -a $JAIL $MEDIA_LOCATION /mnt/media nullfs rw 0 0
+			iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/$(basename $MEDIA_LOCATION)
 			iocage restart $JAIL
 		fi
 
@@ -766,15 +775,18 @@ mount_storage () {
 					   	JAIL_CONFIG=$(dirname $0)"/"$JAIL"/"$JAIL"_config.sh"
 						if [ -f $JAIL_CONFIG ]; then
 							. $JAIL_CONFIG
+							chown -R $USER_NAME:$USER_NAME $DATA
 							iocage fstab -R 1 $JAIL $DATA /mnt/downloads nullfs rw 0 0
+							iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/$(basename $DATA)
 							iocage restart $JAIL
 						fi
 						count=$(( $count + 1 ))
 					done
 				else
 					. $GLOBAL_CONFIG
-					chown -R $USER_NAME:$USER_NAME $DOWNLOADS_LOCATION
-					iocage fstab -a $JAIL $DOWNLOADS_LOCATION /mnt/downloads nullfs rw 0 0
+					chown -R $USER_NAME:$USER_NAME $DATA
+					iocage fstab -a $JAIL $DATA /mnt/downloads nullfs rw 0 0
+					iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/$(basename $DATA)
 					iocage restart $JAIL
 				fi
 			else
@@ -784,6 +796,7 @@ mount_storage () {
 			. $GLOBAL_CONFIG
 			chown -R $USER_NAME:$USER_NAME $DOWNLOADS_LOCATION
 			iocage fstab -a $JAIL $DOWNLOADS_LOCATION /mnt/downloads nullfs rw 0 0
+			iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/$(basename $DOWNLOADS_LOCATION)
 			iocage restart $JAIL
 		fi
 	fi
@@ -962,6 +975,7 @@ touch $GLOBAL_CONFIG || exit
 . $GLOBAL_CONFIG
 
 if [[ $1 == "" ]]; then
+	cd /root/freenas-jails && git reset --hard
 	cd /root/freenas-jails && git pull
 	bash /root/freenas-jails/freenas-jails.sh second_time
 else
