@@ -17,9 +17,9 @@ ROUTER_IP="$(netstat -rn | grep 'default' -m 1 | grep -oE "\b([0-9]{1,3}\.){3}[0
 IOCAGE_SHARED_IP=$BASE_IP.$((LOCAL_IP_LSV + 2))
 GLOBAL_CONFIG=$(dirname $0)"/config.sh"
 DATABASE_JAILS="webserver, nextcloud, gogs"
-MEDIA_JAILS=(plex sonarr radarr sabnzbd)
+MEDIA_JAILS=(plex emby sonarr radarr sabnzbd)
 FILE_JAILS=(nextcloud)
-CUSTOM_PLUGIN=(plex sabnzbd radarr sonarr webserver nextcloud homeassistant)
+CUSTOM_PLUGIN=(plex emby sabnzbd radarr sonarr webserver nextcloud homeassistant)
 VNET_PLUGIN=(plex webserver)
 CHANGEABLE_PORT=(sonarr radarr sabnzbd)
 
@@ -36,6 +36,7 @@ webserver_DEFAULT_DATABASE="wordpress"
 
 plex_DEFAULT_IP=$BASE_IP.$((LOCAL_IP_LSV + 3))
 plex_DEFAULT_PORT="32400"
+emby_DEFAULT_PORT="8096"
 sabnzbd_DEFAULT_PORT="8080"
 sonarr_DEFAULT_PORT="8989"
 radarr_DEFAULT_PORT="7878"
@@ -144,6 +145,7 @@ install_dialog () {
 	Sonarr "Sonarr automatic serice downloader" \
 	Radarr "Radarr automatic movie downloader" \
 	Plex "Plex Media Server" \
+	Emby "Emby Media Server" \
 	HomeAssistant "Home-Assistant Python 3 home automation software"\
 	2>&1 1>&3)
 	exit_status=$?
@@ -626,6 +628,7 @@ mount_storage () {
 			Sonarr "Sonarr automatic serice downloader" \
 			Radarr "Radarr automatic movie downloader" \
 			Plex "Plex Media Server" \
+			Emby "Emby Media Server" \
 			HomeAssistant "Home-Assistant Python 3 home automation software"\
 			2>&1 1>&3)
 			exit_status=$?
@@ -817,6 +820,7 @@ delete_jail () {
 	Sonarr "Sonarr automatic serice downloader" \
 	Radarr "Radarr automatic movie downloader" \
 	Plex "Plex Media Server" \
+	Emby "Emby Media Server" \
 	HomeAssistant "Home-Assistant Python 3 home automation software"\
 	2>&1 1>&3)
 	exit_status=$?
@@ -916,6 +920,7 @@ backup_jail () {
 		Sonarr "Sonarr automatic serice downloader" \
 		Radarr "Radarr automatic movie downloader" \
 		Plex "Plex Media Server" \
+		Emby "Emby Media Server" \
 		HomeAssistant "Home-Assistant Python 3 home automation software"\
 		2>&1 1>&3)
 		exit_status=$?
