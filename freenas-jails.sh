@@ -20,7 +20,7 @@ DATABASE_JAILS="webserver, nextcloud, gogs"
 MEDIA_JAILS=(plex emby sonarr radarr sabnzbd)
 FILE_JAILS=(nextcloud)
 CUSTOM_PLUGIN=(plex emby sabnzbd radarr sonarr webserver nextcloud homeassistant)
-VNET_PLUGIN=(plex webserver)
+VNET_PLUGIN=(plex webserver homeassistant)
 CHANGEABLE_PORT=(sonarr radarr sabnzbd)
 
 # DEFAULT VALUES:
@@ -40,6 +40,7 @@ emby_DEFAULT_PORT="8096"
 sabnzbd_DEFAULT_PORT="8080"
 sonarr_DEFAULT_PORT="8989"
 radarr_DEFAULT_PORT="7878"
+homeassistant_DEFAULT_IP=$BASE_IP.$((LOCAL_IP_LSV + 4))
 homeassistant_DEFAULT_PORT="8123"
 nextcloud_DEFAULT_PORT="80"
 nextcloud_DEFAULT_USERNAME="nextcloud_user"
