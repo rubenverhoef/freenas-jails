@@ -3,10 +3,8 @@
     "release": "11.2-RELEASE",
     "artifact": "https://github.com/rubenverhoef/iocage-plugin-homeassistant.git",
     "pkgs": [
-	  "bash",
-	  "sudo",
-	  "python36",
-	  "py36-sqlite3"
+	  "python37",
+	  "py37-sqlite3"
     ],
 	"packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
 	"fingerprints": {
