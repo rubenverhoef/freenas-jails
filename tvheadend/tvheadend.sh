@@ -1,29 +1,14 @@
 #!/bin/bash
 
-. $(dirname $0)/sonarr_config.sh
+. $(dirname $0)/tvheadend_config.sh
 . $(dirname $0)/config.sh
 
-service sonarr stop
+service tvheadend stop
 
 #create user
 pw useradd -n $USER_NAME -u $USER_ID -d /nonexistent -s /usr/sbin/nologin
 
-mkdir -p /mnt/media/series
-chown -R $USER_NAME:$USER_NAME /mnt/media/series
-chown -R $USER_NAME:$USER_NAME /usr/local/share/sonarr/
+sysrc 'tvheadend_user='$USER_NAME''
+sysrc 'tvheadend_group='$USER_NAME''
 
-sysrc 'sonarr_user='$USER_NAME''
-echo "permissions set"
-
-rm -rf /usr/local/sonarr
-
-service sonarr start
-sleep 10
-
-if [ -z "$sonarr_SUB_DOMAIN" ]; then
-	echo "Change URL Base"
-	sed -i '' -e 's,<UrlBase></UrlBase>,<UrlBase>sonarr</UrlBase>,g' /usr/local/sonarr/config.xml
-fi
-sed -i '' -e 's,<Port>8989</Port>,<Port>'$sonarr_PORT'</Port>,g' /usr/local/sonarr/config.xml
-
-service sonarr restart
+service tvheadend start
