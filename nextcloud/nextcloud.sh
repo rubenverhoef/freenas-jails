@@ -52,10 +52,6 @@ sed -i '' -e 's/port 6379/port 0 /g' /usr/local/etc/redis.conf
 sed -i '' -e 's/# unixsocket/unixsocket/g' /usr/local/etc/redis.conf
 sed -i '' -e 's/perm 700/perm 777 /g' /usr/local/etc/redis.conf
 
-portsnap fetch extract
-cd /usr/ports/databases/pecl-redis/ && make -DBATCH install clean #needs from source, because not ready for php71
-cd /usr/ports/graphics/pecl-imagick/ && make -DBATCH install clean #needs from source, because not ready for php71
-
 sysrc 'nginx_enable=YES' 'php_fpm_enable=YES' 'redis_enable=YES'
   
 service redis start
