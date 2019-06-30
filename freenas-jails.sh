@@ -544,7 +544,7 @@ install_jail () {
 			fi
 		fi
 		
-		if grep -q "MYSQL" $JAIL_CONFIG; then # configure mysql if needed
+		if grep -q "MYSQL.*_DATABASE" $JAIL_CONFIG; then # configure mysql if needed
 			DATABASE=$JAIL\_MYSQL_DATABASE
 			USER=$JAIL\_MYSQL_USERNAME
 			PASS=$JAIL\_MYSQL_PASSWORD
@@ -568,7 +568,7 @@ install_jail () {
 						break
 					fi
 				done
-				if grep -q "MYSQL" $JAIL_CONFIG; then
+				if grep -q "MYSQL.*_DATABASE" $JAIL_CONFIG; then
 					. $(dirname $0)/webserver/webserver_config.sh
 					MYSQL_DATA=$JAIL\_MYSQL_DATABASE
 					iocage exec webserver mysql -u root -p$MYSQL_ROOT_PASSWORD ${!MYSQL_DATA} < $BACKUP_LOCATION/$JAIL/${!MYSQL_DATA}.sql
@@ -873,7 +873,7 @@ delete_jail () {
 			fi
 			rm -f $JAIL_LOCATION/webserver/root/usr/local/etc/nginx/sites/$JAIL.conf
 			sed -i '' -e '/.*'$JAIL'.*/d' $JAIL_LOCATION/webserver/root/usr/local/etc/nginx/standard.conf
-			if grep -q "MYSQL" $JAIL_CONFIG; then
+			if grep -q "MYSQL.*_DATABASE" $JAIL_CONFIG; then
 				MYSQL_DATA=$JAIL\_MYSQL_DATABASE
 				iocage exec webserver mysql -u root -p$MYSQL_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS ${!MYSQL_DATA};"
 			fi
@@ -962,7 +962,7 @@ backup_jail () {
 		fi
 	done
 	iocage start $JAIL
-	if grep -q "MYSQL" $JAIL_CONFIG; then
+	if grep -q "MYSQL.*_DATABASE" $JAIL_CONFIG; then
 		. $(dirname $0)/webserver/webserver_config.sh
 		MYSQL_DATA=$JAIL\_MYSQL_DATABASE
 		iocage exec webserver mysqldump --opt --set-gtid-purged=OFF -u root -p$MYSQL_ROOT_PASSWORD ${!MYSQL_DATA} > $BACKUP_LOCATION/$JAIL/${!MYSQL_DATA}.sql
