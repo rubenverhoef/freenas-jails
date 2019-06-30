@@ -38,7 +38,8 @@
 	  "php72-pecl-redis",
 	  "php72-pecl-imagick",
 	  "php72-hash",
-	  "php72-xml"
+	  "php72-xml",
+	  "php72-filter"
     ],
 	"packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
 	"fingerprints": {
