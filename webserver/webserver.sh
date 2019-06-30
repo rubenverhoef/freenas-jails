@@ -125,7 +125,6 @@ else
 	sed -i '' -e 's,/usr/local/www;,/usr/local/www/organizr;,g'  /usr/local/etc/nginx/nginx.conf
 	echo "location /phpmyadmin { include php.conf; root /usr/local/www; }" >> "/usr/local/etc/nginx/standard.conf"
 fi
-cp $(dirname $0)/config.php /usr/local/www/organizr/api/config/config.php
 
 chown -R $USER_NAME:$USER_NAME /usr/local/www
 
