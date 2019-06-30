@@ -36,7 +36,9 @@
 	  "php72-exif",
 	  "php72-gmp",
 	  "php72-pecl-redis",
-	  "php72-pecl-imagick"
+	  "php72-pecl-imagick",
+	  "php72-hash",
+	  "php72-xml"
     ],
 	"packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
 	"fingerprints": {
