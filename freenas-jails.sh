@@ -659,6 +659,7 @@ mount_storage () {
 						exit_status=$?
 						if [ $exit_status == $DIALOG_OK ]; then
 							chown -R $USER_NAME:$USER_NAME $DATA
+							mkdir -p $JAIL_LOCATION/$JAIL/root/mnt/$(basename $DATA)
 							iocage fstab -a $JAIL $DATA /mnt/$(basename $DATA) nullfs rw 0 0
 							iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/$(basename $DATA)
 							iocage restart $JAIL
@@ -706,8 +707,9 @@ mount_storage () {
 						if [ -f $JAIL_CONFIG ]; then
 							. $JAIL_CONFIG
 							chown -R $USER_NAME:$USER_NAME $DATA
-							iocage fstab -R 0 $JAIL $DATA /media nullfs rw 0 0
-							iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/$(basename $DATA)
+							mkdir -p $JAIL_LOCATION/$JAIL/root/media
+							iocage fstab -R 0 $JAIL $DATA /media nullfs rw 0 0 # does not work, we need to get the index first
+							iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /media
 							iocage restart $JAIL
 						fi
 						count=$(( $count + 1 ))
@@ -715,8 +717,9 @@ mount_storage () {
 				else
 					. $GLOBAL_CONFIG
 					chown -R $USER_NAME:$USER_NAME $DATA
+					mkdir -p $JAIL_LOCATION/$JAIL/root/media
 					iocage fstab -a $JAIL $DATA /media nullfs rw 0 0
-					iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/$(basename $DATA)
+					iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /media
 					iocage restart $JAIL
 				fi
 			else
@@ -725,8 +728,9 @@ mount_storage () {
 		elif [[ $1 != "" ]]; then
 			. $GLOBAL_CONFIG
 			chown -R $USER_NAME:$USER_NAME $FILE_LOCATION
+			mkdir -p $JAIL_LOCATION/$JAIL/root/media
 			iocage fstab -a $JAIL $FILE_LOCATION /media nullfs rw 0 0
-			iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/$(basename $FILE_LOCATION)
+			iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /media
 			iocage restart $JAIL
 		fi
 	fi
@@ -746,8 +750,9 @@ mount_storage () {
 						if [ -f $JAIL_CONFIG ]; then
 					   		. $JAIL_CONFIG
 							chown -R $USER_NAME:$USER_NAME $DATA
-					   		iocage fstab -R 0 $JAIL $DATA /mnt/media nullfs rw 0 0
-							iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/$(basename $DATA)
+							mkdir -p $JAIL_LOCATION/$JAIL/root/mnt/media
+					   		iocage fstab -R 0 $JAIL $DATA /mnt/media nullfs rw 0 0 # does not work, we need to get the index first
+							iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/media
 							iocage restart $JAIL
 						fi
 						count=$(( $count + 1 ))
@@ -755,8 +760,9 @@ mount_storage () {
 				else
 					. $GLOBAL_CONFIG
 					chown -R $USER_NAME:$USER_NAME $DATA
+					mkdir -p $JAIL_LOCATION/$JAIL/root/mnt/media
 					iocage fstab -a $JAIL $DATA /mnt/media nullfs rw 0 0
-					iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/$(basename $DATA)
+					iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/media
 					iocage restart $JAIL
 				fi
 			else
@@ -765,8 +771,9 @@ mount_storage () {
 		elif [[ $1 != "" ]]; then
 			. $GLOBAL_CONFIG
 			chown -R $USER_NAME:$USER_NAME $MEDIA_LOCATION
+			mkdir -p $JAIL_LOCATION/$JAIL/root/mnt/media
 			iocage fstab -a $JAIL $MEDIA_LOCATION /mnt/media nullfs rw 0 0
-			iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/$(basename $MEDIA_LOCATION)
+			iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/media
 			iocage restart $JAIL
 		fi
 
@@ -784,8 +791,9 @@ mount_storage () {
 						if [ -f $JAIL_CONFIG ]; then
 							. $JAIL_CONFIG
 							chown -R $USER_NAME:$USER_NAME $DATA
-							iocage fstab -R 1 $JAIL $DATA /mnt/downloads nullfs rw 0 0
-							iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/$(basename $DATA)
+							mkdir -p $JAIL_LOCATION/$JAIL/root/mnt/downloads
+							iocage fstab -R 1 $JAIL $DATA /mnt/downloads nullfs rw 0 0 # does not work, we need to get the index first
+							iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/downloads
 							iocage restart $JAIL
 						fi
 						count=$(( $count + 1 ))
@@ -793,8 +801,9 @@ mount_storage () {
 				else
 					. $GLOBAL_CONFIG
 					chown -R $USER_NAME:$USER_NAME $DATA
+					mkdir -p $JAIL_LOCATION/$JAIL/root/mnt/downloads
 					iocage fstab -a $JAIL $DATA /mnt/downloads nullfs rw 0 0
-					iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/$(basename $DATA)
+					iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/downloads
 					iocage restart $JAIL
 				fi
 			else
@@ -803,8 +812,9 @@ mount_storage () {
 		elif [[ $1 != "" ]]; then
 			. $GLOBAL_CONFIG
 			chown -R $USER_NAME:$USER_NAME $DOWNLOADS_LOCATION
+			mkdir -p $JAIL_LOCATION/$JAIL/root/mnt/downloads
 			iocage fstab -a $JAIL $DOWNLOADS_LOCATION /mnt/downloads nullfs rw 0 0
-			iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/$(basename $DOWNLOADS_LOCATION)
+			iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/downloads
 			iocage restart $JAIL
 		fi
 	fi
