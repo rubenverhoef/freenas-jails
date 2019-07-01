@@ -98,6 +98,12 @@ else
 	echo "    1 => 'www.$DOMAIN'," >> "/usr/local/www/nextcloud/config/config.php"
 fi
 echo "  )," >> "/usr/local/www/nextcloud/config/config.php"
+echo "  'trusted_proxies' => array(" >> "/usr/local/www/nextcloud/config/config.php"
+echo "    '$webserver_IP'" >> "/usr/local/www/nextcloud/config/config.php"
+echo "  )," >> "/usr/local/www/nextcloud/config/config.php"
+echo "  'forwarded_for_headers' => array(" >> "/usr/local/www/nextcloud/config/config.php"
+echo "    'HTTP_X_FORWARDED_FOR'" >> "/usr/local/www/nextcloud/config/config.php"
+echo "  )," >> "/usr/local/www/nextcloud/config/config.php"
 echo ");" >> "/usr/local/www/nextcloud/config/config.php"
 
 service php-fpm restart
