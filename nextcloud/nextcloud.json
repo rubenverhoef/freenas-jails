@@ -40,7 +40,8 @@
 	  "php72-hash",
 	  "php72-xml",
 	  "php72-filter",
-	  "php72-opcache"
+	  "php72-opcache",
+	  "php72-pcntl"
     ],
 	"packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
 	"fingerprints": {
