@@ -47,6 +47,7 @@ homeassistant_DEFAULT_PORT="8123"
 nextcloud_DEFAULT_PORT="80"
 nextcloud_DEFAULT_USERNAME="nextcloud_user"
 nextcloud_DEFAULT_DATABASE="nextcloud"
+adguard_DEFAULT_PORT="3000"
 
 first () {
 
@@ -151,6 +152,7 @@ install_dialog () {
 	Emby "Emby Media Server" \
 	Tvheadend "Tvheadend TV streaming server" \
 	HomeAssistant "Home-Assistant Python 3 home automation software"\
+	AdGuard "DNS Adblocker"\
 	2>&1 1>&3)
 	exit_status=$?
 	exec 3>&-
@@ -635,6 +637,7 @@ mount_storage () {
 			Emby "Emby Media Server" \
 			Tvheadend "Tvheadend TV streaming server" \
 			HomeAssistant "Home-Assistant Python 3 home automation software"\
+			AdGuard "DNS Adblocker"\
 			2>&1 1>&3)
 			exit_status=$?
 			exec 3>&-
@@ -838,6 +841,7 @@ delete_jail () {
 	Emby "Emby Media Server" \
 	Tvheadend "Tvheadend TV streaming server" \
 	HomeAssistant "Home-Assistant Python 3 home automation software"\
+	AdGuard "DNS Adblocker"\
 	2>&1 1>&3)
 	exit_status=$?
 	exec 3>&-
@@ -939,6 +943,7 @@ backup_jail () {
 		Emby "Emby Media Server" \
 		Tvheadend "Tvheadend TV streaming server" \
 		HomeAssistant "Home-Assistant Python 3 home automation software"\
+		AdGuard "DNS Adblocker"\
 		2>&1 1>&3)
 		exit_status=$?
 		exec 3>&-
