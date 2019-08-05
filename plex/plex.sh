@@ -24,5 +24,6 @@ chown -R $USER_NAME:$USER_NAME /var/run/plex
 #sysrc 'ifconfig_epair0_name=epair0b'
 sysrc 'plexmediaserver_user='$USER_NAME''
 sysrc 'plexmediaserver_group='$USER_NAME''
+sysrc 'plexmediaserver_support_path="/usr/local/plexdata"'
 
 service plexmediaserver start
