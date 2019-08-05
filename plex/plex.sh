@@ -5,7 +5,7 @@
 
 service plexmediaserver stop
 
-ln -s /usr/local/bin/perl5.28.0 /usr/local/bin/perl
+ln -s /usr/local/bin/perl5.30.0 /usr/local/bin/perl
 
 if [ $PLEX_USER ]; then
     sh $(dirname $0)/PMS_Updater.sh -u $PLEX_USER -p$PLEX_PASS -a
