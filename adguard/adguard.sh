@@ -5,3 +5,5 @@
 
 #create user
 pw useradd -n $USER_NAME -u $USER_ID -d /nonexistent -s /usr/sbin/nologin
+
+service adguard start
