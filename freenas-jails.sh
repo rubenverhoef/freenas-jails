@@ -16,10 +16,10 @@ BASE_IP="$(echo $LOCAL_IP | cut -d. -f1-3)"
 ROUTER_IP="$(netstat -rn | grep 'default' -m 1 | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")"
 IOCAGE_SHARED_IP=$BASE_IP.$((LOCAL_IP_LSV + 2))
 GLOBAL_CONFIG=$(dirname $0)"/config.sh"
-DATABASE_JAILS="webserver, nextcloud, gogs"
+DATABASE_JAILS="webserver, nextcloud, gogs, firefly"
 MEDIA_JAILS=(plex emby sonarr radarr sabnzbd tvheadend)
 FILE_JAILS=(nextcloud)
-CUSTOM_PLUGIN=(tvheadend plex emby sabnzbd radarr sonarr webserver nextcloud homeassistant adguard)
+CUSTOM_PLUGIN=(tvheadend plex emby sabnzbd radarr sonarr webserver nextcloud homeassistant adguard firefly)
 VNET_PLUGIN=(tvheadend plex webserver homeassistant)
 CHANGEABLE_PORT=(sonarr radarr sabnzbd)
 
@@ -48,6 +48,9 @@ nextcloud_DEFAULT_PORT="80"
 nextcloud_DEFAULT_USERNAME="nextcloud_user"
 nextcloud_DEFAULT_DATABASE="nextcloud"
 adguard_DEFAULT_PORT="3000"
+firefly_DEFAULT_PORT="8000"
+firefly_DEFAULT_USERNAME="firefly_user"
+firefly_DEFAULT_DATABASE="firefly"
 
 first () {
 
@@ -153,6 +156,7 @@ install_dialog () {
 	Tvheadend "Tvheadend TV streaming server" \
 	HomeAssistant "Home-Assistant Python 3 home automation software"\
 	AdGuard "DNS Adblocker"\
+	FireFly "Personal finances manager"\
 	2>&1 1>&3)
 	exit_status=$?
 	exec 3>&-
@@ -323,8 +327,8 @@ config_jail () {
 
 	if [[ $JAIL == "webserver" ]]; then
         # initialize file with variables if they don't exists
-		if ! grep -q "EMAIL_ADDRESS" $JAIL_CONFIG; then
-			echo -e "EMAIL_ADDRESS=\""$DEFAULT_EMAIL_ADDRESS"\"" >> $JAIL_CONFIG
+		if ! grep -q "EMAIL_ADDRESS" $GLOBAL_CONFIG; then
+			echo -e "EMAIL_ADDRESS=\""$DEFAULT_EMAIL_ADDRESS"\"" >> $GLOBAL_CONFIG
 		fi
 		if ! grep -q "MYSQL_ROOT_PASSWORD" $JAIL_CONFIG; then
 			echo -e "MYSQL_ROOT_PASSWORD=\"\"" >> $JAIL_CONFIG
@@ -382,7 +386,7 @@ config_jail () {
 			install_dialog second_time
 		fi
 		
-		sed -i '' -e 's,EMAIL_ADDRESS="'$EMAIL_ADDRESS'",EMAIL_ADDRESS="'$VALUE'",g' $JAIL_CONFIG
+		sed -i '' -e 's,EMAIL_ADDRESS="'$EMAIL_ADDRESS'",EMAIL_ADDRESS="'$VALUE'",g' $GLOBAL_CONFIG
 
 		exec 3>&1
 		PASS=$(dialog --title "Setting Password:" \
@@ -638,6 +642,7 @@ mount_storage () {
 			Tvheadend "Tvheadend TV streaming server" \
 			HomeAssistant "Home-Assistant Python 3 home automation software"\
 			AdGuard "DNS Adblocker"\
+			FireFly "Personal finances manager"\
 			2>&1 1>&3)
 			exit_status=$?
 			exec 3>&-
@@ -842,6 +847,7 @@ delete_jail () {
 	Tvheadend "Tvheadend TV streaming server" \
 	HomeAssistant "Home-Assistant Python 3 home automation software"\
 	AdGuard "DNS Adblocker"\
+	FireFly "Personal finances manager"\
 	2>&1 1>&3)
 	exit_status=$?
 	exec 3>&-
@@ -944,6 +950,7 @@ backup_jail () {
 		Tvheadend "Tvheadend TV streaming server" \
 		HomeAssistant "Home-Assistant Python 3 home automation software"\
 		AdGuard "DNS Adblocker"\
+		FireFly "Personal finances manager"\
 		2>&1 1>&3)
 		exit_status=$?
 		exec 3>&-
