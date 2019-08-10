@@ -537,6 +537,13 @@ install_jail () {
 			chown -R $USER_NAME:$USER_NAME $JAIL_LOCATION/$JAIL/root/usr/local/etc/letsencrypt/
 		fi
 		
+		if grep -q "MYSQL.*_DATABASE" $JAIL_CONFIG; then # configure mysql if needed
+			DATABASE=$JAIL\_MYSQL_DATABASE
+			USER=$JAIL\_MYSQL_USERNAME
+			PASS=$JAIL\_MYSQL_PASSWORD
+			iocage exec webserver bash /root/mysql.sh ${!DATABASE} ${!USER} ${!PASS}
+		fi
+
 		# config everything inside the jail
 		iocage exec $JAIL pkg install -y bash
 		iocage exec $JAIL bash /root/$JAIL.sh
@@ -548,13 +555,6 @@ install_jail () {
 			else
 				iocage exec webserver bash /root/suburl.sh $JAIL ${!IP} ${!PORT}
 			fi
-		fi
-		
-		if grep -q "MYSQL.*_DATABASE" $JAIL_CONFIG; then # configure mysql if needed
-			DATABASE=$JAIL\_MYSQL_DATABASE
-			USER=$JAIL\_MYSQL_USERNAME
-			PASS=$JAIL\_MYSQL_PASSWORD
-			iocage exec webserver bash /root/mysql.sh ${!DATABASE} ${!USER} ${!PASS}
 		fi
 		
 		if [ -d "$BACKUP_LOCATION/$JAIL" ]; then
