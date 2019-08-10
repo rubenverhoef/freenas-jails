@@ -38,3 +38,9 @@ service nginx start
 cd /usr/local/www/firefly-iii && php artisan migrate:refresh --seed
 cd /usr/local/www/firefly-iii && php artisan firefly-iii:upgrade-database
 cd /usr/local/www/firefly-iii && php artisan passport:install
+
+# cron job for Firefly III
+crontab -u www -l > mycron
+echo "0 3 * * * /usr/local/bin/php -f /var/www/firefly-iii/artisan firefly-iii:cron" >> mycron
+crontab -u www mycron
+rm mycron
