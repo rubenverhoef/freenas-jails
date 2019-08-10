@@ -25,7 +25,8 @@
 	  "php72-tokenizer",
 	  "php72-iconv",
 	  "php72-pdo_mysql",
-	  "php72-dom"
+	  "php72-dom",
+	  "php72-session"
     ],
 	"packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
 	"fingerprints": {
