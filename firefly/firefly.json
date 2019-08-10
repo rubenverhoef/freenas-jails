@@ -1,0 +1,40 @@
+{
+    "name": "Firefly",
+    "release": "11.2-RELEASE",
+    "artifact": "https://github.com/rubenverhoef/iocage-plugin-firefly.git",
+    "pkgs": [
+	  "bash",
+	  "nginx",
+	  "php72",
+	  "php72-bcmath",
+	  "php72-intl",
+	  "php72-curl",
+	  "php72-zip",
+	  "php72-gd",
+	  "php72-xml",
+	  "php72-mbstring",
+	  "php72-ldap",
+	  "php72-json",
+	  "php72-phar",
+	  "php72-filter",
+	  "php72-hash",
+	  "php72-openssl",
+	  "php72-zlib",
+	  "php72-fileinfo",
+	  "php72-simplexml",
+	  "php72-tokenizer",
+	  "php72-iconv",
+	  "php72-pdo_mysql",
+	  "php72-dom"
+    ],
+	"packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
+	"fingerprints": {
+		"iocage-plugins": [
+			{
+			"function": "sha256",
+			"fingerprint": "b0170035af3acc5f3f3ae1859dc717101b4e6c1d0a794ad554928ca0cbb2f438"
+		}
+		]
+	},
+    "official": false
+}
