@@ -18,7 +18,7 @@ if [ $LATEST == 4.8.0 ]; then
 fi
 
 sed -i '' -e 's/SITE_OWNER=.*/SITE_OWNER='$EMAIL_ADDRESS'/g' /usr/local/www/firefly-iii/.env
-sed -i '' -e 's/APP_URL=.*/APP_URL=https://'$nextcloud_SUB_DOMAIN'.'$DOMAIN'/g' /usr/local/www/firefly-iii/.env
+sed -i '' -e 's/APP_URL=.*/APP_URL=https:\/\/'$firefly_SUB_DOMAIN'.'$DOMAIN'/g' /usr/local/www/firefly-iii/.env
 sed -i '' -e 's/TRUSTED_PROXIES=.*/TRUSTED_PROXIES=**/g' /usr/local/www/firefly-iii/.env
 
 sed -i '' -e 's/DB_CONNECTION=.*/DB_CONNECTION=mysql/g' /usr/local/www/firefly-iii/.env
@@ -28,7 +28,7 @@ sed -i '' -e 's/DB_DATABASE=.*/DB_DATABASE='$firefly_MYSQL_DATABASE'/g' /usr/loc
 sed -i '' -e 's/DB_USERNAME=.*/DB_USERNAME='$firefly_MYSQL_USERNAME'/g' /usr/local/www/firefly-iii/.env
 sed -i '' -e 's/DB_PASSWORD=.*/DB_PASSWORD='$firefly_MYSQL_PASSWORD'/g' /usr/local/www/firefly-iii/.env
 
-chown -R $USER_NAME:$USER_NAME /usr/local/www
+chown -R www:www /usr/local/www
 
 sysrc 'nginx_enable=YES' 'php_fpm_enable=YES'
 
