@@ -13,10 +13,6 @@ sed -i '' -e 's/;env\[PATH\] /env\[PATH\] /g' /usr/local/etc/php-fpm.d/www.conf
 curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 cd /usr/local/www && composer create-project grumpydictator/firefly-iii --no-dev --prefer-dist firefly-iii $LATEST
 
-if [ $LATEST == 4.8.0 ]; then
-    sed -i '' -e 's/generate-keys/passport:install/g' /usr/local/www/firefly-iii/app/Console/Commands/Upgrade/UpgradeDatabase.php
-fi
-
 sed -i '' -e 's/SITE_OWNER=.*/SITE_OWNER='$EMAIL_ADDRESS'/g' /usr/local/www/firefly-iii/.env
 sed -i '' -e 's/APP_URL=.*/APP_URL=https:\/\/'$firefly_SUB_DOMAIN'.'$DOMAIN'/g' /usr/local/www/firefly-iii/.env
 sed -i '' -e 's/TRUSTED_PROXIES=.*/TRUSTED_PROXIES=**/g' /usr/local/www/firefly-iii/.env
