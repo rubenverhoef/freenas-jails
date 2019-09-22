@@ -37,6 +37,6 @@ cd /usr/local/www/firefly-iii && php artisan passport:install
 
 # cron job for Firefly III
 crontab -u www -l > mycron
-echo "0 3 * * * /usr/local/bin/php -f /var/www/firefly-iii/artisan firefly-iii:cron" >> mycron
+echo "0 3 * * * /usr/local/bin/php -f /usr/local/www/firefly-iii/artisan firefly-iii:cron" >> mycron
 crontab -u www mycron
 rm mycron
