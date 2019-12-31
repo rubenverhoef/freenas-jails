@@ -17,7 +17,6 @@
 	  "php74-json",
 	  "php74-phar",
 	  "php74-filter",
-	  "php74-hash",
 	  "php74-openssl",
 	  "php74-zlib",
 	  "php74-fileinfo",
