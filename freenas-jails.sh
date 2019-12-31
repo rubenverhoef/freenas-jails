@@ -19,8 +19,8 @@ GLOBAL_CONFIG=$(dirname $0)"/config.sh"
 DATABASE_JAILS="webserver, nextcloud, gogs, firefly"
 MEDIA_JAILS=(plex emby sonarr radarr sabnzbd tvheadend)
 FILE_JAILS=(nextcloud)
-CUSTOM_PLUGIN=(tvheadend plex emby sabnzbd radarr sonarr webserver nextcloud homeassistant adguard firefly)
-VNET_PLUGIN=(tvheadend plex webserver homeassistant)
+CUSTOM_PLUGIN=(tvheadend plex emby sabnzbd radarr sonarr webserver nextcloud adguard firefly)
+VNET_PLUGIN=(tvheadend plex webserver)
 CHANGEABLE_PORT=(sonarr radarr sabnzbd)
 
 # DEFAULT VALUES:
@@ -42,8 +42,6 @@ sonarr_DEFAULT_PORT="8989"
 radarr_DEFAULT_PORT="7878"
 tvheadend_DEFAULT_PORT="9981"
 tvheadend_DEFAULT_IP=$BASE_IP.$((LOCAL_IP_LSV + 5))
-homeassistant_DEFAULT_IP=$BASE_IP.$((LOCAL_IP_LSV + 4))
-homeassistant_DEFAULT_PORT="8123"
 nextcloud_DEFAULT_PORT="80"
 nextcloud_DEFAULT_USERNAME="nextcloud_user"
 nextcloud_DEFAULT_DATABASE="nextcloud"
@@ -154,7 +152,6 @@ install_dialog () {
 	Plex "Plex Media Server" \
 	Emby "Emby Media Server" \
 	Tvheadend "Tvheadend TV streaming server" \
-	HomeAssistant "Home-Assistant Python 3 home automation software"\
 	AdGuard "DNS Adblocker"\
 	FireFly "Personal finances manager"\
 	2>&1 1>&3)
@@ -640,7 +637,6 @@ mount_storage () {
 			Plex "Plex Media Server" \
 			Emby "Emby Media Server" \
 			Tvheadend "Tvheadend TV streaming server" \
-			HomeAssistant "Home-Assistant Python 3 home automation software"\
 			AdGuard "DNS Adblocker"\
 			FireFly "Personal finances manager"\
 			2>&1 1>&3)
@@ -845,7 +841,6 @@ delete_jail () {
 	Plex "Plex Media Server" \
 	Emby "Emby Media Server" \
 	Tvheadend "Tvheadend TV streaming server" \
-	HomeAssistant "Home-Assistant Python 3 home automation software"\
 	AdGuard "DNS Adblocker"\
 	FireFly "Personal finances manager"\
 	2>&1 1>&3)
@@ -948,7 +943,6 @@ backup_jail () {
 		Plex "Plex Media Server" \
 		Emby "Emby Media Server" \
 		Tvheadend "Tvheadend TV streaming server" \
-		HomeAssistant "Home-Assistant Python 3 home automation software"\
 		AdGuard "DNS Adblocker"\
 		FireFly "Personal finances manager"\
 		2>&1 1>&3)
