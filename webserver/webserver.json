@@ -1,6 +1,6 @@
 {
     "name": "Webserver",
-    "release": "11.2-RELEASE",
+    "release": "11.3-RELEASE",
     "artifact": "https://github.com/rubenverhoef/iocage-plugin-webserver.git",
     "pkgs": [
 	  "bash",
@@ -26,7 +26,6 @@
 	  "php73-iconv",
 	  "php73-json",
 	  "php73-simplexml",
-	  "php73-mbstring",
 	  "php73-pdo_mysql",
 	  "php73-mysqli",
 	  "php73-sockets",

@@ -1,6 +1,6 @@
 {
   "name": "AdGuard",
-  "release": "11.2-RELEASE",
+  "release": "11.3-RELEASE",
   "artifact": "https://github.com/rubenverhoef/iocage-plugin-adguard.git",
   "pkgs": [
 		"curl",
