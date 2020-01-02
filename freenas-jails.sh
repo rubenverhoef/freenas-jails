@@ -16,11 +16,11 @@ BASE_IP="$(echo $LOCAL_IP | cut -d. -f1-3)"
 ROUTER_IP="$(netstat -rn | grep 'default' -m 1 | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")"
 IOCAGE_SHARED_IP=$BASE_IP.$((LOCAL_IP_LSV + 2))
 GLOBAL_CONFIG=$(dirname $0)"/config.sh"
-DATABASE_JAILS="webserver, nextcloud, gogs, firefly, dsmr"
+DATABASE_JAILS="webserver, nextcloud, gogs, firefly"
 MEDIA_JAILS=(plex emby sonarr radarr sabnzbd tvheadend)
 FILE_JAILS=(nextcloud)
 CUSTOM_PLUGIN=(tvheadend plex emby sabnzbd radarr sonarr webserver nextcloud adguard firefly dsmr)
-VNET_PLUGIN=(tvheadend plex webserver)
+VNET_PLUGIN=(tvheadend plex webserver dsmr)
 CHANGEABLE_PORT=(sonarr radarr sabnzbd)
 
 # DEFAULT VALUES:
@@ -49,8 +49,7 @@ adguard_DEFAULT_PORT="3000"
 firefly_DEFAULT_PORT="8000"
 firefly_DEFAULT_USERNAME="firefly_user"
 firefly_DEFAULT_DATABASE="firefly"
-dsmr_DEFAULT_USERNAME="dsmr_user"
-dsmr_DEFAULT_DATABASE="dsmr"
+dsmr_DEFAULT_PORT="8100"
 
 first () {
 

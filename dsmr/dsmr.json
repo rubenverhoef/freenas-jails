@@ -4,8 +4,13 @@
     "artifact": "https://github.com/rubenverhoef/iocage-plugin-dsmr.git",
     "pkgs": [
 	  "bash",
+	  "sudo",
 	  "nginx",
-	  "python38"
+	  "git",
+	  "postgresql12-server",
+	  "python37",
+	  "py37-pip",
+	  "py37-supervisor"
     ],
 	"packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
 	"fingerprints": {
