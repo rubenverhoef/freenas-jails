@@ -50,6 +50,7 @@ firefly_DEFAULT_PORT="8000"
 firefly_DEFAULT_USERNAME="firefly_user"
 firefly_DEFAULT_DATABASE="firefly"
 dsmr_DEFAULT_PORT="8100"
+dsmr_DEFAULT_IP=$BASE_IP.$((LOCAL_IP_LSV + 6))
 
 first () {
 
