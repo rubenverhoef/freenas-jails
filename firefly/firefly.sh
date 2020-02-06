@@ -3,7 +3,24 @@
 . $(dirname $0)/firefly_config.sh
 . $(dirname $0)/config.sh
 
-LATEST=$(curl -s https://api.github.com/repos/firefly-iii/firefly-iii/releases/latest | grep "tag_name" | cut -d : -f 2 | tr -d \",)
+LATEST=$(curl -s 'https://version.firefly-iii.org/index.json' | jq -r .firefly_iii.stable.version)
+if [ $LATEST == null ]
+then
+    LATEST=$(curl -s 'https://version.firefly-iii.org/index.json' | jq -r .firefly_iii.beta.version)
+fi
+if [ $LATEST == null ]
+then
+    LATEST=$(curl -s 'https://version.firefly-iii.org/index.json' | jq -r .firefly_iii.alpha.version)
+fi
+LATESTCSV=$(curl -s 'https://version.firefly-iii.org/index.json' | jq -r .csv.stable.version)
+if [ $LATESTCSV == null ]
+then
+    LATESTCSV=$(curl -s 'https://version.firefly-iii.org/index.json' | jq -r .csv.beta.version)
+fi
+if [ $LATESTCSV == null ]
+then
+    LATESTCSV=$(curl -s 'https://version.firefly-iii.org/index.json' | jq -r .csv.alpha.version)
+fi
 
 sed -i '' -e 's/listen = 127.0.0.1:9000/listen = \/var\/run\/php-fpm.sock/g' /usr/local/etc/php-fpm.d/www.conf
 sed -i '' -e 's/;listen.owner = www/listen.owner = www/g' /usr/local/etc/php-fpm.d/www.conf
@@ -12,6 +29,7 @@ sed -i '' -e 's/;env\[PATH\] /env\[PATH\] /g' /usr/local/etc/php-fpm.d/www.conf
 
 curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 cd /usr/local/www && composer create-project grumpydictator/firefly-iii --no-dev --prefer-dist firefly-iii $LATEST
+cd /usr/local/www && composer create-project firefly-iii/csv-importer --no-dev --prefer-dist csv-importer $LATESTCSV
 
 sed -i '' -e 's/SITE_OWNER=.*/SITE_OWNER='$EMAIL_ADDRESS'/g' /usr/local/www/firefly-iii/.env
 sed -i '' -e 's/APP_URL=.*/APP_URL=https:\/\/'$firefly_SUB_DOMAIN'.'$DOMAIN'/g' /usr/local/www/firefly-iii/.env
