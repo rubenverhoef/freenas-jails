@@ -511,9 +511,9 @@ install_jail () {
 		
 		if [[ ${VNET_PLUGIN[*]} == *$JAIL* ]]; then
 			INTERFACE="vnet0"
-			iocage fetch -P --name $(dirname $0)/$JAIL/$JAIL.json ip4_addr="$INTERFACE|${!IP}" defaultrouter="$ROUTER_IP" vnet="on"
+			iocage fetch -P $(dirname $0)/$JAIL/$JAIL.json ip4_addr="$INTERFACE|${!IP}" defaultrouter="$ROUTER_IP" vnet="on" -n $JAIL
 		else
-			iocage fetch -P --name $(dirname $0)/$JAIL/$JAIL.json ip4_addr="$INTERFACE|${!IP}"
+			iocage fetch -P $(dirname $0)/$JAIL/$JAIL.json ip4_addr="$INTERFACE|${!IP}" -n $JAIL
 		fi
 
 		mount_storage $JAIL
