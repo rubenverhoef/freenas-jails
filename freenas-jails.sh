@@ -19,7 +19,6 @@ GLOBAL_CONFIG=$(dirname $0)"/config.sh"
 DATABASE_JAILS="webserver, nextcloud, gogs, firefly"
 MEDIA_JAILS=(plex emby sonarr radarr sabnzbd tvheadend)
 FILE_JAILS=(nextcloud)
-CUSTOM_PLUGIN=(tvheadend plex emby sabnzbd radarr sonarr webserver nextcloud adguard firefly dsmr)
 VNET_PLUGIN=(tvheadend plex webserver dsmr)
 CHANGEABLE_PORT=(sonarr radarr sabnzbd)
 
@@ -510,20 +509,11 @@ install_jail () {
 	
 	if [[ $(iocage list) != *$JAIL* ]]; then
 		
-		if [[ ${CUSTOM_PLUGIN[*]} == *$JAIL* ]]; then
-			if [[ ${VNET_PLUGIN[*]} == *$JAIL* ]]; then
-				INTERFACE="vnet0"
-				iocage fetch -P --name $(dirname $0)/$JAIL/$JAIL.json ip4_addr="$INTERFACE|${!IP}" defaultrouter="$ROUTER_IP" vnet="on"
-			else
-				iocage fetch -P --name $(dirname $0)/$JAIL/$JAIL.json ip4_addr="$INTERFACE|${!IP}"
-			fi
+		if [[ ${VNET_PLUGIN[*]} == *$JAIL* ]]; then
+			INTERFACE="vnet0"
+			iocage fetch -P --name $(dirname $0)/$JAIL/$JAIL.json ip4_addr="$INTERFACE|${!IP}" defaultrouter="$ROUTER_IP" vnet="on"
 		else
-			if [[ ${VNET_PLUGIN[*]} == *$JAIL* ]]; then
-				INTERFACE="vnet0"
-				iocage fetch --plugins --name $JAIL ip4_addr="$INTERFACE|${!IP}" defaultrouter="$ROUTER_IP" vnet="on"
-			else
-				iocage fetch --plugins --name $JAIL ip4_addr="$INTERFACE|${!IP}"
-			fi
+			iocage fetch -P --name $(dirname $0)/$JAIL/$JAIL.json ip4_addr="$INTERFACE|${!IP}"
 		fi
 
 		mount_storage $JAIL
