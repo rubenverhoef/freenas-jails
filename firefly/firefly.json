@@ -1,5 +1,6 @@
 {
     "name": "Firefly",
+    "plugin_schema": "2",
     "release": "11.3-RELEASE",
     "artifact": "https://github.com/rubenverhoef/iocage-plugin-firefly.git",
     "pkgs": [
@@ -36,5 +37,6 @@
 		}
 		]
 	},
+    "revision": "0",
     "official": false
 }
