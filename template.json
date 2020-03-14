@@ -1,0 +1,37 @@
+{
+	"name": "Name",
+    "plugin_schema": "2",
+    "release": "11.3-RELEASE",
+    "artifact": "https://github.com/rubenverhoef/iocage-plugin-name.git",
+    "properties": {
+        "nat": 1,
+        "nat_forwards": "tcp(8181:8181)",
+        "allow_raw_sockets": 1,
+        "dhcp": 1,
+        "allow_tun": 1,
+        "mount_devfs": 1,
+        "mount_fdescfs": 1,
+        "mount_procfs": 1,
+        "securelevel": -1,
+        "allow_set_hostname": 1,
+        "allow_sysvipc": 1,
+        "sysvmsg": "new",
+        "sysvsem": "new",
+        "sysvshm": "new",
+        "priority": "98"
+    },
+    "pkgs": [
+	  "bash"
+    ],
+    "packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
+    "fingerprints": {
+        "iocage-plugins": [
+			{
+			"function": "sha256",
+            "fingerprint": "b0170035af3acc5f3f3ae1859dc717101b4e6c1d0a794ad554928ca0cbb2f438"
+		}
+		]
+	},
+    "revision": "0",
+    "official": false
+}
