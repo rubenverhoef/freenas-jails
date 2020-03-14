@@ -434,6 +434,11 @@ install_jail () {
 		iocage exec $JAIL pkg install -y bash
 		iocage exec $JAIL bash /root/$JAIL.sh
 
+		echo "IP:"
+		echo ${LOCAL_IP}
+		echo "PORT:"
+		PORT=$(perl -nle 'print $1 if /\:(.[0-9]*)\)/' $(dirname $0)/$JAIL/$JAIL.json)
+		echo ${PORT}
 		# if [[ $JAIL != "webserver" ]]; then  # configure subdomain
 		# 	. $(dirname $0)/webserver/webserver_config.sh
 		# 	PORT=$(perl -nle 'print $1 if /\:(.[0-9]*)\)/' $(dirname $0)/$JAIL/$JAIL.json)
