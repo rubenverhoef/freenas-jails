@@ -2,45 +2,45 @@
     "name": "firefly",
     "plugin_schema": "2",
     "release": "11.3-RELEASE",
-	"artifact": "https://github.com/rubenverhoef/iocage-plugin-firefly.git",
-	"properties": {
+    "artifact": "https://github.com/rubenverhoef/iocage-plugin-firefly.git",
+    "properties": {
         "nat": 1,
-		"nat_forwards": "tcp(8000:8000)"
-	},
+        "nat_forwards": "tcp(8000:8010)"
+    },
     "pkgs": [
-	  "nginx",
-	  "jq",
-	  "php74",
-	  "php74-bcmath",
-	  "php74-intl",
-	  "php74-curl",
-	  "php74-zip",
-	  "php74-gd",
-	  "php74-xml",
-	  "php74-mbstring",
-	  "php74-ldap",
-	  "php74-json",
-	  "php74-phar",
-	  "php74-filter",
-	  "php74-openssl",
-	  "php74-zlib",
-	  "php74-fileinfo",
-	  "php74-simplexml",
-	  "php74-tokenizer",
-	  "php74-iconv",
-	  "php74-pdo_mysql",
-	  "php74-dom",
-	  "php74-session"
+        "nginx",
+        "jq",
+        "php74",
+        "php74-bcmath",
+        "php74-intl",
+        "php74-curl",
+        "php74-zip",
+        "php74-gd",
+        "php74-xml",
+        "php74-mbstring",
+        "php74-ldap",
+        "php74-json",
+        "php74-phar",
+        "php74-filter",
+        "php74-openssl",
+        "php74-zlib",
+        "php74-fileinfo",
+        "php74-simplexml",
+        "php74-tokenizer",
+        "php74-iconv",
+        "php74-pdo_mysql",
+        "php74-dom",
+        "php74-session"
     ],
-	"packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
-	"fingerprints": {
-		"iocage-plugins": [
-			{
-			"function": "sha256",
-			"fingerprint": "b0170035af3acc5f3f3ae1859dc717101b4e6c1d0a794ad554928ca0cbb2f438"
-		}
-		]
-	},
+    "packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
+    "fingerprints": {
+        "iocage-plugins": [
+            {
+            "function": "sha256",
+            "fingerprint": "b0170035af3acc5f3f3ae1859dc717101b4e6c1d0a794ad554928ca0cbb2f438"
+            }
+        ]
+    },
     "revision": "0",
     "official": false
 }

@@ -12,7 +12,7 @@
 INTERFACE="$(ifconfig | head -n1 | sed -e 's/:.*$//')"
 LOCAL_IP="$(ifconfig $INTERFACE | grep 'inet' -m 1 | cut -d' ' -f2)"
 GLOBAL_CONFIG=$(dirname $0)"/config.sh"
-DATABASE_JAILS="webserver, nextcloud, gogs, firefly"
+DATABASE_JAILS="webserver, nextcloud, firefly"
 MEDIA_JAILS=(plex emby sonarr radarr sabnzbd tvheadend)
 FILE_JAILS=(nextcloud)
 
