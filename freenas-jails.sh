@@ -11,15 +11,10 @@
 # Globals:
 INTERFACE="$(ifconfig | head -n1 | sed -e 's/:.*$//')"
 LOCAL_IP="$(ifconfig $INTERFACE | grep 'inet' -m 1 | cut -d' ' -f2)"
-LOCAL_IP_LSV="$(echo $LOCAL_IP | cut -d. -f4)"
-BASE_IP="$(echo $LOCAL_IP | cut -d. -f1-3)"
-ROUTER_IP="$(netstat -rn | grep 'default' -m 1 | grep -oE "\b([0-9]{1,3}\.){3}[0-9]{1,3}\b")"
-IOCAGE_SHARED_IP=$BASE_IP.$((LOCAL_IP_LSV + 2))
 GLOBAL_CONFIG=$(dirname $0)"/config.sh"
 DATABASE_JAILS="webserver, nextcloud, gogs, firefly"
 MEDIA_JAILS=(plex emby sonarr radarr sabnzbd tvheadend)
 FILE_JAILS=(nextcloud)
-VNET_PLUGIN=(tvheadend plex webserver dsmr)
 
 # DEFAULT VALUES:
 DEFAULT_DOMAIN="example.com"
@@ -28,27 +23,14 @@ DEFAULT_JAIL_LOCATION="/mnt/iocage/jails"
 DEFAULT_BACKUP_LOCATION="/mnt/data/backup_jails"
 DEFAULT_EMAIL_ADDRESS="admin@example.com"
 
-webserver_DEFAULT_IP=$BASE_IP.$((LOCAL_IP_LSV + 1))
 webserver_DEFAULT_USERNAME="wordpress_user"
 webserver_DEFAULT_DATABASE="wordpress"
 
-plex_DEFAULT_IP=$BASE_IP.$((LOCAL_IP_LSV + 3))
-plex_DEFAULT_PORT="32400"
-emby_DEFAULT_PORT="8096"
-sabnzbd_DEFAULT_PORT="8080"
-sonarr_DEFAULT_PORT="8989"
-radarr_DEFAULT_PORT="7878"
-tvheadend_DEFAULT_PORT="9981"
-tvheadend_DEFAULT_IP=$BASE_IP.$((LOCAL_IP_LSV + 5))
-nextcloud_DEFAULT_PORT="80"
 nextcloud_DEFAULT_USERNAME="nextcloud_user"
 nextcloud_DEFAULT_DATABASE="nextcloud"
-adguard_DEFAULT_PORT="3000"
-firefly_DEFAULT_PORT="8000"
+
 firefly_DEFAULT_USERNAME="firefly_user"
 firefly_DEFAULT_DATABASE="firefly"
-dsmr_DEFAULT_PORT="8100"
-dsmr_DEFAULT_IP=$BASE_IP.$((LOCAL_IP_LSV + 6))
 
 first () {
 
@@ -100,9 +82,6 @@ install_dialog () {
 		if ! grep -q "IOCAGE_ZPOOL" $GLOBAL_CONFIG; then
 			echo -e "IOCAGE_ZPOOL=\""$DEFAULT_IOCAGE_ZPOOL"\"" >> $GLOBAL_CONFIG
 		fi
-		if ! grep -q "IOCAGE_SHARED_IP" $GLOBAL_CONFIG; then
-			echo -e "IOCAGE_SHARED_IP=\""$IOCAGE_SHARED_IP"\"" >> $GLOBAL_CONFIG
-		fi
 		if ! grep -q "BACKUP_LOCATION" $GLOBAL_CONFIG; then
 			echo -e "BACKUP_LOCATION=\""$DEFAULT_BACKUP_LOCATION"\"" >> $GLOBAL_CONFIG
 		fi
@@ -119,11 +98,10 @@ install_dialog () {
 		exec 3>&1
 		JAIL=$(dialog --form "IOCAGE Jail location:" 0 0 0 \
 		"Iocage ZPOOL" 1 1 "$IOCAGE_ZPOOL" 1 60 25 0 \
-		"Iocage Shared IP" 2 1 "$IOCAGE_SHARED_IP" 2 60 15 0 \
-		"Backup location (starting with \"/\" and without last \"/\")" 3 1 "$BACKUP_LOCATION" 3 60 25 0 \
-		"Please create a USER in the FreeNAS WebGUI!!" 4 1 "" 4 60 0 0 \
-		"User name:" 5 1 "$USER_NAME" 5 60 25 0 \
-		"User ID (UID):" 6 1 "$USER_ID" 6 60 25 0 \
+		"Backup location (starting with \"/\" and without last \"/\")" 2 1 "$BACKUP_LOCATION" 2 60 25 0 \
+		"Please create a USER in the FreeNAS WebGUI!!" 3 1 "" 3 60 0 0 \
+		"User name:" 4 1 "$USER_NAME" 4 60 25 0 \
+		"User ID (UID):" 5 1 "$USER_ID" 5 60 25 0 \
 		2>&1 1>&3)
 		exit_status=$?
 		exec 3>&-
@@ -136,10 +114,9 @@ install_dialog () {
 		
 		#save new config variables in global config file
 		sed -i '' -e 's,IOCAGE_ZPOOL="'$IOCAGE_ZPOOL'",IOCAGE_ZPOOL="'${GLOBAL[0]}'",g' $GLOBAL_CONFIG
-		sed -i '' -e 's,IOCAGE_SHARED_IP="'$IOCAGE_SHARED_IP'",IOCAGE_SHARED_IP="'${GLOBAL[1]}'",g' $GLOBAL_CONFIG
-		sed -i '' -e 's,BACKUP_LOCATION="'$BACKUP_LOCATION'",BACKUP_LOCATION="'${GLOBAL[2]}'",g' $GLOBAL_CONFIG
-		sed -i '' -e 's,USER_NAME="'$USER_NAME'",USER_NAME="'${GLOBAL[3]}'",g' $GLOBAL_CONFIG
-		sed -i '' -e 's,USER_ID="'$USER_ID'",USER_ID="'${GLOBAL[4]}'",g' $GLOBAL_CONFIG
+		sed -i '' -e 's,BACKUP_LOCATION="'$BACKUP_LOCATION'",BACKUP_LOCATION="'${GLOBAL[1]}'",g' $GLOBAL_CONFIG
+		sed -i '' -e 's,USER_NAME="'$USER_NAME'",USER_NAME="'${GLOBAL[2]}'",g' $GLOBAL_CONFIG
+		sed -i '' -e 's,USER_ID="'$USER_ID'",USER_ID="'${GLOBAL[3]}'",g' $GLOBAL_CONFIG
     fi
 	
 	exec 3>&1
@@ -172,10 +149,6 @@ install_dialog () {
 config_jail () {
 	JAIL=$1
 	SUB_DOMAIN=$1\_SUB_DOMAIN
-	DEFAULT_IP=$JAIL\_DEFAULT_IP
-	DEFAULT_PORT=$JAIL\_DEFAULT_PORT
-	IP=$JAIL\_IP
-	PORT=$JAIL\_PORT
 	JAIL_CONFIG=$(dirname $0)"/"$JAIL"/"$JAIL"_config.sh"
 
     # make directory and file if not exists already
@@ -187,19 +160,10 @@ config_jail () {
 		if ! grep -q "DOMAIN" $GLOBAL_CONFIG; then
 			echo -e "DOMAIN=\""$DEFAULT_DOMAIN"\"" >> $GLOBAL_CONFIG
 		fi
-		if ! grep -q $IP $GLOBAL_CONFIG; then
-			echo -e $IP"=\""${!DEFAULT_IP}"\"" >> $GLOBAL_CONFIG
-		fi
 	else
 		if ! grep -q $SUB_DOMAIN $JAIL_CONFIG; then
 			echo -e $SUB_DOMAIN"=\"\"" >> $JAIL_CONFIG
 		fi
-		if ! grep -q $PORT $JAIL_CONFIG; then
-			echo -e $PORT"=\""${!DEFAULT_PORT}"\"" >> $JAIL_CONFIG
-		fi
-	fi
-	if ! grep -q $IP $JAIL_CONFIG; then
-		echo -e $IP"=\""${!DEFAULT_IP}"\"" >> $JAIL_CONFIG
 	fi
 	if [[ $JAIL == "plex" ]]; then
 		if ! grep -q "PLEX_USER" $JAIL_CONFIG; then
@@ -217,22 +181,14 @@ config_jail () {
 	exec 3>&1
 	if [[ $JAIL == "webserver" ]]; then
 		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
-		"IP address:" 1 1 "${!IP}" 1 40 15 0 \
-		"Domain name (without https://www.)" 2 1 "$DOMAIN" 2 40 25 0 \
+		"Domain name (without https://www.)" 1 1 "$DOMAIN" 1 40 25 0 \
 		2>&1 1>&3)
 	elif [[ $JAIL == "plex" ]]; then
 		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
-		"IP address:" 1 1 "${!IP}" 1 30 15 0 \
-		"Keep emtpy for no Subdomain" 2 1 "" 2 30 0 0 \
-		"Subdomain name" 3 1 "${!SUB_DOMAIN}" 3 30 25 0 \
-		"Blank for normal plex" 4 1 "" 4 30 0 0 \
-		"Plex.tv username" 5 1 "$PLEX_USER" 5 30 25 0 \
-		2>&1 1>&3)
-	elif [[ ${VNET_PLUGIN[*]} == *$JAIL* ]]; then
-		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
-		"IP address:" 1 1 "${!IP}" 1 30 15 0 \
-		"Keep emtpy for no Subdomain" 2 1 "" 2 30 0 0 \
-		"Subdomain name" 3 1 "${!SUB_DOMAIN}" 3 30 25 0 \
+		"Keep emtpy for no Subdomain" 1 1 "" 1 30 0 0 \
+		"Subdomain name" 2 1 "${!SUB_DOMAIN}" 2 30 25 0 \
+		"Blank for normal plex" 3 1 "" 3 30 0 0 \
+		"Plex.tv username" 4 1 "$PLEX_USER" 4 30 25 0 \
 		2>&1 1>&3)
 	else
 		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
@@ -251,13 +207,10 @@ config_jail () {
 	JAIL_VALUES=( $VALUES )
 
 	if [[ $JAIL == "webserver" ]]; then
-		sed -i '' -e 's,'$IP'="'${!IP}'",'$IP'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
-		sed -i '' -e 's,'$IP'="'${!IP}'",'$IP'="'${JAIL_VALUES[0]}'",g' $GLOBAL_CONFIG
-		sed -i '' -e 's,DOMAIN="'$DOMAIN'",DOMAIN="'${JAIL_VALUES[1]}'",g' $GLOBAL_CONFIG
+		sed -i '' -e 's,DOMAIN="'$DOMAIN'",DOMAIN="'${JAIL_VALUES[0]}'",g' $GLOBAL_CONFIG
 	elif [[ $JAIL == "plex" ]]; then
-		sed -i '' -e 's,'$IP'="'${!IP}'",'$IP'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
-		sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
-		sed -i '' -e 's,PLEX_USER="'$PLEX_USER'",PLEX_USER="'${JAIL_VALUES[2]}'",g' $JAIL_CONFIG
+		sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
+		sed -i '' -e 's,PLEX_USER="'$PLEX_USER'",PLEX_USER="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
 		exec 3>&1
 		PASS=$(dialog --title "PlexPass Password:" \
 		--clear \
@@ -271,12 +224,8 @@ config_jail () {
 			install_dialog second_time
 		fi
 		sed -i '' -e 's,PLEX_PASS="'$PLEX_PASS'",PLEX_PASS="'$PASS'",g' $JAIL_CONFIG
-	elif [[ ${VNET_PLUGIN[*]} == *$JAIL* ]]; then
-		sed -i '' -e 's,'$IP'="'${!IP}'",'$IP'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
-		sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
 	else
 		sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
-		sed -i '' -e 's,'$IP'="'${!IP}'",'$IP'="'$IOCAGE_SHARED_IP'",g' $JAIL_CONFIG
 	fi
 
 	if [[ $JAIL == "webserver" ]]; then
@@ -453,8 +402,6 @@ install_jail () {
 	. $JAIL_CONFIG
 	. $GLOBAL_CONFIG
 	
-	IP=$JAIL\_IP
-	PORT=$JAIL\_PORT
 	SUB_DOMAIN=$JAIL\_SUB_DOMAIN
 
 	VERSION="$(uname -r)"
@@ -463,13 +410,7 @@ install_jail () {
 	iocage activate $IOCAGE_ZPOOL
 	
 	if [[ $(iocage list) != *$JAIL* ]]; then
-		
-		if [[ ${VNET_PLUGIN[*]} == *$JAIL* ]]; then
-			INTERFACE="vnet0"
-			iocage fetch -P $(dirname $0)/$JAIL/$JAIL.json ip4_addr="$INTERFACE|${!IP}" defaultrouter="$ROUTER_IP" vnet="on" -n $JAIL
-		else
-			iocage fetch -P $(dirname $0)/$JAIL/$JAIL.json ip4_addr="$INTERFACE|${!IP}" -n $JAIL
-		fi
+		iocage fetch -P $(dirname $0)/$JAIL/$JAIL.json
 
 		mount_storage $JAIL
 		
@@ -493,14 +434,15 @@ install_jail () {
 		iocage exec $JAIL pkg install -y bash
 		iocage exec $JAIL bash /root/$JAIL.sh
 
-		if [[ $JAIL != "webserver" ]]; then  # configure subdomain
-			. $(dirname $0)/webserver/webserver_config.sh
-			if [ "${!SUB_DOMAIN}" ]; then
-				iocage exec webserver bash /root/subdomain.sh ${!SUB_DOMAIN} ${!IP} ${!PORT}
-			else
-				iocage exec webserver bash /root/suburl.sh $JAIL ${!IP} ${!PORT}
-			fi
-		fi
+		# if [[ $JAIL != "webserver" ]]; then  # configure subdomain
+		# 	. $(dirname $0)/webserver/webserver_config.sh
+		# 	PORT=$(perl -nle 'print $1 if /\:(.[0-9]*)\)/' $(dirname $0)/$JAIL/$JAIL.json)
+		# 	if [ "${!SUB_DOMAIN}" ]; then
+		# 		iocage exec webserver bash /root/subdomain.sh ${!SUB_DOMAIN} ${!LOCAL_IP} ${!PORT}
+		# 	else
+		# 		iocage exec webserver bash /root/suburl.sh $JAIL ${!LOCAL_IP} ${!PORT}
+		# 	fi
+		# fi
 		
 		if [ -d "$BACKUP_LOCATION/$JAIL" ]; then
 			dialog --title "Restore backup?" --yesno "Do you want to restore the backup?\"?" 7 60
@@ -954,8 +896,8 @@ touch $GLOBAL_CONFIG || exit
 . $GLOBAL_CONFIG
 
 if [[ $1 == "" ]]; then
-	cd /root/freenas-jails && git reset --hard
-	cd /root/freenas-jails && git pull
+	# cd /root/freenas-jails && git reset --hard
+	# cd /root/freenas-jails && git pull
 	bash /root/freenas-jails/freenas-jails.sh second_time
 else
 	first
