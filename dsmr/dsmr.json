@@ -3,7 +3,6 @@
     "release": "11.3-RELEASE",
     "artifact": "https://github.com/rubenverhoef/iocage-plugin-dsmr.git",
     "pkgs": [
-	  "bash",
 	  "sudo",
 	  "nginx",
 	  "git",

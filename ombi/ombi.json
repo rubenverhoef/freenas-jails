@@ -2,9 +2,6 @@
     "name": "Ombi",
     "release": "11.3-RELEASE",
     "artifact": "https://github.com/rubenverhoef/iocage-plugin-ombi.git",
-    "pkgs": [
-	  "bash"
-    ],
 	"packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
 	"fingerprints": {
 		"iocage-plugins": [
