@@ -20,7 +20,6 @@ DATABASE_JAILS="webserver, nextcloud, gogs, firefly"
 MEDIA_JAILS=(plex emby sonarr radarr sabnzbd tvheadend)
 FILE_JAILS=(nextcloud)
 VNET_PLUGIN=(tvheadend plex webserver dsmr)
-CHANGEABLE_PORT=(sonarr radarr sabnzbd)
 
 # DEFAULT VALUES:
 DEFAULT_DOMAIN="example.com"
@@ -222,52 +221,24 @@ config_jail () {
 		"Domain name (without https://www.)" 2 1 "$DOMAIN" 2 40 25 0 \
 		2>&1 1>&3)
 	elif [[ $JAIL == "plex" ]]; then
-		if [[ ${CHANGEABLE_PORT[*]} == *$JAIL* ]]; then
-			VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
-			"IP address:" 1 1 "${!IP}" 1 30 15 0 \
-			"Application PORT:" 2 1 "${!PORT}" 2 30 5 0 \
-			"Keep emtpy for no Subdomain" 3 1 "" 3 30 0 0 \
-			"Subdomain name" 4 1 "${!SUB_DOMAIN}" 4 30 25 0 \
-			"Blank for normal plex" 5 1 "" 5 30 0 0 \
-			"Plex.tv username" 6 1 "$PLEX_USER" 6 30 25 0 \
-			2>&1 1>&3)
-		else
-			VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
-			"IP address:" 1 1 "${!IP}" 1 30 15 0 \
-			"Keep emtpy for no Subdomain" 2 1 "" 2 30 0 0 \
-			"Subdomain name" 3 1 "${!SUB_DOMAIN}" 3 30 25 0 \
-			"Blank for normal plex" 4 1 "" 4 30 0 0 \
-			"Plex.tv username" 5 1 "$PLEX_USER" 5 30 25 0 \
-			2>&1 1>&3)
-		fi
+		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
+		"IP address:" 1 1 "${!IP}" 1 30 15 0 \
+		"Keep emtpy for no Subdomain" 2 1 "" 2 30 0 0 \
+		"Subdomain name" 3 1 "${!SUB_DOMAIN}" 3 30 25 0 \
+		"Blank for normal plex" 4 1 "" 4 30 0 0 \
+		"Plex.tv username" 5 1 "$PLEX_USER" 5 30 25 0 \
+		2>&1 1>&3)
 	elif [[ ${VNET_PLUGIN[*]} == *$JAIL* ]]; then
-		if [[ ${CHANGEABLE_PORT[*]} == *$JAIL* ]]; then
-			VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
-			"IP address:" 1 1 "${!IP}" 1 30 15 0 \
-			"Application PORT:" 2 1 "${!PORT}" 2 30 5 0 \
-			"Keep emtpy for no Subdomain" 3 1 "" 3 30 0 0 \
-			"Subdomain name" 4 1 "${!SUB_DOMAIN}" 4 30 25 0 \
-			2>&1 1>&3)
-		else
-			VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
-			"IP address:" 1 1 "${!IP}" 1 30 15 0 \
-			"Keep emtpy for no Subdomain" 2 1 "" 2 30 0 0 \
-			"Subdomain name" 3 1 "${!SUB_DOMAIN}" 3 30 25 0 \
-			2>&1 1>&3)
-		fi
+		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
+		"IP address:" 1 1 "${!IP}" 1 30 15 0 \
+		"Keep emtpy for no Subdomain" 2 1 "" 2 30 0 0 \
+		"Subdomain name" 3 1 "${!SUB_DOMAIN}" 3 30 25 0 \
+		2>&1 1>&3)
 	else
-		if [[ ${CHANGEABLE_PORT[*]} == *$JAIL* ]]; then
-			VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
-			"Application PORT:" 1 1 "${!PORT}" 1 30 5 0 \
-			"Keep emtpy for no Subdomain" 2 1 "" 2 30 0 0 \
-			"Subdomain name" 3 1 "${!SUB_DOMAIN}" 3 30 25 0 \
-			2>&1 1>&3)
-		else
-			VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
-			"Keep emtpy for no Subdomain" 1 1 "" 1 30 0 0 \
-			"Subdomain name" 2 1 "${!SUB_DOMAIN}" 2 30 25 0 \
-			2>&1 1>&3)
-		fi
+		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
+		"Keep emtpy for no Subdomain" 1 1 "" 1 30 0 0 \
+		"Subdomain name" 2 1 "${!SUB_DOMAIN}" 2 30 25 0 \
+		2>&1 1>&3)
 	fi
 	exit_status=$?
 	exec 3>&-
@@ -285,14 +256,8 @@ config_jail () {
 		sed -i '' -e 's,DOMAIN="'$DOMAIN'",DOMAIN="'${JAIL_VALUES[1]}'",g' $GLOBAL_CONFIG
 	elif [[ $JAIL == "plex" ]]; then
 		sed -i '' -e 's,'$IP'="'${!IP}'",'$IP'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
-		if [[ ${CHANGEABLE_PORT[*]} == *$JAIL* ]]; then
-			sed -i '' -e 's,'$PORT'="'${!PORT}'",'$PORT'="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
-			sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[2]}'",g' $JAIL_CONFIG
-			sed -i '' -e 's,PLEX_USER="'$PLEX_USER'",PLEX_USER="'${JAIL_VALUES[3]}'",g' $JAIL_CONFIG
-		else	
-			sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
-			sed -i '' -e 's,PLEX_USER="'$PLEX_USER'",PLEX_USER="'${JAIL_VALUES[2]}'",g' $JAIL_CONFIG
-		fi
+		sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
+		sed -i '' -e 's,PLEX_USER="'$PLEX_USER'",PLEX_USER="'${JAIL_VALUES[2]}'",g' $JAIL_CONFIG
 		exec 3>&1
 		PASS=$(dialog --title "PlexPass Password:" \
 		--clear \
@@ -308,19 +273,9 @@ config_jail () {
 		sed -i '' -e 's,PLEX_PASS="'$PLEX_PASS'",PLEX_PASS="'$PASS'",g' $JAIL_CONFIG
 	elif [[ ${VNET_PLUGIN[*]} == *$JAIL* ]]; then
 		sed -i '' -e 's,'$IP'="'${!IP}'",'$IP'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
-		if [[ ${CHANGEABLE_PORT[*]} == *$JAIL* ]]; then
-			sed -i '' -e 's,'$PORT'="'${!PORT}'",'$PORT'="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
-			sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[2]}'",g' $JAIL_CONFIG
-		else
-			sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
-		fi
+		sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
 	else
-		if [[ ${CHANGEABLE_PORT[*]} == *$JAIL* ]]; then
-			sed -i '' -e 's,'$PORT'="'${!PORT}'",'$PORT'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
-			sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
-		else
-			sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
-		fi
+		sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
 		sed -i '' -e 's,'$IP'="'${!IP}'",'$IP'="'$IOCAGE_SHARED_IP'",g' $JAIL_CONFIG
 	fi
 
