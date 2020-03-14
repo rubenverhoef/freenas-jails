@@ -434,20 +434,15 @@ install_jail () {
 		iocage exec $JAIL pkg install -y bash
 		iocage exec $JAIL bash /root/$JAIL.sh
 
-		echo "IP:"
-		echo ${LOCAL_IP}
-		echo "PORT:"
-		PORT=$(perl -nle 'print $1 if /\:(.[0-9]*)\)/' $(dirname $0)/$JAIL/$JAIL.json)
-		echo ${PORT}
-		# if [[ $JAIL != "webserver" ]]; then  # configure subdomain
-		# 	. $(dirname $0)/webserver/webserver_config.sh
-		# 	PORT=$(perl -nle 'print $1 if /\:(.[0-9]*)\)/' $(dirname $0)/$JAIL/$JAIL.json)
-		# 	if [ "${!SUB_DOMAIN}" ]; then
-		# 		iocage exec webserver bash /root/subdomain.sh ${!SUB_DOMAIN} ${!LOCAL_IP} ${!PORT}
-		# 	else
-		# 		iocage exec webserver bash /root/suburl.sh $JAIL ${!LOCAL_IP} ${!PORT}
-		# 	fi
-		# fi
+		if [[ $JAIL != "webserver" ]]; then  # configure subdomain
+			. $(dirname $0)/webserver/webserver_config.sh
+			PORT=$(perl -nle 'print $1 if /\:(.[0-9]*)\)/' $(dirname $0)/$JAIL/$JAIL.json)
+			if [ "${!SUB_DOMAIN}" ]; then
+				iocage exec webserver bash /root/subdomain.sh ${!SUB_DOMAIN} ${!LOCAL_IP} ${!PORT}
+			else
+				iocage exec webserver bash /root/suburl.sh $JAIL ${!LOCAL_IP} ${!PORT}
+			fi
+		fi
 		
 		if [ -d "$BACKUP_LOCATION/$JAIL" ]; then
 			dialog --title "Restore backup?" --yesno "Do you want to restore the backup?\"?" 7 60
@@ -901,8 +896,8 @@ touch $GLOBAL_CONFIG || exit
 . $GLOBAL_CONFIG
 
 if [[ $1 == "" ]]; then
-	# cd /root/freenas-jails && git reset --hard
-	# cd /root/freenas-jails && git pull
+	cd /root/freenas-jails && git reset --hard
+	cd /root/freenas-jails && git pull
 	bash /root/freenas-jails/freenas-jails.sh second_time
 else
 	first
