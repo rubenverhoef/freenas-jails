@@ -432,7 +432,11 @@ install_jail () {
 
 		# config everything inside the jail
 		iocage exec $JAIL pkg install -y bash
-		iocage exec $JAIL bash /root/$JAIL.sh
+		if [ -f "$(dirname $0)/$JAIL/$JAIL.sh" ]; then
+			iocage exec $JAIL bash /root/$JAIL.sh
+		elif [ -f "$(dirname $0)/$JAIL/config-$JAIL.sh" ]; then
+			bash "$(dirname $0)/$JAIL/config-$JAIL.sh"
+		fi
 
 		if [[ $JAIL != "webserver" ]]; then  # configure subdomain
 			. $(dirname $0)/webserver/webserver_config.sh
