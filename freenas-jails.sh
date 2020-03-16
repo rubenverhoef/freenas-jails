@@ -186,14 +186,14 @@ config_jail () {
 	elif [[ $JAIL == "plex" ]]; then
 		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
 		"Keep emtpy for no Subdomain" 1 1 "" 1 30 0 0 \
-		"Subdomain name" 2 1 "$SUB_DOMAIN" 2 30 25 0 \
+		"Subdomain name" 2 1 "${!SUB_DOMAIN}" 2 30 25 0 \
 		"Blank for normal plex" 3 1 "" 3 30 0 0 \
 		"Plex.tv username" 4 1 "$PLEX_USER" 4 30 25 0 \
 		2>&1 1>&3)
 	else
 		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
 		"Keep emtpy for no Subdomain" 1 1 "" 1 30 0 0 \
-		"Subdomain name" 2 1 "$SUB_DOMAIN" 2 30 25 0 \
+		"Subdomain name" 2 1 "${!SUB_DOMAIN}" 2 30 25 0 \
 		2>&1 1>&3)
 	fi
 	exit_status=$?
@@ -209,7 +209,7 @@ config_jail () {
 	if [[ $JAIL == "webserver" ]]; then
 		sed -i '' -e 's,DOMAIN="'$DOMAIN'",DOMAIN="'${JAIL_VALUES[0]}'",g' $GLOBAL_CONFIG
 	elif [[ $JAIL == "plex" ]]; then
-		sed -i '' -e 's,'$SUB_DOMAIN'="'$SUB_DOMAIN'",'$SUB_DOMAIN'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
+		sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
 		sed -i '' -e 's,PLEX_USER="'$PLEX_USER'",PLEX_USER="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
 		exec 3>&1
 		PASS=$(dialog --title "PlexPass Password:" \
@@ -225,7 +225,7 @@ config_jail () {
 		fi
 		sed -i '' -e 's,PLEX_PASS="'$PLEX_PASS'",PLEX_PASS="'$PASS'",g' $JAIL_CONFIG
 	else
-		sed -i '' -e 's,'$SUB_DOMAIN'="'$SUB_DOMAIN'",'$SUB_DOMAIN'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
+		sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
 	fi
 
 	if [[ $JAIL == "webserver" ]]; then
@@ -351,10 +351,10 @@ config_mysql () {
 	JAIL_CONFIG=$(dirname $0)"/"$JAIL"/"$JAIL"_config.sh"
 	
 	if ! grep -q $MYSQL_USER $JAIL_CONFIG; then
-		echo -e $MYSQL_USER"=\""$DEFAULT_USER"\"" >> $JAIL_CONFIG
+		echo -e $MYSQL_USER"=\""${!DEFAULT_USER}"\"" >> $JAIL_CONFIG
 	fi
 	if ! grep -q $MYSQL_DATA $JAIL_CONFIG; then
-		echo -e $MYSQL_DATA"=\""$DEFAULT_DATA"\"" >> $JAIL_CONFIG
+		echo -e $MYSQL_DATA"=\""${!DEFAULT_DATA}"\"" >> $JAIL_CONFIG
 	fi
 	if ! grep -q $MYSQL_PASS $JAIL_CONFIG; then
 		echo -e $MYSQL_PASS"=\"\"" >> $JAIL_CONFIG
@@ -365,8 +365,8 @@ config_mysql () {
 	
 	exec 3>&1
 	VALUES=$(dialog --form "Webserver configuration:" 0 0 0 \
-	"$1 MySQL User:" 1 1 "$MYSQL_USER" 1 30 25 0 \
-	"$1 MySQL Database:" 2 1 "$MYSQL_DATA" 2 30 25 0 \
+	"$1 MySQL User:" 1 1 "${!MYSQL_USER}" 1 30 25 0 \
+	"$1 MySQL Database:" 2 1 "${!MYSQL_DATA}" 2 30 25 0 \
 	2>&1 1>&3)
 	exit_status=$?
 	exec 3>&-
@@ -376,14 +376,14 @@ config_mysql () {
 	fi
 	
 	VALUES_ARR=( $VALUES )
-	sed -i '' -e 's,'$MYSQL_USER'="'$MYSQL_USER'",'$MYSQL_USER'="'${VALUES_ARR[0]}'",g' $JAIL_CONFIG
-	sed -i '' -e 's,'$MYSQL_DATA'="'$MYSQL_DATA'",'$MYSQL_DATA'="'${VALUES_ARR[1]}'",g' $JAIL_CONFIG
+	sed -i '' -e 's,'$MYSQL_USER'="'${!MYSQL_USER}'",'$MYSQL_USER'="'${VALUES_ARR[0]}'",g' $JAIL_CONFIG
+	sed -i '' -e 's,'$MYSQL_DATA'="'${!MYSQL_DATA}'",'$MYSQL_DATA'="'${VALUES_ARR[1]}'",g' $JAIL_CONFIG
 
 	exec 3>&1
 	PASS=$(dialog --title "Setting Password:" \
 	--clear \
 	--insecure \
-	--passwordbox "Set MySQL $1 password:" 0 0 "$MYSQL_PASS" \
+	--passwordbox "Set MySQL $1 password:" 0 0 "${!MYSQL_PASS}" \
 	2>&1 1>&3)
 	exit_status=$?
 	exec 3>&-
@@ -392,7 +392,7 @@ config_mysql () {
 		install_dialog second_time
 	fi
 
-	sed -i '' -e 's,'$MYSQL_PASS'="'$MYSQL_PASS'",'$MYSQL_PASS'="'$PASS'",g' $JAIL_CONFIG
+	sed -i '' -e 's,'$MYSQL_PASS'="'${!MYSQL_PASS}'",'$MYSQL_PASS'="'$PASS'",g' $JAIL_CONFIG
 }
 
 install_jail () {
@@ -425,7 +425,7 @@ install_jail () {
 			DATABASE=$JAIL\_MYSQL_DATABASE
 			USER=$JAIL\_MYSQL_USERNAME
 			PASS=$JAIL\_MYSQL_PASSWORD
-			iocage exec webserver bash /root/mysql.sh $DATABASE $USER $PASS
+			iocage exec webserver bash /root/mysql.sh ${!DATABASE} ${!USER} ${!PASS}
 		fi
 
 		# config everything inside the jail
@@ -442,10 +442,10 @@ install_jail () {
 		if [[ $JAIL != "webserver" ]]; then  # configure subdomain
 			. $(dirname $0)/webserver/webserver_config.sh
 			PORT=$(perl -nle 'print $1 if /\:(.[0-9]*)\)/' $(dirname $0)/$JAIL/$JAIL.json)
-			if [ "$SUB_DOMAIN" ]; then
-				iocage exec webserver bash /root/subdomain.sh $SUB_DOMAIN $LOCAL_IP $PORT
+			if [ "${!SUB_DOMAIN}" ]; then
+				iocage exec webserver bash /root/subdomain.sh ${!SUB_DOMAIN} ${!LOCAL_IP} ${!PORT}
 			else
-				iocage exec webserver bash /root/suburl.sh $JAIL $LOCAL_IP $PORT
+				iocage exec webserver bash /root/suburl.sh $JAIL ${!LOCAL_IP} ${!PORT}
 			fi
 		fi
 		
@@ -469,7 +469,7 @@ install_jail () {
 				if grep -q "MYSQL.*_DATABASE" $JAIL_CONFIG; then
 					. $(dirname $0)/webserver/webserver_config.sh
 					MYSQL_DATA=$JAIL\_MYSQL_DATABASE
-					iocage exec webserver mysql -u root -p$MYSQL_ROOT_PASSWORD $MYSQL_DATA < $BACKUP_LOCATION/$JAIL/$MYSQL_DATA.sql
+					iocage exec webserver mysql -u root -p$MYSQL_ROOT_PASSWORD ${!MYSQL_DATA} < $BACKUP_LOCATION/$JAIL/${!MYSQL_DATA}.sql
 				fi
 				if [[ $JAIL == *"webserver"* ]]; then
 					iocage exec webserver mysql -u root -p$MYSQL_ROOT_PASSWORD < $BACKUP_LOCATION/$JAIL/all-databases.sql
@@ -477,9 +477,9 @@ install_jail () {
 			fi
 		fi
 
-		if [ "$SUB_DOMAIN" ]; then
+		if [ "${!SUB_DOMAIN}" ]; then
 			echo "Change ui.json with subdomain"
-			sed -i '' -e 's,"adminportal.*,"adminportal": "https://'$SUB_DOMAIN'.'$DOMAIN'",g' $JAIL_LOCATION/$JAIL/plugin/ui.json
+			sed -i '' -e 's,"adminportal.*,"adminportal": "https://'${!SUB_DOMAIN}'.'$DOMAIN'",g' $JAIL_LOCATION/$JAIL/plugin/ui.json
 		elif [[ $JAIL == "webserver" ]]; then
 			echo "Change ui.json for webserver"
 			sed -i '' -e 's,"adminportal.*,"adminportal": "https://www.'$DOMAIN'",g' $JAIL_LOCATION/$JAIL/plugin/ui.json
@@ -787,7 +787,7 @@ delete_jail () {
 			sed -i '' -e '/.*'$JAIL'.*/d' $JAIL_LOCATION/webserver/root/usr/local/etc/nginx/standard.conf
 			if grep -q "MYSQL.*_DATABASE" $JAIL_CONFIG; then
 				MYSQL_DATA=$JAIL\_MYSQL_DATABASE
-				iocage exec webserver mysql -u root -p$MYSQL_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS $MYSQL_DATA;"
+				iocage exec webserver mysql -u root -p$MYSQL_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS ${!MYSQL_DATA};"
 			fi
 			dialog --msgbox "$JAIL deleted" 5 30
 		else
@@ -879,7 +879,7 @@ backup_jail () {
 	if grep -q "MYSQL.*_DATABASE" $JAIL_CONFIG; then
 		. $(dirname $0)/webserver/webserver_config.sh
 		MYSQL_DATA=$JAIL\_MYSQL_DATABASE
-		iocage exec webserver mysqldump --opt --set-gtid-purged=OFF -u root -p$MYSQL_ROOT_PASSWORD $MYSQL_DATA > $BACKUP_LOCATION/$JAIL/$MYSQL_DATA.sql
+		iocage exec webserver mysqldump --opt --set-gtid-purged=OFF -u root -p$MYSQL_ROOT_PASSWORD ${!MYSQL_DATA} > $BACKUP_LOCATION/$JAIL/${!MYSQL_DATA}.sql
 		if [[ $JAIL == *"webserver"* ]]; then
 			iocage exec webserver mysqldump --opt --all-databases --set-gtid-purged=OFF -u root -p$MYSQL_ROOT_PASSWORD > $BACKUP_LOCATION/$JAIL/all-databases.sql
 		fi
