@@ -414,8 +414,6 @@ install_jail () {
 
 		mount_storage $JAIL
 		
-		cp ${JAIL_CONFIG%/*}/* $JAIL_LOCATION/$JAIL/root/root/
-		cp $GLOBAL_CONFIG $JAIL_LOCATION/$JAIL/root/root/
 		if [ -d "$BACKUP_LOCATION/$JAIL/usr/local/etc/letsencrypt/" ]; then # copy certificates before installing, otherwise certificates will be requested when not necessary
 			echo "restoring certificates..."
 			mkdir -p $JAIL_LOCATION/$JAIL/root/usr/local/etc/letsencrypt
@@ -433,8 +431,11 @@ install_jail () {
 		# config everything inside the jail
 		iocage exec $JAIL pkg install -y bash
 		if [ -f "$(dirname $0)/$JAIL/$JAIL.sh" ]; then
+			cp ${JAIL_CONFIG%/*}/* $JAIL_LOCATION/$JAIL/root/root/
+			cp $GLOBAL_CONFIG $JAIL_LOCATION/$JAIL/root/root/
 			iocage exec $JAIL bash /root/$JAIL.sh
-		elif [ -f "$(dirname $0)/$JAIL/config-$JAIL.sh" ]; then
+		fi
+		if [ -f "$(dirname $0)/$JAIL/config-$JAIL.sh" ]; then
 			bash "$(dirname $0)/$JAIL/config-$JAIL.sh"
 		fi
 
