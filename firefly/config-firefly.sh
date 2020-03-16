@@ -11,3 +11,5 @@ iocage set -P firefly-iii=DB_PORT=3306 firefly
 iocage set -P firefly-iii=DB_DATABASE=$firefly_MYSQL_DATABASE firefly
 iocage set -P firefly-iii=DB_USERNAME=$firefly_MYSQL_USERNAME firefly
 iocage set -P firefly-iii=DB_PASSWORD=$firefly_MYSQL_PASSWORD firefly
+
+iocage exec firefly /usr/local/bin/start
