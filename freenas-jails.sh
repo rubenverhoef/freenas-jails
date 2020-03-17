@@ -469,10 +469,10 @@ install_jail () {
 				if grep -q "MYSQL.*_DATABASE" $JAIL_CONFIG; then
 					. $(dirname $0)/webserver/webserver_config.sh
 					MYSQL_DATA=$JAIL\_MYSQL_DATABASE
-					iocage exec webserver mysql -u root -p$MYSQL_ROOT_PASSWORD ${!MYSQL_DATA} < $BACKUP_LOCATION/$JAIL/${!MYSQL_DATA}.sql
+					iocage exec webserver mysql -u root -p'$MYSQL_ROOT_PASSWORD' ${!MYSQL_DATA} < $BACKUP_LOCATION/$JAIL/${!MYSQL_DATA}.sql
 				fi
 				if [[ $JAIL == *"webserver"* ]]; then
-					iocage exec webserver mysql -u root -p$MYSQL_ROOT_PASSWORD < $BACKUP_LOCATION/$JAIL/all-databases.sql
+					iocage exec webserver mysql -u root -p'$MYSQL_ROOT_PASSWORD' < $BACKUP_LOCATION/$JAIL/all-databases.sql
 				fi
 			fi
 		fi
@@ -787,7 +787,7 @@ delete_jail () {
 			sed -i '' -e '/.*'$JAIL'.*/d' $JAIL_LOCATION/webserver/root/usr/local/etc/nginx/standard.conf
 			if grep -q "MYSQL.*_DATABASE" $JAIL_CONFIG; then
 				MYSQL_DATA=$JAIL\_MYSQL_DATABASE
-				iocage exec webserver mysql -u root -p$MYSQL_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS ${!MYSQL_DATA};"
+				iocage exec webserver mysql -u root -p'$MYSQL_ROOT_PASSWORD' -e "DROP DATABASE IF EXISTS ${!MYSQL_DATA};"
 			fi
 			dialog --msgbox "$JAIL deleted" 5 30
 		else
@@ -879,9 +879,9 @@ backup_jail () {
 	if grep -q "MYSQL.*_DATABASE" $JAIL_CONFIG; then
 		. $(dirname $0)/webserver/webserver_config.sh
 		MYSQL_DATA=$JAIL\_MYSQL_DATABASE
-		iocage exec webserver mysqldump --opt --set-gtid-purged=OFF -u root -p$MYSQL_ROOT_PASSWORD ${!MYSQL_DATA} > $BACKUP_LOCATION/$JAIL/${!MYSQL_DATA}.sql
+		iocage exec webserver mysqldump --opt --set-gtid-purged=OFF -u root -p'$MYSQL_ROOT_PASSWORD' ${!MYSQL_DATA} > $BACKUP_LOCATION/$JAIL/${!MYSQL_DATA}.sql
 		if [[ $JAIL == *"webserver"* ]]; then
-			iocage exec webserver mysqldump --opt --all-databases --set-gtid-purged=OFF -u root -p$MYSQL_ROOT_PASSWORD > $BACKUP_LOCATION/$JAIL/all-databases.sql
+			iocage exec webserver mysqldump --opt --all-databases --set-gtid-purged=OFF -u root -p'$MYSQL_ROOT_PASSWORD' > $BACKUP_LOCATION/$JAIL/all-databases.sql
 		fi
 	fi
 	
