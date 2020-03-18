@@ -417,8 +417,7 @@ install_jail () {
 		if [ -d "$BACKUP_LOCATION/$JAIL/usr/local/etc/letsencrypt/" ]; then # copy certificates before installing, otherwise certificates will be requested when not necessary
 			echo "restoring certificates..."
 			mkdir -p $JAIL_LOCATION/$JAIL/root/usr/local/etc/letsencrypt
-			rsync -a $BACKUP_LOCATION/$JAIL/usr/local/etc/letsencrypt/ $JAIL_LOCATION/$JAIL/root/usr/local/etc/letsencrypt
-			chown -R $USER_NAME:$USER_NAME $JAIL_LOCATION/$JAIL/root/usr/local/etc/letsencrypt/
+			rsync -o $USER_NAME -g $USER_NAME -a $BACKUP_LOCATION/$JAIL/usr/local/etc/letsencrypt/ $JAIL_LOCATION/$JAIL/root/usr/local/etc/letsencrypt
 		fi
 		
 		if grep -q "MYSQL.*_DATABASE" $JAIL_CONFIG; then # configure mysql if needed
@@ -426,6 +425,28 @@ install_jail () {
 			USER=$JAIL\_MYSQL_USERNAME
 			PASS=$JAIL\_MYSQL_PASSWORD
 			iocage exec webserver bash /root/mysql.sh ${!DATABASE} ${!USER} ${!PASS}
+		fi
+
+		RESTORE=0
+		if [ -d "$BACKUP_LOCATION/$JAIL" ]; then
+			dialog --title "Restore backup?" --yesno "Do you want to restore the backup?\"?" 7 60
+			exit_status=$?
+			if [ $exit_status == $DIALOG_OK ]; then
+				RESTORE=1
+				. $(dirname $0)/webserver/webserver_config.sh
+				if [[ $JAIL == *"webserver"* ]]; then
+					rsync -a --delete $BACKUP_LOCATION/$JAIL/all-databases.sql $JAIL_LOCATION/webserver/root/root
+					iocage exec webserver "mysql -u root -p'$MYSQL_ROOT_PASSWORD' < root/all-databases.sql"
+					rm -rf $JAIL_LOCATION/webserver/root/root/all-databases.sql
+				else
+					if grep -q "MYSQL.*_DATABASE" $JAIL_CONFIG; then
+						MYSQL_DATA=$JAIL\_MYSQL_DATABASE
+						rsync -a --delete $BACKUP_LOCATION/$JAIL/${!MYSQL_DATA}.sql $JAIL_LOCATION/webserver/root/root
+						iocage exec webserver "mysql -u root -p'$MYSQL_ROOT_PASSWORD' ${!MYSQL_DATA} < root/${!MYSQL_DATA}.sql"
+						rm -rf $JAIL_LOCATION/webserver/root/root/${!MYSQL_DATA}.sql
+					fi
+				fi
+			fi
 		fi
 
 		# config everything inside the jail
@@ -449,32 +470,19 @@ install_jail () {
 			fi
 		fi
 		
-		if [ -d "$BACKUP_LOCATION/$JAIL" ]; then
-			dialog --title "Restore backup?" --yesno "Do you want to restore the backup?\"?" 7 60
-			exit_status=$?
-			if [ $exit_status == $DIALOG_OK ]; then
-				i=1
-				while true; do
-					FOLDER="$(sed -n ''$i'p' ${JAIL_CONFIG%/*}/backup.conf)"
-					DEST_FOLDER="$(sed -n ''$i'p' ${JAIL_CONFIG%/*}/backup.conf | cut -d " " -f1)"
-					DEST_FOLDER=${DEST_FOLDER%/*}/
-					(( i++ ))
-					if [ "$FOLDER" ]; then
-						rsync -a $BACKUP_LOCATION/$JAIL$FOLDER $JAIL_LOCATION/$JAIL/root$DEST_FOLDER
-						chown -R $USER_NAME:$USER_NAME $JAIL_LOCATION/$JAIL/root$DEST_FOLDER
-					else
-						break
-					fi
-				done
-				if grep -q "MYSQL.*_DATABASE" $JAIL_CONFIG; then
-					. $(dirname $0)/webserver/webserver_config.sh
-					MYSQL_DATA=$JAIL\_MYSQL_DATABASE
-					iocage exec webserver "mysql -u root -p'$MYSQL_ROOT_PASSWORD' ${!MYSQL_DATA} < $BACKUP_LOCATION/$JAIL/${!MYSQL_DATA}.sql"
+		if [ $RESTORE -eq 1 ]; then
+			i=1
+			while true; do
+				FOLDER="$(sed -n ''$i'p' ${JAIL_CONFIG%/*}/backup.conf)"
+				DEST_FOLDER="$(sed -n ''$i'p' ${JAIL_CONFIG%/*}/backup.conf | cut -d " " -f1)"
+				DEST_FOLDER=${DEST_FOLDER%/*}/
+				(( i++ ))
+				if [ "$FOLDER" ]; then
+					rsync -o $USER_NAME -g $USER_NAME -a $BACKUP_LOCATION/$JAIL$FOLDER $JAIL_LOCATION/$JAIL/root$DEST_FOLDER
+				else
+					break
 				fi
-				if [[ $JAIL == *"webserver"* ]]; then
-					iocage exec webserver "mysql -u root -p'$MYSQL_ROOT_PASSWORD' < $BACKUP_LOCATION/$JAIL/all-databases.sql"
-				fi
-			fi
+			done
 		fi
 
 		if [ "${!SUB_DOMAIN}" ]; then
@@ -880,13 +888,13 @@ backup_jail () {
 		fi
 	done
 
-	if grep -q "MYSQL.*_DATABASE" $JAIL_CONFIG; then
-		. $(dirname $0)/webserver/webserver_config.sh
-		if [[ $JAIL == *"webserver"* ]]; then
-			iocage exec webserver "mysqldump --opt --all-databases --set-gtid-purged=OFF -u root -p'$MYSQL_ROOT_PASSWORD' > root/all-databases.sql"
-			rsync -a --delete $JAIL_LOCATION/webserver/root/root/all-databases.sql $BACKUP_LOCATION/$JAIL
-			rm -rf $JAIL_LOCATION/webserver/root/root/all-databases.sql
-		else
+	. $(dirname $0)/webserver/webserver_config.sh
+	if [[ $JAIL == *"webserver"* ]]; then
+		iocage exec webserver "mysqldump --opt --all-databases --set-gtid-purged=OFF -u root -p'$MYSQL_ROOT_PASSWORD' > root/all-databases.sql"
+		rsync -a --delete $JAIL_LOCATION/webserver/root/root/all-databases.sql $BACKUP_LOCATION/$JAIL
+		rm -rf $JAIL_LOCATION/webserver/root/root/all-databases.sql
+	else
+		if grep -q "MYSQL.*_DATABASE" $JAIL_CONFIG; then
 			MYSQL_DATA=$JAIL\_MYSQL_DATABASE
 			iocage exec webserver "mysqldump --opt --set-gtid-purged=OFF -u root -p'$MYSQL_ROOT_PASSWORD' ${!MYSQL_DATA} > root/${!MYSQL_DATA}.sql"
 			rsync -a --delete $JAIL_LOCATION/webserver/root/root/${!MYSQL_DATA}.sql $BACKUP_LOCATION/$JAIL
