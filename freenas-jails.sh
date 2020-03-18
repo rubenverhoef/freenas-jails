@@ -861,7 +861,11 @@ backup_jail () {
 	. $GLOBAL_CONFIG
 	
 	mkdir -p $BACKUP_LOCATION/$JAIL
-	iocage stop $JAIL
+
+	if [[ $JAIL != *"webserver"* ]]; then
+		iocage stop $JAIL
+	fi
+
 	i=1
 	while true; do
 		FOLDER="$(sed -n ''$i'p' $JAIL_BACKUP)"
@@ -875,15 +879,23 @@ backup_jail () {
 			break
 		fi
 	done
-	iocage start $JAIL
+
 	if grep -q "MYSQL.*_DATABASE" $JAIL_CONFIG; then
 		. $(dirname $0)/webserver/webserver_config.sh
-		MYSQL_DATA=$JAIL\_MYSQL_DATABASE
-		iocage exec webserver "mysqldump --opt --set-gtid-purged=OFF -u root -p'$MYSQL_ROOT_PASSWORD' ${!MYSQL_DATA} > $BACKUP_LOCATION/$JAIL/${!MYSQL_DATA}.sql"
 		if [[ $JAIL == *"webserver"* ]]; then
-			iocage exec webserver "mysqldump --opt --all-databases --set-gtid-purged=OFF -u root -p'$MYSQL_ROOT_PASSWORD' > $BACKUP_LOCATION/$JAIL/all-databases.sql"
+			iocage exec webserver "mysqldump --opt --all-databases --set-gtid-purged=OFF -u root -p'$MYSQL_ROOT_PASSWORD' > root/all-databases.sql"
+			rsync -a --delete $JAIL_LOCATION/webserver/root/root/all-databases.sql $BACKUP_LOCATION/$JAIL
+			rm -rf $JAIL_LOCATION/webserver/root/root/all-databases.sql
+		else
+			MYSQL_DATA=$JAIL\_MYSQL_DATABASE
+			iocage exec webserver "mysqldump --opt --set-gtid-purged=OFF -u root -p'$MYSQL_ROOT_PASSWORD' ${!MYSQL_DATA} > root/${!MYSQL_DATA}.sql"
+			rsync -a --delete $JAIL_LOCATION/webserver/root/root/${!MYSQL_DATA}.sql $BACKUP_LOCATION/$JAIL
+			rm -rf $JAIL_LOCATION/webserver/root/root/${!MYSQL_DATA}.sql
 		fi
 	fi
+
+	iocage start $JAIL
+
 	
 	dialog --msgbox "Config of $JAIL backuped!" 5 50
 	
