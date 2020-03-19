@@ -448,6 +448,21 @@ install_jail () {
 						rm -rf $JAIL_LOCATION/webserver/root/root/${!MYSQL_DATA}.sql
 					fi
 				fi
+
+				i=1
+				while true; do
+					FOLDER="$(sed -n ''$i'p' ${JAIL_CONFIG%/*}/backup.conf)"
+					DEST_FOLDER="$(sed -n ''$i'p' ${JAIL_CONFIG%/*}/backup.conf | cut -d " " -f1)"
+					DEST_FOLDER=${DEST_FOLDER%/*}/
+					(( i++ ))
+					if [ "$FOLDER" ]; then
+						USER=$(stat -f %Su $(dirname $JAIL_LOCATION/$JAIL/root$DEST_FOLDER))
+						GROUP=$(stat -f %Sg $(dirname $JAIL_LOCATION/$JAIL/root$DEST_FOLDER))
+						rsync -a $BACKUP_LOCATION/$JAIL$FOLDER $JAIL_LOCATION/$JAIL/root$DEST_FOLDER --chown=$USER:$GROUP
+					else
+						break
+					fi
+				done
 			fi
 		fi
 
