@@ -173,6 +173,11 @@ config_jail () {
 			echo -e "PLEX_PASS=\""$PLEX_PASS"\"" >> $JAIL_CONFIG
 		fi
 	fi
+	if [[ $JAIL == "firefly" ]]; then
+		if ! grep -q "GITHUB_API" $JAIL_CONFIG; then
+			echo -e "GITHUB_API=\""$GITHUB_API"\"" >> $JAIL_CONFIG
+		fi
+	fi
 	
 	# load updated config files
 	. $JAIL_CONFIG
@@ -189,6 +194,14 @@ config_jail () {
 		"Subdomain name" 2 1 "${!SUB_DOMAIN}" 2 30 25 0 \
 		"Blank for normal plex" 3 1 "" 3 30 0 0 \
 		"Plex.tv username" 4 1 "$PLEX_USER" 4 30 25 0 \
+		2>&1 1>&3)
+	elif [[ $JAIL == "firefly" ]]; then
+		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
+		"Keep emtpy for no Subdomain" 1 1 "" 1 30 0 0 \
+		"Subdomain name" 2 1 "${!SUB_DOMAIN}" 2 30 25 0 \
+		"Github API key for composer" 3 1 "" 3 30 0 0 \
+		"https://github.com/settings/tokens/new?scopes=repo&description=Composer+on+firefly" 4 1 "" 4 30 0 0 \
+		"GitHub API" 5 1 "$GITHUB_API" 5 30 25 0 \
 		2>&1 1>&3)
 	else
 		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
@@ -224,6 +237,9 @@ config_jail () {
 			install_dialog second_time
 		fi
 		sed -i '' -e 's,PLEX_PASS="'$PLEX_PASS'",PLEX_PASS="'$PASS'",g' $JAIL_CONFIG
+	elif [[ $JAIL == "firefly" ]]; then
+		sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
+		sed -i '' -e 's,GITHUB_API="'$GITHUB_API'",GITHUB_API="'${JAIL_VALUES[1]}'",g' $JAIL_CONFIG
 	else
 		sed -i '' -e 's,'$SUB_DOMAIN'="'${!SUB_DOMAIN}'",'$SUB_DOMAIN'="'${JAIL_VALUES[0]}'",g' $JAIL_CONFIG
 	fi
