@@ -199,8 +199,8 @@ config_jail () {
 		VALUES=$(dialog --form "$1 configuration:" 0 0 0 \
 		"Keep emtpy for no Subdomain" 1 1 "" 1 30 0 0 \
 		"Subdomain name" 2 1 "${!SUB_DOMAIN}" 2 30 25 0 \
-		"Github API key for composer" 3 1 "" 3 30 0 0 \
-		"https://github.com/settings/tokens/new?scopes=repo&description=Composer+on+firefly" 4 1 "" 4 30 0 0 \
+		"Github API key for composer. Create one her:" 3 1 "" 3 30 0 0 \
+		"https://github.com/settings/tokens/new?scopes=repo&description=Composer+on+firefly" 4 1 "" 4 45 0 0 \
 		"GitHub API" 5 1 "$GITHUB_API" 5 30 25 0 \
 		2>&1 1>&3)
 	else
