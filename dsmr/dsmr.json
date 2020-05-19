@@ -8,13 +8,15 @@
         "nat_forwards": "tcp(8100:8100)"
     },
     "pkgs": [
+        "postgresql12-server",
         "sudo",
         "nginx",
         "git",
-        "postgresql12-server",
+        "bash",
         "python37",
         "py37-pip",
-        "py37-supervisor"
+        "py37-supervisor",
+        "py37-virtualenv"
     ],
     "packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
     "fingerprints": {
