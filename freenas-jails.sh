@@ -948,7 +948,42 @@ backup_jail () {
 }
 
 upgrade_jail () {
-	dialog --msgbox "Not implemented yet!" 5 30
+	exec 3>&1
+	JAIL=$(dialog --menu "Delete following programs:" 0 0 0 \
+	Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" \
+	Nextcloud "Nextcloud 12" \
+	SABnzbd "SABnzbd" \
+	Sonarr "Sonarr automatic serice downloader" \
+	Radarr "Radarr automatic movie downloader" \
+	Plex "Plex Media Server" \
+	Emby "Emby Media Server" \
+	Tvheadend "Tvheadend TV streaming server" \
+	AdGuard "DNS Adblocker"\
+	FireFly "Personal finances manager"\
+	DSMR "DSMR Reader"\
+	2>&1 1>&3)
+	exit_status=$?
+	exec 3>&-
+	
+	if [ $exit_status != $DIALOG_OK ]; then
+		first
+	fi
+	
+	JAIL=${JAIL,,}
+
+	# backup
+	backup_jail $JAIL
+
+	# rename to _old
+	iocage stop $JAIL"_old"
+	iocage destroy $JAIL"_old" -f
+	iocage destroy $JAIL"_old" -f
+	iocage stop $JAIL
+	iocage rename $JAIL $JAIL"_old"
+
+	# install new one
+	install_jail $JAIL
+
 	first
 }
 
