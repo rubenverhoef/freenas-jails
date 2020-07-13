@@ -425,7 +425,7 @@ install_jail () {
 
 	iocage activate $IOCAGE_ZPOOL
 	
-	if [[ $(iocage list) != *$JAIL* ]]; then
+	if [[ $(iocage list) != $JAIL ]]; then
 		iocage fetch -P $(dirname $0)/$JAIL/$JAIL.json
 
 		mount_storage $JAIL
