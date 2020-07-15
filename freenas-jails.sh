@@ -442,7 +442,7 @@ install_jail () {
 			DATABASE=$JAIL\_MYSQL_DATABASE
 			USER=$JAIL\_MYSQL_USERNAME
 			PASS=$JAIL\_MYSQL_PASSWORD
-			iocage exec webserver bash /root/mysql.sh ${!DATABASE} ${!USER} ${!PASS}
+			iocage exec webserver "bash /root/mysql.sh ${!DATABASE} ${!USER} ${!PASS}"
 		fi
 
 		RESTORE=0
@@ -483,11 +483,11 @@ install_jail () {
 		fi
 
 		# config everything inside the jail
-		iocage exec $JAIL pkg install -y bash
+		iocage exec $JAIL "pkg install -y bash"
 		if [ -f "$(dirname $0)/$JAIL/$JAIL.sh" ]; then
 			cp ${JAIL_CONFIG%/*}/* $JAIL_LOCATION/$JAIL/root/root/
 			cp $GLOBAL_CONFIG $JAIL_LOCATION/$JAIL/root/root/
-			iocage exec $JAIL bash /root/$JAIL.sh
+			iocage exec $JAIL "bash /root/$JAIL.sh"
 		fi
 		if [ -f "$(dirname $0)/$JAIL/config-$JAIL.sh" ]; then
 			bash "$(dirname $0)/$JAIL/config-$JAIL.sh"
@@ -497,9 +497,9 @@ install_jail () {
 			. $(dirname $0)/webserver/webserver_config.sh
 			PORT=$(perl -nle 'print $1 if /\:(.[0-9]*)\)/' $(dirname $0)/$JAIL/$JAIL.json)
 			if [ "${!SUB_DOMAIN}" ]; then
-				iocage exec webserver bash /root/subdomain.sh ${!SUB_DOMAIN} $LOCAL_IP $PORT
+				iocage exec webserver "bash /root/subdomain.sh ${!SUB_DOMAIN} $LOCAL_IP $PORT"
 			else
-				iocage exec webserver bash /root/suburl.sh $JAIL $LOCAL_IP $PORT
+				iocage exec webserver "bash /root/suburl.sh $JAIL $LOCAL_IP $PORT"
 			fi
 		fi
 		
@@ -604,7 +604,7 @@ mount_storage () {
 							chown -R $USER_NAME:$USER_NAME $DATA
 							mkdir -p $JAIL_LOCATION/$JAIL/root/mnt/$(basename $DATA)
 							iocage fstab -a $JAIL $DATA /mnt/$(basename $DATA) nullfs rw 0 0
-							iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/$(basename $DATA)
+							iocage exec $JAIL "chown -R $USER_NAME:$USER_NAME /mnt/$(basename $DATA)"
 							iocage restart $JAIL
 						fi
 					fi		
@@ -652,7 +652,7 @@ mount_storage () {
 							chown -R $USER_NAME:$USER_NAME $DATA
 							mkdir -p $JAIL_LOCATION/$JAIL/root/media
 							iocage fstab -R 0 $JAIL $DATA /media nullfs rw 0 0 # does not work, we need to get the index first
-							iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /media
+							iocage exec "$JAIL chown -R $USER_NAME:$USER_NAME /media"
 							iocage restart $JAIL
 						fi
 						count=$(( $count + 1 ))
@@ -662,7 +662,7 @@ mount_storage () {
 					chown -R $USER_NAME:$USER_NAME $DATA
 					mkdir -p $JAIL_LOCATION/$JAIL/root/media
 					iocage fstab -a $JAIL $DATA /media nullfs rw 0 0
-					iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /media
+					iocage exec "$JAIL chown -R $USER_NAME:$USER_NAME /media"
 					iocage restart $JAIL
 				fi
 			else
@@ -673,7 +673,7 @@ mount_storage () {
 			chown -R $USER_NAME:$USER_NAME $FILE_LOCATION
 			mkdir -p $JAIL_LOCATION/$JAIL/root/media
 			iocage fstab -a $JAIL $FILE_LOCATION /media nullfs rw 0 0
-			iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /media
+			iocage exec $JAIL "chown -R $USER_NAME:$USER_NAME /media"
 			iocage restart $JAIL
 		fi
 	fi
@@ -695,7 +695,7 @@ mount_storage () {
 							chown -R $USER_NAME:$USER_NAME $DATA
 							mkdir -p $JAIL_LOCATION/$JAIL/root/mnt/media
 					   		iocage fstab -R 0 $JAIL $DATA /mnt/media nullfs rw 0 0 # does not work, we need to get the index first
-							iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/media
+							iocage exec $JAIL "chown -R $USER_NAME:$USER_NAME /mnt/media"
 							iocage restart $JAIL
 						fi
 						count=$(( $count + 1 ))
@@ -705,7 +705,7 @@ mount_storage () {
 					chown -R $USER_NAME:$USER_NAME $DATA
 					mkdir -p $JAIL_LOCATION/$JAIL/root/mnt/media
 					iocage fstab -a $JAIL $DATA /mnt/media nullfs rw 0 0
-					iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/media
+					iocage exec $JAIL "chown -R $USER_NAME:$USER_NAME /mnt/media"
 					iocage restart $JAIL
 				fi
 			else
@@ -716,7 +716,7 @@ mount_storage () {
 			chown -R $USER_NAME:$USER_NAME $MEDIA_LOCATION
 			mkdir -p $JAIL_LOCATION/$JAIL/root/mnt/media
 			iocage fstab -a $JAIL $MEDIA_LOCATION /mnt/media nullfs rw 0 0
-			iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/media
+			iocage exec $JAIL "chown -R $USER_NAME:$USER_NAME /mnt/media"
 			iocage restart $JAIL
 		fi
 
@@ -736,7 +736,7 @@ mount_storage () {
 							chown -R $USER_NAME:$USER_NAME $DATA
 							mkdir -p $JAIL_LOCATION/$JAIL/root/mnt/downloads
 							iocage fstab -R 1 $JAIL $DATA /mnt/downloads nullfs rw 0 0 # does not work, we need to get the index first
-							iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/downloads
+							iocage exec $JAIL "chown -R $USER_NAME:$USER_NAME /mnt/downloads"
 							iocage restart $JAIL
 						fi
 						count=$(( $count + 1 ))
@@ -746,7 +746,7 @@ mount_storage () {
 					chown -R $USER_NAME:$USER_NAME $DATA
 					mkdir -p $JAIL_LOCATION/$JAIL/root/mnt/downloads
 					iocage fstab -a $JAIL $DATA /mnt/downloads nullfs rw 0 0
-					iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/downloads
+					iocage exec $JAIL "chown -R $USER_NAME:$USER_NAME /mnt/downloads"
 					iocage restart $JAIL
 				fi
 			else
@@ -757,7 +757,7 @@ mount_storage () {
 			chown -R $USER_NAME:$USER_NAME $DOWNLOADS_LOCATION
 			mkdir -p $JAIL_LOCATION/$JAIL/root/mnt/downloads
 			iocage fstab -a $JAIL $DOWNLOADS_LOCATION /mnt/downloads nullfs rw 0 0
-			iocage exec $JAIL chown -R $USER_NAME:$USER_NAME /mnt/downloads
+			iocage exec $JAIL "chown -R $USER_NAME:$USER_NAME /mnt/downloads"
 			iocage restart $JAIL
 		fi
 	fi
