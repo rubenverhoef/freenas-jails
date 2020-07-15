@@ -433,9 +433,7 @@ install_jail () {
 		if [ -d "$BACKUP_LOCATION/$JAIL/usr/local/etc/letsencrypt/" ]; then # copy certificates before installing, otherwise certificates will be requested when not necessary
 			echo "restoring certificates..."
 			mkdir -p $JAIL_LOCATION/$JAIL/root/usr/local/etc/letsencrypt
-			USER=$(stat -f %Su $JAIL_LOCATION/$JAIL/root/usr/local/etc/letsencrypt)
-			GROUP=$(stat -f %Sg $JAIL_LOCATION/$JAIL/root/usr/local/etc/letsencrypt)
-			rsync -a $BACKUP_LOCATION/$JAIL/usr/local/etc/letsencrypt/ $JAIL_LOCATION/$JAIL/root/usr/local/etc/letsencrypt --chown=$USER:$GROUP
+			rsync -a $BACKUP_LOCATION/$JAIL/usr/local/etc/letsencrypt/ $JAIL_LOCATION/$JAIL/root/usr/local/etc/letsencrypt
 		fi
 		
 		if grep -q "MYSQL.*_DATABASE" $JAIL_CONFIG; then # configure mysql if needed
@@ -472,9 +470,7 @@ install_jail () {
 					DEST_FOLDER=${DEST_FOLDER%/*}/
 					(( i++ ))
 					if [ "$FOLDER" ]; then
-						USER=$(stat -f %Su $(dirname $JAIL_LOCATION/$JAIL/root$DEST_FOLDER))
-						GROUP=$(stat -f %Sg $(dirname $JAIL_LOCATION/$JAIL/root$DEST_FOLDER))
-						rsync -a $BACKUP_LOCATION/$JAIL$FOLDER $JAIL_LOCATION/$JAIL/root$DEST_FOLDER --chown=$USER:$GROUP
+						rsync -a $BACKUP_LOCATION/$JAIL$FOLDER $JAIL_LOCATION/$JAIL/root$DEST_FOLDER
 					else
 						break
 					fi
@@ -511,9 +507,7 @@ install_jail () {
 				DEST_FOLDER=${DEST_FOLDER%/*}/
 				(( i++ ))
 				if [ "$FOLDER" ]; then
-					USER=$(stat -f %Su $(dirname $JAIL_LOCATION/$JAIL/root$DEST_FOLDER))
-					GROUP=$(stat -f %Sg $(dirname $JAIL_LOCATION/$JAIL/root$DEST_FOLDER))
-					rsync -a $BACKUP_LOCATION/$JAIL$FOLDER $JAIL_LOCATION/$JAIL/root$DEST_FOLDER --chown=$USER:$GROUP
+					rsync -a $BACKUP_LOCATION/$JAIL$FOLDER $JAIL_LOCATION/$JAIL/root$DEST_FOLDER
 				else
 					break
 				fi
