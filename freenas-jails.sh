@@ -813,6 +813,7 @@ delete_jail () {
 			iocage destroy $JAIL"_old"
 			iocage stop $JAIL
 			iocage rename $JAIL $JAIL"_old"
+			iocage set boot=no $JAIL"_old"
 			iocage destroy $JAIL
 			if [ $backup != "1" ]; then
 				dialog --title "Delete backup" \
@@ -975,6 +976,7 @@ upgrade_jail () {
 	iocage destroy $JAIL"_old"
 	iocage stop $JAIL
 	iocage rename $JAIL $JAIL"_old"
+	iocage set boot=no $JAIL"_old"
 
 	# install new one
 	install_jail $JAIL
