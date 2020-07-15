@@ -1,7 +1,7 @@
 {
     "name": "webserver",
     "plugin_schema": "2",
-    "release": "11.3-RELEASE",
+    "release": "11.4-RELEASE",
     "artifact": "https://github.com/rubenverhoef/iocage-plugin-webserver.git",
     "properties": {
         "nat": 1,
