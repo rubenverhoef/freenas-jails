@@ -427,7 +427,7 @@ install_jail () {
 	
 	if [[ $(iocage list) != $JAIL ]]; then
 		iocage fetch -P $(dirname $0)/$JAIL/$JAIL.json
-
+		iocage exec $JAIL "pw useradd -n $USER_NAME -u $USER_ID -d /nonexistent -s /usr/sbin/nologin"
 		mount_storage $JAIL
 		
 		if [ -d "$BACKUP_LOCATION/$JAIL/usr/local/etc/letsencrypt/" ]; then # copy certificates before installing, otherwise certificates will be requested when not necessary

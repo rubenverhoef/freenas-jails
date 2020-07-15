@@ -13,9 +13,6 @@ else
     sh $(dirname $0)/PMS_Updater.sh -n -a
 fi
 
-#create user
-pw useradd -n $USER_NAME -u $USER_ID -d /nonexistent -s /usr/sbin/nologin
-
 mkdir -p /usr/local/plexdata/Plex\ Media\ Server/Mounts/
 ln -s /mnt/* /usr/local/plexdata/Plex\ Media\ Server/Mounts/
 chown -R $USER_NAME:$USER_NAME /usr/local/plexdata

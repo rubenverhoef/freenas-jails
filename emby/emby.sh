@@ -8,10 +8,6 @@ sysrc 'emby_server_user='$USER_NAME''
 sysrc 'emby_server_group='$USER_NAME''
 sysrc 'emby_server_data_dir=/var/db/emby-server'
 
-
-#create user
-pw useradd -n $USER_NAME -u $USER_ID -d /nonexistent -s /usr/sbin/nologin
-
 mkdir -p /var/db/emby-server
 chown -R $USER_NAME:$USER_NAME /var/db/emby-server
 

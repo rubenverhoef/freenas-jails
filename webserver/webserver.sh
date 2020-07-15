@@ -3,9 +3,6 @@
 . $(dirname $0)/config.sh
 . $(dirname $0)/webserver_config.sh
 
-#create user
-pw useradd -n $USER_NAME -u $USER_ID -d /nonexistent -s /usr/sbin/nologin
-
 BLOWFISH_SECRET="$(openssl rand -base64 32)"
 BLOWFISH_SECRET=${BLOWFISH_SECRET//[^[:alnum:]]/}
 

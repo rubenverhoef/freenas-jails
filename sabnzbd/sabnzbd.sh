@@ -11,9 +11,6 @@ sysrc 'sabnzbd_group='$USER_NAME''
 sysrc 'sabnzbd_conf_dir="/usr/local/sabnzbd"'
 sysrc 'sabnzbd_pidfile="/var/run/sabnzbd/sabnzbd.pid"'
 
-#create user
-pw useradd -n $USER_NAME -u $USER_ID -d /nonexistent -s /usr/sbin/nologin
-
 rm -rf /usr/local/sabnzbd
 mkdir /usr/local/sabnzbd
 mkdir /var/run/sabnzbd

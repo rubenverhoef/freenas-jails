@@ -3,9 +3,6 @@
 . $(dirname $0)/nextcloud_config.sh
 . $(dirname $0)/config.sh
 
-#create user
-pw useradd -n $USER_NAME -u $USER_ID -d /nonexistent -s /usr/sbin/nologin
-
 #php configuration
 cp /usr/local/etc/php.ini-production /usr/local/etc/php.ini
 
