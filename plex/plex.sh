@@ -23,4 +23,4 @@ sysrc 'plexmediaserver_user='$USER_NAME''
 sysrc 'plexmediaserver_group='$USER_NAME''
 sysrc 'plexmediaserver_support_path=/usr/local/plexdata'
 
-service plexmediaserver start
+service plexmediaserver restart
