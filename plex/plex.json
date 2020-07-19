@@ -11,7 +11,7 @@
         "multimedia/plexmediaserver",
         "ca_root_nss",
         "wget",
-        "perl5.30"
+        "perl5"
     ],
     "packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
     "fingerprints": {
