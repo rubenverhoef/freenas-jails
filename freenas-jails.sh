@@ -810,11 +810,11 @@ delete_jail () {
 		exit_status=$?
 		if [ $exit_status == $DIALOG_OK ]; then
 			iocage stop $JAIL"_old"
-			iocage destroy $JAIL"_old"
+			iocage destroy $JAIL"_old" --recursive
 			iocage stop $JAIL
 			iocage rename $JAIL $JAIL"_old"
 			iocage set boot=no $JAIL"_old"
-			iocage destroy $JAIL
+			iocage destroy $JAIL --recursive
 			if [ $backup != "1" ]; then
 				dialog --title "Delete backup" \
 				--yesno "Do you want to delete the backup of $JAIL also?" 7 60
@@ -973,7 +973,7 @@ upgrade_jail () {
 
 	# rename to _old
 	iocage stop $JAIL"_old"
-	iocage destroy $JAIL"_old"
+	iocage destroy $JAIL"_old" --recursive
 	iocage stop $JAIL
 	iocage rename $JAIL $JAIL"_old"
 	iocage set boot=no $JAIL"_old"
