@@ -902,9 +902,7 @@ backup_jail () {
 	
 	mkdir -p $BACKUP_LOCATION/$JAIL
 
-	if [[ $JAIL != *"webserver"* ]]; then
-		iocage stop $JAIL
-	fi
+	iocage stop $JAIL
 
 	i=1
 	while true; do
@@ -922,6 +920,7 @@ backup_jail () {
 
 	. $(dirname $0)/webserver/webserver_config.sh
 	if [[ $JAIL == *"webserver"* ]]; then
+		iocage start webserver
 		iocage exec webserver "mysqldump --opt --all-databases --set-gtid-purged=OFF -u root -p'$MYSQL_ROOT_PASSWORD' > root/all-databases.sql"
 		rsync -a --delete $JAIL_LOCATION/webserver/root/root/all-databases.sql $BACKUP_LOCATION/$JAIL
 		rm -rf $JAIL_LOCATION/webserver/root/root/all-databases.sql
