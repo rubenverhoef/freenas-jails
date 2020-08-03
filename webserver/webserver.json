@@ -5,7 +5,7 @@
     "artifact": "https://github.com/rubenverhoef/iocage-plugin-webserver.git",
     "properties": {
         "nat": 1,
-        "nat_forwards": "tcp(80:8000)"
+        "nat_forwards": "tcp(80:1080),tcp(443:1443)"
     },
     "pkgs": [
         "nginx",
