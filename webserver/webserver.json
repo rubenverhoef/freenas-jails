@@ -37,7 +37,7 @@
         "php74-zlib",
         "php74-pdo_sqlite",
         "php74-sqlite3",
-        "py36-certbot",
+        "py37-certbot",
         "expect"
     ],
     "packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
