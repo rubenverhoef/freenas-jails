@@ -5,7 +5,7 @@
     "artifact": "https://github.com/rubenverhoef/iocage-plugin-tvheadend.git",
     "properties": {
         "nat": 1,
-        "nat_forwards": "tcp(9981:9981)"
+        "nat_forwards": "tcp(9981:9981),tcp(9982:9982)"
     },
     "pkgs": [
         "tvheadend"
