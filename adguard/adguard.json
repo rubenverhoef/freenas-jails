@@ -5,7 +5,7 @@
     "artifact": "https://github.com/rubenverhoef/iocage-plugin-adguard.git",
     "properties": {
         "nat": 1,
-        "nat_forwards": "tcp(3000:3000),tcp(853:853)"
+        "nat_forwards": "tcp(3000:3000),tcp(853:853),tcp(53:53),udp(53:53)"
     },
     "pkgs": [
         "curl",
