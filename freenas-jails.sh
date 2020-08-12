@@ -132,6 +132,7 @@ install_dialog () {
 	AdGuard "DNS Adblocker"\
 	FireFly "Personal finances manager"\
 	DSMR "DSMR Reader"\
+	Zigbee2MQTT "Zigbee2MQTT"\
 	2>&1 1>&3)
 	exit_status=$?
 	exec 3>&-
@@ -572,6 +573,7 @@ mount_storage () {
 			AdGuard "DNS Adblocker"\
 			FireFly "Personal finances manager"\
 			DSMR "DSMR Reader"\
+			Zigbee2MQTT "Zigbee2MQTT"\
 			2>&1 1>&3)
 			exit_status=$?
 			exec 3>&-
@@ -777,6 +779,7 @@ delete_jail () {
 	AdGuard "DNS Adblocker"\
 	FireFly "Personal finances manager"\
 	DSMR "DSMR Reader"\
+	Zigbee2MQTT "Zigbee2MQTT"\
 	2>&1 1>&3)
 	exit_status=$?
 	exec 3>&-
@@ -883,6 +886,7 @@ backup_jail () {
 		AdGuard "DNS Adblocker"\
 		FireFly "Personal finances manager"\
 		DSMR "DSMR Reader"\
+		Zigbee2MQTT "Zigbee2MQTT"\
 		2>&1 1>&3)
 		exit_status=$?
 		exec 3>&-
@@ -957,6 +961,7 @@ upgrade_jail () {
 	AdGuard "DNS Adblocker"\
 	FireFly "Personal finances manager"\
 	DSMR "DSMR Reader"\
+	Zigbee2MQTT "Zigbee2MQTT"\
 	2>&1 1>&3)
 	exit_status=$?
 	exec 3>&-
@@ -974,6 +979,8 @@ upgrade_jail () {
 	iocage stop $JAIL"_old"
 	iocage destroy $JAIL"_old" --recursive
 	iocage stop $JAIL
+	ALL_FSTAB=$(iocage fstab $JAIL -l -h | grep --invert "releases")
+
 	iocage rename $JAIL $JAIL"_old"
 	iocage set boot=no $JAIL"_old"
 
