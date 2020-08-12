@@ -4,13 +4,14 @@
     "release": "11.4-RELEASE",
     "artifact": "https://github.com/rubenverhoef/iocage-plugin-zigbee2mqtt.git",
     "properties": {
-        "nat": 1
+        "nat": 1,
+        "mount_devfs": 1
     },
     "pkgs": [
         "git",
-        "python37",
-        "py37-pip",
-        "py37-virtualenv"
+        "node12",
+        "npm-node12",
+        "python37"
     ],
     "packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
     "fingerprints": {
