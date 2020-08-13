@@ -9,9 +9,7 @@
     },
     "pkgs": [
         "git",
-        "node12",
-        "npm-node12",
-        "python37"
+        "npm-node12"
     ],
     "packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
     "fingerprints": {
