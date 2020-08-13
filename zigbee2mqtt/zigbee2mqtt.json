@@ -5,7 +5,7 @@
     "artifact": "https://github.com/rubenverhoef/iocage-plugin-zigbee2mqtt.git",
     "properties": {
         "nat": 1,
-        "mount_devfs": 1
+        "devfs_ruleset": 3
     },
     "pkgs": [
         "git",
