@@ -5,6 +5,7 @@
     "artifact": "https://github.com/rubenverhoef/iocage-plugin-zigbee2mqtt.git",
     "properties": {
         "nat": 1,
+        "nat_forwards": "tcp(8080:8081)",
         "devfs_ruleset": 3
     },
     "pkgs": [
