@@ -44,7 +44,8 @@
         "php74-xml",
         "php74-filter",
         "php74-opcache",
-        "php74-pcntl"
+        "php74-pcntl",
+        "php74-bcmath"
     ],
     "packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
     "fingerprints": {
