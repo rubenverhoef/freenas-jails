@@ -13,7 +13,7 @@ INTERFACE="$(ifconfig | head -n1 | sed -e 's/:.*$//')"
 LOCAL_IP="$(ifconfig $INTERFACE | grep 'inet' -m 1 | cut -d' ' -f2)"
 GLOBAL_CONFIG=$(dirname $0)"/config.sh"
 DATABASE_JAILS=(webserver nextcloud firefly)
-MEDIA_JAILS=(plex emby sonarr radarr sabnzbd tvheadend)
+MEDIA_JAILS=(plex sonarr radarr sabnzbd tvheadend)
 FILE_JAILS=(nextcloud)
 
 # DEFAULT VALUES:
@@ -127,7 +127,6 @@ install_dialog () {
 	Sonarr "Sonarr automatic serice downloader" \
 	Radarr "Radarr automatic movie downloader" \
 	Plex "Plex Media Server" \
-	Emby "Emby Media Server" \
 	Tvheadend "Tvheadend TV streaming server" \
 	AdGuard "DNS Adblocker"\
 	FireFly "Personal finances manager"\
@@ -570,7 +569,6 @@ mount_storage () {
 			Sonarr "Sonarr automatic serice downloader" \
 			Radarr "Radarr automatic movie downloader" \
 			Plex "Plex Media Server" \
-			Emby "Emby Media Server" \
 			Tvheadend "Tvheadend TV streaming server" \
 			AdGuard "DNS Adblocker"\
 			FireFly "Personal finances manager"\
@@ -776,7 +774,6 @@ delete_jail () {
 	Sonarr "Sonarr automatic serice downloader" \
 	Radarr "Radarr automatic movie downloader" \
 	Plex "Plex Media Server" \
-	Emby "Emby Media Server" \
 	Tvheadend "Tvheadend TV streaming server" \
 	AdGuard "DNS Adblocker"\
 	FireFly "Personal finances manager"\
@@ -883,7 +880,6 @@ backup_jail () {
 		Sonarr "Sonarr automatic serice downloader" \
 		Radarr "Radarr automatic movie downloader" \
 		Plex "Plex Media Server" \
-		Emby "Emby Media Server" \
 		Tvheadend "Tvheadend TV streaming server" \
 		AdGuard "DNS Adblocker"\
 		FireFly "Personal finances manager"\
@@ -958,7 +954,6 @@ upgrade_jail () {
 	Sonarr "Sonarr automatic serice downloader" \
 	Radarr "Radarr automatic movie downloader" \
 	Plex "Plex Media Server" \
-	Emby "Emby Media Server" \
 	Tvheadend "Tvheadend TV streaming server" \
 	AdGuard "DNS Adblocker"\
 	FireFly "Personal finances manager"\
