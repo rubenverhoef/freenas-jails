@@ -99,7 +99,7 @@ install_dialog () {
 		JAIL=$(dialog --form "IOCAGE Jail location:" 0 0 0 \
 		"Iocage ZPOOL" 1 1 "$IOCAGE_ZPOOL" 1 60 25 0 \
 		"Backup location (starting with \"/\" and without last \"/\")" 2 1 "$BACKUP_LOCATION" 2 60 25 0 \
-		"Please create a USER in the FreeNAS WebGUI!!" 3 1 "" 3 60 0 0 \
+		"Please create a USER in the TrueNAS WebGUI!!" 3 1 "" 3 60 0 0 \
 		"User name:" 4 1 "$USER_NAME" 4 60 25 0 \
 		"User ID (UID):" 5 1 "$USER_ID" 5 60 25 0 \
 		2>&1 1>&3)
@@ -263,21 +263,21 @@ config_jail () {
 		# load updated config file
 		. $JAIL_CONFIG
 
-		dialog --title "External access" --yesno "Do you want to make the FreeNAS webGUI accessible from outside your network?" 7 60
+		dialog --title "External access" --yesno "Do you want to make the TrueNAS webGUI accessible from outside your network?" 7 60
 		exit_status=$?
         if [ $exit_status == $DIALOG_OK ]; then
-			if ! grep -q "FREENAS_IP" $JAIL_CONFIG; then
-				echo -e "FREENAS_IP=\""$LOCAL_IP"\"" >> $JAIL_CONFIG
+			if ! grep -q "NAS_IP" $JAIL_CONFIG; then
+				echo -e "NAS_IP=\""$LOCAL_IP"\"" >> $JAIL_CONFIG
 			fi	
-			if ! grep -q "FREENAS_PORT" $JAIL_CONFIG; then
-				echo -e "FREENAS_PORT=\"80\"" >> $JAIL_CONFIG
+			if ! grep -q "NAS_PORT" $JAIL_CONFIG; then
+				echo -e "NAS_PORT=\"80\"" >> $JAIL_CONFIG
 			fi	
 			# load updated config file
 			. $JAIL_CONFIG
 			
 			exec 3>&1
-			FREENASIP=$(dialog --form "Webserver configuration:" 0 0 0 \
-			"FreeNAS webGUI Port:" 2 2 "$FREENAS_PORT" 2 30 5 0 \
+			NASIP=$(dialog --form "Webserver configuration:" 0 0 0 \
+			"TrueNAS webGUI Port:" 2 2 "$NAS_PORT" 2 30 5 0 \
 			2>&1 1>&3)
 			exit_status=$?
 			exec 3>&-
@@ -285,9 +285,9 @@ config_jail () {
             if [ $exit_status != $DIALOG_OK ]; then
 				install_dialog second_time
 			else
-                FREENASARR=( $FREENASIP )
+                NASARR=( $NASIP )
                 sed -i '' -e 's,EXTERNAL_GUI="NO",EXTERNAL_GUI="YES",g' $JAIL_CONFIG
-                sed -i '' -e 's,FREENAS_PORT="'$FREENAS_PORT'",FREENAS_PORT="'${FREENASARR[0]}'",g' $JAIL_CONFIG
+                sed -i '' -e 's,NAS_PORT="'$NAS_PORT'",NAS_PORT="'${NASARR[0]}'",g' $JAIL_CONFIG
             fi
 		elif [ $exit_status == $DIALOG_CANCEL ]; then
 			sed -i '' -e 's,EXTERNAL_GUI="YES",EXTERNAL_GUI="NO",g' $JAIL_CONFIG
@@ -996,9 +996,9 @@ touch $GLOBAL_CONFIG || exit
 . $GLOBAL_CONFIG
 
 if [[ $1 == "" ]]; then
-	cd /root/freenas-jails && git reset --hard
-	cd /root/freenas-jails && git pull
-	bash /root/freenas-jails/freenas-jails.sh second_time
+	cd "$(dirname "$0")" && git reset --hard
+	cd "$(dirname "$0")" && git pull
+	bash "$0" second_time
 else
 	first
 fi

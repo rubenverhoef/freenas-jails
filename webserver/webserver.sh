@@ -52,7 +52,7 @@ echo -e "www."$DOMAIN" = /usr/local/www" >> /usr/local/etc/letsencrypt/renewal/w
 
 
 if [ "$EXTERNAL_GUI" == "YES" ]; then
-	bash /root/subdomain.sh freenas $FREENAS_IP $FREENAS_PORT
+	bash /root/subdomain.sh truenas $NAS_IP $NAS_PORT
 fi
 
 sysrc 'php_fpm_enable=YES'

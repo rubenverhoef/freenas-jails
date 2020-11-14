@@ -1,9 +1,9 @@
-# freenas-jails
-FreeNAS 11 jails/plugins installation and maintenance script(s)
+# truenas-jails
+TrueNAS 12 jails/plugins installation and maintenance script(s)
 
-Run the following command in freenas shell:
+Run the following command in truenas shell:
 
 ```
-bash -c 'if [ ! -d "/root/freenas-jails" ]; then git clone https://github.com/rubenverhoef/freenas-jails.git /root/freenas-jails; fi'
-bash /root/freenas-jails/freenas-jails.sh
+bash -c 'if [ ! -d "/root/truenas-jails" ]; then git clone https://github.com/rubenverhoef/truenas-jails.git /root/truenas-jails; fi'
+bash /root/truenas-jails/truenas-jails.sh
 ```
