@@ -1,7 +1,7 @@
 {
     "name": "adguard",
     "plugin_schema": "2",
-    "release": "11.4-RELEASE",
+    "release": "12.2-RELEASE",
     "artifact": "https://github.com/rubenverhoef/iocage-plugin-adguard.git",
     "properties": {
         "nat": 1,
