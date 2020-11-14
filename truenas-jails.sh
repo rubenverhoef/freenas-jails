@@ -951,7 +951,7 @@ backup_jail () {
 
 upgrade_jail () {
 	exec 3>&1
-	JAIL=$(dialog --menu "Delete following programs:" 0 0 0 \
+	JAIL=$(dialog --menu "Upgrade following programs:" 0 0 0 \
 	Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" \
 	Nextcloud "Nextcloud 12" \
 	SABnzbd "SABnzbd" \
