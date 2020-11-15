@@ -122,7 +122,7 @@ install_dialog () {
 	exec 3>&1
 	PROGRAM=$(dialog --menu "Install following program:" 0 0 0 \
 	Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" \
-	Nextcloud "Nextcloud 12" \
+	Nextcloud "Nextcloud" \
 	SABnzbd "SABnzbd" \
 	Sonarr "Sonarr automatic serice downloader" \
 	Radarr "Radarr automatic movie downloader" \
@@ -564,7 +564,7 @@ mount_storage () {
 			exec 3>&1
 			JAIL=$(dialog --menu "Mount storage to:" 0 0 0 \
 			Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" \
-			Nextcloud "Nextcloud 12" \
+			Nextcloud "Nextcloud" \
 			SABnzbd "SABnzbd" \
 			Sonarr "Sonarr automatic serice downloader" \
 			Radarr "Radarr automatic movie downloader" \
@@ -769,7 +769,7 @@ delete_jail () {
 	exec 3>&1
 	JAIL=$(dialog --menu "Delete following programs:" 0 0 0 \
 	Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" \
-	Nextcloud "Nextcloud 12" \
+	Nextcloud "Nextcloud" \
 	SABnzbd "SABnzbd" \
 	Sonarr "Sonarr automatic serice downloader" \
 	Radarr "Radarr automatic movie downloader" \
@@ -875,7 +875,7 @@ backup_jail () {
 		exec 3>&1
 		JAIL=$(dialog --menu "Backup following programs:" 0 0 0 \
 		Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" \
-		Nextcloud "Nextcloud 12" \
+		Nextcloud "Nextcloud" \
 		SABnzbd "SABnzbd" \
 		Sonarr "Sonarr automatic serice downloader" \
 		Radarr "Radarr automatic movie downloader" \
@@ -949,7 +949,7 @@ upgrade_jail () {
 	exec 3>&1
 	JAIL=$(dialog --menu "Upgrade following programs:" 0 0 0 \
 	Webserver "NGINX, MySQL, WordPress, phpMyAdmin, HTTPS(Let's Encrypt)" \
-	Nextcloud "Nextcloud 12" \
+	Nextcloud "Nextcloud" \
 	SABnzbd "SABnzbd" \
 	Sonarr "Sonarr automatic serice downloader" \
 	Radarr "Radarr automatic movie downloader" \
