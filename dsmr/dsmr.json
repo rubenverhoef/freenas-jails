@@ -8,7 +8,7 @@
         "nat_forwards": "tcp(80:8100)"
     },
     "pkgs": [
-        "postgresql12-server",
+        "postgresql13-server",
         "sudo",
         "nginx",
         "git",
