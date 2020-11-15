@@ -11,14 +11,14 @@
         "curl",
         "wget",
         "openssl",
-        "python",
-        "py27-pip",
+        "python37",
+        "py37-pip",
         "unrar",
         "par2cmdline",
         "par2cmdline-tbb",
         "unzip",
         "p7zip",
-        "py27-sqlite3"
+        "py37-sqlite3"
     ],
     "packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
     "fingerprints": {
