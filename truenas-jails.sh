@@ -132,6 +132,7 @@ install_dialog () {
 	FireFly "Personal finances manager"\
 	DSMR "DSMR Reader"\
 	Zigbee2MQTT "Zigbee2MQTT"\
+	Unifi "Unifi Controller"\
 	2>&1 1>&3)
 	exit_status=$?
 	exec 3>&-
@@ -574,6 +575,7 @@ mount_storage () {
 			FireFly "Personal finances manager"\
 			DSMR "DSMR Reader"\
 			Zigbee2MQTT "Zigbee2MQTT"\
+			Unifi "Unifi Controller"\
 			2>&1 1>&3)
 			exit_status=$?
 			exec 3>&-
@@ -779,6 +781,7 @@ delete_jail () {
 	FireFly "Personal finances manager"\
 	DSMR "DSMR Reader"\
 	Zigbee2MQTT "Zigbee2MQTT"\
+	Unifi "Unifi Controller"\
 	2>&1 1>&3)
 	exit_status=$?
 	exec 3>&-
@@ -885,6 +888,7 @@ backup_jail () {
 		FireFly "Personal finances manager"\
 		DSMR "DSMR Reader"\
 		Zigbee2MQTT "Zigbee2MQTT"\
+		Unifi "Unifi Controller"\
 		2>&1 1>&3)
 		exit_status=$?
 		exec 3>&-
@@ -959,6 +963,7 @@ upgrade_jail () {
 	FireFly "Personal finances manager"\
 	DSMR "DSMR Reader"\
 	Zigbee2MQTT "Zigbee2MQTT"\
+	Unifi "Unifi Controller"\
 	2>&1 1>&3)
 	exit_status=$?
 	exec 3>&-
