@@ -5,7 +5,7 @@
     "artifact": "https://github.com/rubenverhoef/iocage-plugin-sabnzbd",
     "properties": {
         "nat": 1,
-        "nat_forwards": "tcp(8080:8080)"
+        "nat_forwards": "tcp(8080:8082)"
     },
     "pkgs": [
         "curl",
