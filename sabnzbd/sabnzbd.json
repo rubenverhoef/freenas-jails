@@ -18,7 +18,8 @@
         "par2cmdline-tbb",
         "unzip",
         "p7zip",
-        "py37-sqlite3"
+        "py37-sqlite3",
+        "rust"
     ],
     "packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
     "fingerprints": {
