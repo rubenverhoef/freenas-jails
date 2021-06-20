@@ -493,11 +493,16 @@ install_jail () {
 		if [[ $JAIL != "webserver" ]]; then  # configure subdomain
 			. $(dirname $0)/webserver/webserver_config.sh
 			PORT=$(perl -nle 'print $1 if /\:(.[0-9]*)\)/' $(dirname $0)/$JAIL/$JAIL.json)
+			SCHEME=$(cat $(dirname $0)/$JAIL/$JAIL.json | jq -r '.properties.web_scheme')
+			if [ "$SCHEME" == "null" ]; then
+				SCHEME="http"
+			fi
+
 			if [ ! -z $PORT ]; then
 				if [ "${!SUB_DOMAIN}" ]; then
-					iocage exec webserver "bash /root/subdomain.sh ${!SUB_DOMAIN} $LOCAL_IP $PORT"
+					iocage exec webserver "bash /root/subdomain.sh ${!SUB_DOMAIN} $LOCAL_IP $PORT $SCHEME"
 				else
-					iocage exec webserver "bash /root/suburl.sh $JAIL $LOCAL_IP $PORT"
+					iocage exec webserver "bash /root/suburl.sh $JAIL $LOCAL_IP $PORT $SCHEME"
 				fi
 			fi
 		fi
