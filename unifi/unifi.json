@@ -8,7 +8,7 @@
         "nat_forwards": "tcp(8080:8082),udp(3478:3478),udp(10001:10001)"
     },
     "pkgs": [
-        "unifi5"
+        "unifi6"
     ],
     "packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
     "fingerprints": {
