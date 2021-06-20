@@ -5,8 +5,7 @@
     "artifact": "https://github.com/rubenverhoef/iocage-plugin-unifi",
     "properties": {
         "nat": 1,
-        "nat_forwards": "tcp(8443:8082),udp(3478:3478),udp(10001:10001)",
-        "web_scheme": "https"
+        "nat_forwards": "tcp(8443:8082),udp(3478:3478),udp(10001:10001)"
     },
     "pkgs": [
         "unifi6"
@@ -20,6 +19,7 @@
             }
         ]
     },
+    "web_scheme": "https",
     "revision": "0",
     "official": false
 }
