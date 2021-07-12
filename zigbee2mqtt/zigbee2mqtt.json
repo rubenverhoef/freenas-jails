@@ -10,7 +10,7 @@
     },
     "pkgs": [
         "git",
-        "npm-node12"
+        "npm-node14"
     ],
     "packagesite": "http://pkg.FreeBSD.org/${ABI}/latest",
     "fingerprints": {
